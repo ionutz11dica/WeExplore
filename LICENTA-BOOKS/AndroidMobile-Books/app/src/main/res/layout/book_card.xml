@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="125dp"
+    android:layout_height="200dp"
+
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:adjustViewBounds="true">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="120dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        android:layout_margin="7dp"
+        android:elevation="0dp"
+        card_view:cardCornerRadius="@dimen/card_movie_radius"
+        tools:targetApi="lollipop">
+
+        <LinearLayout
+            android:id="@+id/ll_card_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_margin="0dp"
+                android:padding="0dp"
+                android:id="@+id/iv_thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="130dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="fitXY" />
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+
+                android:paddingLeft="@dimen/book_title_padding"
+                android:paddingTop="@dimen/book_title_padding"
+                android:paddingRight="@dimen/book_title_padding"
+                android:textColor="@color/book_title"
+                android:textSize="@dimen/book_title"
+
+                tools:ignore="RtlCompat,SpUsage" />
+            <RelativeLayout
+                android:id="@+id/rl_book_card"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/tv_authors"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:textColor="@color/grey"
+                    android:textSize="12sp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:layout_alignParentBottom="true"
+                    android:paddingLeft="@dimen/book_title_padding"
+                    android:paddingTop="@dimen/book_title_padding"
+                    android:paddingRight="@dimen/book_title_padding"
+                    android:paddingBottom="@dimen/book_title_padding"
+                    tools:ignore="SmallSp" />
+
+            </RelativeLayout>
+
+
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+</LinearLayout>
+
