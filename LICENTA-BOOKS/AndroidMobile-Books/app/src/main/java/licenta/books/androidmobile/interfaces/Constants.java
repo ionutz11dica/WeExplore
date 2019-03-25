@@ -2,7 +2,13 @@ package licenta.books.androidmobile.interfaces;
 
 public interface Constants {
       int RC_SIGN_IN = 9001;
-      String BASE_URL = "http://192.168.1.12:4000/";
+      int WRITE_REQUEST_CODE = 300;
+
+      String BASE_URL = "http://192.168.1.4:4000/";
+
+      float BITMAP_SCALE = 0.4f;
+      float BLUR_RADIUS = 24f;
 
 
+      String KEY_IMAGE_URL = "keyImgUrl";
 }

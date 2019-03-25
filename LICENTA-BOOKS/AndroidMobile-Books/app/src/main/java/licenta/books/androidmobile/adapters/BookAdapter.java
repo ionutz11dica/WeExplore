@@ -1,13 +1,16 @@
 package licenta.books.androidmobile.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -15,16 +18,18 @@ import java.lang.reflect.Array;
 import java.util.List;
 
 import licenta.books.androidmobile.R;
-import licenta.books.androidmobile.classes.Book;
+import licenta.books.androidmobile.activities.DetailsActivity;
+import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.interfaces.Constants;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> {
 
 
     private Context mContext;
-    private List<Book> bookList;
+    private List<BookE> bookList;
 
 
-    public BookAdapter(Context mContext, List<Book> movieList){
+    public BookAdapter(Context mContext, List<BookE> movieList){
         this.mContext = mContext;
         this.bookList = movieList;
     }
@@ -44,7 +49,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
         viewHolder.title.setText(bookList.get(i).getTitle());
         String authors = convertStringFromArray(bookList.get(i));
         viewHolder.authors.setText(authors);
-        String bookCover = bookList.get(i).getImageLink().replace("zoom=0","zoom=5");
+        String bookCover = bookList.get(i).getImageLink().replace("zoom=0","zoom=4");
 
         Glide.with(mContext)
                 .load(bookCover)
@@ -57,7 +62,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
         return bookList.size();
     }
 
-    public String convertStringFromArray(Book book){
+    public String convertStringFromArray(BookE book){
         StringBuilder sb = new StringBuilder();
         for(String author : book.getAuthors()){
             if(book.getAuthors().size()>1){
@@ -84,14 +89,17 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
                 @Override
                 public void onClick(View v){
                     int pos = getAdapterPosition();
-                   /* if (pos != RecyclerView.NO_POSITION){
-                        Movie clickedDataItem = movieList.get(pos);
-                        Intent intent = new Intent(mContext, DetailActivity.class);
-                        intent.putExtra("movies", clickedDataItem );
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        mContext.startActivity(intent);
-                        Toast.makeText(v.getContext(), "You clicked " + clickedDataItem.getOriginalTitle(), Toast.LENGTH_SHORT).show();
-                    }*/
+                    Log.i("Poz: ",String.valueOf(pos));
+                    if (pos != RecyclerView.NO_POSITION){
+                        BookE clickedDataItem = bookList.get(pos);
+                        String bookCover = bookList.get(pos).getImageLink().replace("zoom=0","zoom=4");
+                    Intent intent = new Intent(mContext, DetailsActivity.class);
+                    intent.putExtra(Constants.KEY_IMAGE_URL,bookCover);
+                    intent.putExtra("ceva",bookList.get(pos));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    mContext.startActivity(intent);
+                    Toast.makeText(v.getContext(), "You clicked " + clickedDataItem.getTitle(), Toast.LENGTH_SHORT).show();
+                }
                 }
             });
         }

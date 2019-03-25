@@ -28,6 +28,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.Task;
 
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.others.CheckForNetwork;
 import licenta.books.androidmobile.activities.others.CustomToast;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
@@ -86,6 +87,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
 
     void initComp(){
+        if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
+            Toast.makeText(getApplicationContext(),"Exista net",Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getApplicationContext(),"nu Exista net",Toast.LENGTH_LONG).show();
+
+        }
         tie_signinUsername = findViewById(R.id.signin_tie_username);
         tie_signinPassword = findViewById(R.id.signin_tie_password);
 
