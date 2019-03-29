@@ -2,9 +2,11 @@ package licenta.books.androidmobile.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.arch.persistence.room.RoomDatabase;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,14 +31,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.BlurBuilder;
 import licenta.books.androidmobile.activities.others.CheckForSDCard;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.database.AppRoomDatabase;
+import licenta.books.androidmobile.database.DAO.BookEDao;
 import licenta.books.androidmobile.interfaces.Constants;
 import okhttp3.ResponseBody;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -48,16 +61,45 @@ import retrofit2.Response;
 public class DetailsActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, View.OnClickListener {
 
     Intent intent;
-
+    BookEDao bookEDao;
+    private CompositeDisposable compositeDisposable;
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
+
+
+        compositeDisposable = new CompositeDisposable();
+
+        bookEDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookEDao();
+
+        ArrayList<String> authors = new ArrayList<>();
+        authors.add("UNUL");
+        authors.add("Doi");
+        ArrayList<String> categ = new ArrayList<>();
+        categ.add("UNUL");
+        categ.add("Doi");
+        BookE bookE = new BookE("Muntdadaidai Carpati",authors,categ,222,"Ceva mare care plutea pe o mare in zare","Donel","11-11-2011"
+                ,new byte[12],"undeva pe marte","1111112222");
+
+       // bookEDao.insert(bookE);
+        insertBook(bookE);
+       // loadBook();
+//
         intent = getIntent();
         final String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
         final BookE book = intent.getParcelableExtra("ceva");
+
+
+
+       // bookEDao.insert(bookE);
+
+//       List<BookE> listDinDb = bookEDao.getBooksFromDb();
+//       if(listDinDb.size()>0){
+//           Toast.makeText(getApplicationContext(),listDinDb.get(0).getIsbn(),Toast.LENGTH_LONG).show();
+//       }
 
         final LinearLayout parent = findViewById(R.id.ll_details_parent);
         final LinearLayout blurBackground = parent.findViewById(R.id.ll_details);
@@ -117,6 +159,56 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         });
 
 
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private void insertBook(final BookE bookE) {
+        new AsyncTask<Void,Void,Void>(){
+            @Override
+            protected Void doInBackground(Void... voids) {
+                bookEDao.insert(bookE);
+
+                return null;
+            }
+        }.execute();
+    }
+
+    private void loadBook() {
+        Disposable disposable = io.reactivex.Observable.create(new ObservableOnSubscribe<Object>() {
+            @Override
+            public void subscribe(ObservableEmitter<Object> e) throws Exception {
+                ArrayList<String> authors = new ArrayList<>();
+                authors.add("UNUL");
+                authors.add("Doi");
+                ArrayList<String> categ = new ArrayList<>();
+                categ.add("UNUL");
+                categ.add("Doi");
+                BookE bookE = new BookE("Muntidai Carpati",authors,categ,222,"Ceva mare care plutea pe o mare in zare","Donel","11-11-2011"
+                        ,new byte[12],"undeva pe marte","1111112222");
+
+                bookEDao.insert(bookE);
+                e.onComplete();
+            }
+        })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(new Consumer() {
+                    @Override
+                    public void accept(Object o) throws Exception {
+                        Toast.makeText(getApplicationContext(), "Book has been inserted", Toast.LENGTH_LONG).show();
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Toast.makeText(getApplicationContext(), throwable.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }, new Action() {
+                    @Override
+                    public void run() throws Exception {
+
+                    }
+                });
+        disposable.dispose();
     }
 
     @Override

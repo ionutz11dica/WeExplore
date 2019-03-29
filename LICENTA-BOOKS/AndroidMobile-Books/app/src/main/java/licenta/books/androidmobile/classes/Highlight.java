@@ -1,24 +1,58 @@
 package licenta.books.androidmobile.classes;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Index;
+import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.sql.Date;
+import java.sql.Timestamp;
+
+import licenta.books.androidmobile.classes.Converters.TimestampConverter;
+
+@Entity(tableName = "highlight_join",
+        foreignKeys = {
+                @ForeignKey(
+                        entity = BookE.class,
+                        parentColumns = "bookId",
+                        childColumns = "bookId"
+                ),
+                @ForeignKey(
+                        entity = User.class,
+                        parentColumns = "userId",
+                        childColumns = "userId")
+        },
+        indices = {
+                @Index(value = "userId"),
+                @Index(value = "bookId")
+        })
 public class Highlight implements Parcelable {
+    @PrimaryKey(autoGenerate = true)
     private Integer highlightId;
     private Integer pagePosition;
     private Integer noChapter;
-    private String date;
+    @TypeConverters({TimestampConverter.class})
+    private Date date;
     private Integer colorCode;
     private String content;
+    private  Integer bookId;
+    private  Integer userId;
 
-    public Highlight(Integer highlightId, Integer pagePosition, Integer noChapter, String date, Integer colorCode, String content) {
-        this.highlightId = highlightId;
+    public Highlight( Integer pagePosition, Integer noChapter, Date date, Integer colorCode, String content,Integer bookId,Integer userId) {
+
         this.pagePosition = pagePosition;
         this.noChapter = noChapter;
         this.date = date;
         this.colorCode = colorCode;
         this.content = content;
+        this.bookId = bookId;
+        this.userId = userId;
     }
+
 
     protected Highlight(Parcel in) {
         if (in.readByte() == 0) {
@@ -36,13 +70,22 @@ public class Highlight implements Parcelable {
         } else {
             noChapter = in.readInt();
         }
-        date = in.readString();
         if (in.readByte() == 0) {
             colorCode = null;
         } else {
             colorCode = in.readInt();
         }
         content = in.readString();
+        if (in.readByte() == 0) {
+            bookId = null;
+        } else {
+            bookId = in.readInt();
+        }
+        if (in.readByte() == 0) {
+            userId = null;
+        } else {
+            userId = in.readInt();
+        }
     }
 
     @Override
@@ -65,7 +108,6 @@ public class Highlight implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(noChapter);
         }
-        dest.writeString(date);
         if (colorCode == null) {
             dest.writeByte((byte) 0);
         } else {
@@ -73,6 +115,18 @@ public class Highlight implements Parcelable {
             dest.writeInt(colorCode);
         }
         dest.writeString(content);
+        if (bookId == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(bookId);
+        }
+        if (userId == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(userId);
+        }
     }
 
     @Override
@@ -116,11 +170,11 @@ public class Highlight implements Parcelable {
         this.noChapter = noChapter;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
@@ -138,5 +192,21 @@ public class Highlight implements Parcelable {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public Integer getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(Integer bookId) {
+        this.bookId = bookId;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }
