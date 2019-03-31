@@ -43,6 +43,7 @@ public class User implements Parcelable {
     }
 
     //DatabaseConstructor
+
     public User(@NonNull String email, @Nullable String username,@Nullable String password) {
         this.email = email;
         this.username = username;

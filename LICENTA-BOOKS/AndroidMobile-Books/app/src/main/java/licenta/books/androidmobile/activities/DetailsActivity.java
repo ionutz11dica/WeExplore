@@ -19,6 +19,7 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,8 +35,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.netopen.hotbitmapgg.library.view.RingProgressBar;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -50,6 +53,8 @@ import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.BookEDao;
+import licenta.books.androidmobile.downloadProgress.Download;
+import licenta.books.androidmobile.downloadProgress.DownloadProgressListener;
 import licenta.books.androidmobile.interfaces.Constants;
 import okhttp3.ResponseBody;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -63,43 +68,21 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     Intent intent;
     BookEDao bookEDao;
     private CompositeDisposable compositeDisposable;
+    Button btnDownload;
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
-
-
         compositeDisposable = new CompositeDisposable();
-
         bookEDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookEDao();
 
-        ArrayList<String> authors = new ArrayList<>();
-        authors.add("UNUL");
-        authors.add("Doi");
-        ArrayList<String> categ = new ArrayList<>();
-        categ.add("UNUL");
-        categ.add("Doi");
-        BookE bookE = new BookE("Muntdadaidai Carpati",authors,categ,222,"Ceva mare care plutea pe o mare in zare","Donel","11-11-2011"
-                ,new byte[12],"undeva pe marte","1111112222");
 
-       // bookEDao.insert(bookE);
-        insertBook(bookE);
-       // loadBook();
-//
         intent = getIntent();
         final String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
         final BookE book = intent.getParcelableExtra("ceva");
 
-
-
-       // bookEDao.insert(bookE);
-
-//       List<BookE> listDinDb = bookEDao.getBooksFromDb();
-//       if(listDinDb.size()>0){
-//           Toast.makeText(getApplicationContext(),listDinDb.get(0).getIsbn(),Toast.LENGTH_LONG).show();
-//       }
 
         final LinearLayout parent = findViewById(R.id.ll_details_parent);
         final LinearLayout blurBackground = parent.findViewById(R.id.ll_details);
@@ -107,7 +90,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         final TextView description = parent.findViewById(R.id.tv_book_description);
         parent.setOnClickListener(this);
         blurBackground.setOnClickListener(this);
-        final Button btnDownload = findViewById(R.id.btn_details_download);
+        btnDownload = findViewById(R.id.btn_details_download);
 
 
         Glide.with(this)
@@ -131,30 +114,22 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             @SuppressLint("SetJavaScriptEnabled")
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(),"SD Card not found",Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(),"SD Card not found",Toast.LENGTH_LONG).show();
 
                 if (CheckForSDCard.isSDCardPresent()) {
                     //check if app has permission to write to the external storage.
                     if (EasyPermissions.hasPermissions(DetailsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                       DownloadFile();
+                       TestDownloadRxJava();
 
                     } else {
                         //If permission is not present request for the same.
                         EasyPermissions.requestPermissions(DetailsActivity.this, getString(R.string.write_file), Constants.WRITE_REQUEST_CODE, Manifest.permission.READ_EXTERNAL_STORAGE);
                     }
-
-
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "SD Card not found", Toast.LENGTH_LONG).show();
-
                 }
 
-
-//                view.getSettings().setJavaScriptEnabled(true);
-//                view.loadUrl(book.getDownloadLink());
-//
-////                DownloadFile();
             }
         });
 
@@ -171,44 +146,6 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                 return null;
             }
         }.execute();
-    }
-
-    private void loadBook() {
-        Disposable disposable = io.reactivex.Observable.create(new ObservableOnSubscribe<Object>() {
-            @Override
-            public void subscribe(ObservableEmitter<Object> e) throws Exception {
-                ArrayList<String> authors = new ArrayList<>();
-                authors.add("UNUL");
-                authors.add("Doi");
-                ArrayList<String> categ = new ArrayList<>();
-                categ.add("UNUL");
-                categ.add("Doi");
-                BookE bookE = new BookE("Muntidai Carpati",authors,categ,222,"Ceva mare care plutea pe o mare in zare","Donel","11-11-2011"
-                        ,new byte[12],"undeva pe marte","1111112222");
-
-                bookEDao.insert(bookE);
-                e.onComplete();
-            }
-        })
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(new Consumer() {
-                    @Override
-                    public void accept(Object o) throws Exception {
-                        Toast.makeText(getApplicationContext(), "Book has been inserted", Toast.LENGTH_LONG).show();
-                    }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        Toast.makeText(getApplicationContext(), throwable.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                }, new Action() {
-                    @Override
-                    public void run() throws Exception {
-
-                    }
-                });
-        disposable.dispose();
     }
 
     @Override
@@ -234,6 +171,45 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
     }
 
+    private void TestDownloadRxJava(){
+        final BookE book = intent.getParcelableExtra("ceva");
+        DownloadProgressListener listener = new DownloadProgressListener() {
+            @Override
+            public void update(long bytesRead, long contentLength, boolean done) {
+                Download download = new Download();
+                download.setTotalFileSize(contentLength);
+                download.setCurrentFileSize(bytesRead);
+                int progress = (int) ((bytesRead * 100) / contentLength);
+                download.setProgress(progress);
+
+
+            }
+        };
+
+        File outputFile = new File(getExternalFilesDir(null) + File.separator +"test.epub");
+
+        new ApiClient(listener).downloadAPK("books/"+book.get_id(), outputFile, new Observer() {
+            @Override
+            public void onSubscribe(Disposable d) {
+            }
+
+            @Override
+            public void onNext(Object o) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Toast.makeText(getApplicationContext(),"S-a descarcat cu mare failed",Toast.LENGTH_LONG).show();
+
+            }
+
+            @Override
+            public void onComplete() {
+                Toast.makeText(getApplicationContext(),"S-a descarcat",Toast.LENGTH_LONG).show();
+            }
+        });
+    }
 
 
     private void DownloadFile(){
@@ -247,17 +223,16 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             @Override
             public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d("TAG: ", "server contacted and has file");
-                     String fileName = "marogladumenzau.epub";
-//                    new AsyncTask<Void,Void,Void>(){
-//                        @Override
-//                        protected Void doInBackground(Void... voids) {
+                    final String fileName = "marogladumenzau.epub";
+                    new AsyncTask<Void,Void,Void>(){
+                        @Override
+                        protected Void doInBackground(Void... voids) {
                             boolean writtenToDisk = writeResponseBodyToDisk(response.body(),fileName);
 
                             Log.d("TAG: ", "file download was a success? " + writtenToDisk);
-//                            return null;
-//                        }
-//                    }.execute();
+                            return null;
+                        }
+                    }.execute();
 
                 } else {
                     Log.d("TAG: ", "server contact failed");
@@ -274,7 +249,6 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
     private boolean writeResponseBodyToDisk(ResponseBody body,String fileName) {
         try {
-            // todo change the file location/name according to your needs
 
             File epubFile = new File(getExternalFilesDir(null) + File.separator + fileName );
 
@@ -301,6 +275,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                     fileSizeDownloaded += read;
 
+
                     Log.d("TAG", "file download: " + fileSizeDownloaded + " of " + fileSize);
                 }
 
@@ -321,5 +296,23 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         } catch (IOException e) {
             return false;
         }
+    }
+
+    private void progressBarDownloading(){
+        int[] location = new int[2]; //coordonatele absolute;
+        btnDownload.getLocationOnScreen(location);
+        int x = location[0];
+        int y = location[1];
+
+        int width = btnDownload.getWidth()/4;
+        int height = btnDownload.getHeight();
+
+        btnDownload.setVisibility(View.GONE);
+        RingProgressBar ringProgressBar = new RingProgressBar(getApplicationContext());
+        ringProgressBar.setTextSize(16);
+        ringProgressBar.setMax(100);
+        ringProgressBar.setRingWidth(width);
+
+
     }
 }

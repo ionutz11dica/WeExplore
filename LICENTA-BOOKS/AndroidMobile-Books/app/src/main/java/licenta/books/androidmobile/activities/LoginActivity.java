@@ -1,8 +1,9 @@
 package licenta.books.androidmobile.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -14,7 +15,6 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
-
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,12 +33,12 @@ import licenta.books.androidmobile.activities.others.CustomToast;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.User;
+import licenta.books.androidmobile.database.AppRoomDatabase;
+import licenta.books.androidmobile.database.DAO.UserDao;
 import licenta.books.androidmobile.interfaces.Constants;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener{
 
@@ -59,17 +59,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     GoogleSignInClient mGoogleSignInClient;
     ApiService apiService;
+
+    UserDao userDao;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
 
-//        Retrofit retrofit = new Retrofit.Builder()
-//                .baseUrl(Constants.BASE_URL)
-//                .addConverterFactory(GsonConverterFactory.create())
-//                .build();
-        apiService = ApiClient.getRetrofit(). create(ApiService.class);
+
+        apiService = ApiClient.getRetrofit().create(ApiService.class);
 
         initGoogleSignIn();
         initComp();
@@ -93,6 +92,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             Toast.makeText(getApplicationContext(),"nu Exista net",Toast.LENGTH_LONG).show();
 
         }
+        userDao = AppRoomDatabase.getInstance(getApplicationContext()).getUserDao();
+
         tie_signinUsername = findViewById(R.id.signin_tie_username);
         tie_signinPassword = findViewById(R.id.signin_tie_password);
 
@@ -116,7 +117,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         btnSignin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                verifyLogin(null);
+                if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
+                    verifyLogin(null);
+                }else{
+                    verifyLoginFromDb();
+                }
             }
         });
 
@@ -128,7 +133,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 btnSignup.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                      createUserGoogle(null);
+                        if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())) {
+                            createUser();
+                        }else{
+                            Toast.makeText(getApplicationContext(),"Network failed",Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
 
@@ -142,6 +151,85 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 showSigninForm();
             }
         });
+    }
+
+     @SuppressLint("StaticFieldLeak")
+     void verifyLoginFromDb() {
+        final User userr = new User();
+         final Boolean[] flag = {false};
+
+        if(verifySignin()){
+
+
+            new AsyncTask<User, Void,Boolean>(){
+                @Override
+                protected void onPreExecute() {
+                    super.onPreExecute();
+                    userr.setUsername(tie_signinUsername.getText().toString());
+                    userr.setPassword(tie_signinPassword.getText().toString());
+
+                }
+
+                @Override
+                protected Boolean doInBackground(User... users) {
+                    User userDb  = userDao.verifyAvailableAccount(userr.getUsername(),userr.getPassword());
+                    if(userDb !=null && userDb.getUsername().equals(userr.getUsername()) && userDb.getPassword().equals(userr.getPassword())){
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }
+
+                @Override
+                protected void onPostExecute(Boolean user) {
+                    super.onPostExecute(user);
+                    if(user){
+                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                    }else{
+                        Toast.makeText(getApplicationContext(),"Incorect password or username",Toast.LENGTH_LONG).show();
+                    }
+                }
+            }.execute();
+        }
+
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    void verifyLoginFromDbGoogleAccount(final GoogleSignInAccount account) {
+            final User userr = new User();
+            userr.setEmail(account.getEmail());
+
+
+            new AsyncTask<Void, Void,Boolean>(){
+                @Override
+                protected void onPreExecute() {
+                    super.onPreExecute();
+
+                }
+
+                @Override
+                protected Boolean doInBackground(Void... voids) {
+                    User userDb  = userDao.verifyExistenceGoogleAcount(userr.getEmail());
+                    if(userDb !=null && userr.getEmail().equals(userDb.getEmail())){
+                        return true;
+                    }else{
+                        userDao.insertUser(userr);
+                        return false;
+                    }
+                }
+
+                @Override
+                protected void onPostExecute(Boolean user) {
+                    super.onPostExecute(user);
+                    if(user){
+                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                    }else{
+                        Toast.makeText(getApplicationContext(),userr.getEmail(),Toast.LENGTH_LONG).show();
+                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+
+                    }
+                }
+            }.execute();
     }
 
     void initGoogleSignIn(){
@@ -240,32 +328,42 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
         switch (view.getId()){
             case R.id.sign_in_button:
-                signIn();
-                break;
-        }
+                if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
+                    signIn();
+                    break;
+                }else{
+                    Toast.makeText(getApplicationContext(),"Nu exista conexiune la internet",Toast.LENGTH_LONG).show();
+                    break;
+                }
+            case R.id.btnSignin:
+                if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
 
+                }
+            case R.id.btnSignup:
+                if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
+
+                }else{
+                    Toast.makeText(getApplicationContext(),"Connection problem",Toast.LENGTH_LONG).show();
+                    break;
+                }
+
+        }
     }
 
 
 
-    void createUserGoogle(GoogleSignInAccount account){
+    void createUser(){
         Call<User> call;
         final CustomToast customToast;
-        final User user = new User();
-        if(account !=null) {
-             user.setEmail(account.getEmail());
-             call = apiService.createUser(user);
-        }else{
+        final User user;
             if(verifySignup()) {
-                user.setEmail(tie_signupEmail.getText().toString());
-                user.setUsername(tie_signupUsername.getText().toString());
-                user.setPassword(tie_signupPassword.getText().toString());
-                call = apiService.createUser(user);
+                user = new User(tie_signupEmail.getText().toString(),tie_signupUsername.getText().toString(),tie_signupPassword.getText().toString());
+
+                call = apiService.loginUser(user);
             }else{
                 customToast = new CustomToast(this);
                 customToast.show("Invalid inputs",R.drawable.ic_input_24dp,this);
                 return;
-            }
         }
         customToast = new CustomToast(this);
         call.enqueue(new Callback<User>() {
@@ -275,7 +373,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     customToast.show("That email is already used", getApplicationContext());
                     return;
                 }
-                Toast.makeText(getApplicationContext(),"User "+ user.getEmail()+ " created successfully",Toast.LENGTH_LONG).show();
+                 if(response.code() == 201){
+                    insertInDB(user);
+                    Toast.makeText(getApplicationContext(),"User "+ user.getEmail()+ " created successfully",Toast.LENGTH_LONG).show();
+                     startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                 }else if(response.code() == 200){
+                    customToast.show("That email is already used", getApplicationContext());
+                }
+
             }
 
             @Override
@@ -283,6 +388,17 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
             }
         });
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private void insertInDB(final User user) {
+        new AsyncTask<Void,Void,Void>(){
+            @Override
+            protected Void doInBackground(Void... voids) {
+                userDao.insertUser(user);
+                return null;
+            }
+        }.execute();
     }
 
     void verifyLogin(GoogleSignInAccount account){
@@ -320,7 +436,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         });
     }
 
-    void verifyGoogleLogin(GoogleSignInAccount account){
+    void verifyGoogleLogin(final GoogleSignInAccount account){
         Call<User> call;
         final User user = new User();
         final CustomToast customToast = new CustomToast(this);
@@ -332,16 +448,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             public void onResponse(Call<User> call, Response<User> response) {
                 if(!response.isSuccessful()){
                     //customToast.show("Passowrd or username incorrect",R.drawable.ic_error_outline_24dp,getApplicationContext());
-
                     return;
                 }
-                customToast.show("User has been loggedin",R.drawable.ic_error_outline_24dp,getApplicationContext());
-                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                startActivity(intent);
-//
+//                    Intent intent = new Intent(getApplicationContext(),MainActivity.class);
 
-            }
-
+                    customToast.show("User has been logged in",R.drawable.ic_error_outline_24dp,getApplicationContext());
+                    verifyLoginFromDbGoogleAccount(account);
+//                    startActivity(intent);
+                }
             @Override
             public void onFailure(Call<User> call, Throwable t) {
 

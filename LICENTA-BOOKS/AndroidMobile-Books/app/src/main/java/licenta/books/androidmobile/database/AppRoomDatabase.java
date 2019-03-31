@@ -15,11 +15,13 @@ import licenta.books.androidmobile.classes.Review;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.classes.UserBookJoin;
 import licenta.books.androidmobile.database.DAO.BookEDao;
+import licenta.books.androidmobile.database.DAO.UserDao;
 
 @Database(entities = {User.class, BookE.class, Review.class, Highlight.class, Bookmark.class, BookState.class, UserBookJoin.class},version = 1,exportSchema = false)
 public abstract class AppRoomDatabase extends RoomDatabase {
     //database object
     public abstract BookEDao getBookEDao();
+    public abstract UserDao getUserDao();
 
 
 
@@ -33,13 +35,8 @@ public abstract class AppRoomDatabase extends RoomDatabase {
                 if(appRoomDatabase == null){
                     appRoomDatabase = Room.databaseBuilder(context.getApplicationContext(),
                             AppRoomDatabase.class,"AppDatabase.db")
-                            .addCallback(new RoomDatabase.Callback(){
-                                @Override
-                                public void onCreate(@NonNull SupportSQLiteDatabase db) {
-                                    super.onCreate(db);
-
-                                }
-                            }).build();
+                            .fallbackToDestructiveMigration()
+                            .build();
                 }
             }
         }
