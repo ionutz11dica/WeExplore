@@ -1,5 +1,7 @@
 package licenta.books.androidmobile.downloadProgress;
 
+import android.support.annotation.NonNull;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -13,6 +15,7 @@ public class DownloadProgressInterceptor implements Interceptor {
     }
 
 
+    @NonNull
     @Override
     public Response intercept(Chain chain) throws IOException {
         Response originalResponse = chain.proceed(chain.request());

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 import org.reactivestreams.Subscriber;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.Flowable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 
 import io.reactivex.functions.Consumer;
@@ -28,6 +30,7 @@ import licenta.books.androidmobile.downloadProgress.DownloadProgressListener;
 import licenta.books.androidmobile.interfaces.Constants;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -64,8 +67,8 @@ public class ApiClient {
     }
 
     @SuppressLint("CheckResult")
-    public void downloadAPK(@NonNull String url, final File file, Observer subscriber) {
-        Log.d("Downloader: ", "downloading " + url);
+    public void downloadAPK(@NonNull String url, final File file, Observer observer) {
+        Log.d("Downloader: ", "downloading " +retrofit.baseUrl().toString()+ url);
 
         retrofit.create(ApiService.class)
                 .downloadBookAsync(url)
@@ -90,6 +93,6 @@ public class ApiClient {
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe( subscriber);
+                .subscribe(observer);
     }
 }

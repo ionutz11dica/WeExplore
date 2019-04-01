@@ -2,7 +2,6 @@ package licenta.books.androidmobile.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.arch.persistence.room.RoomDatabase;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,7 +14,6 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -32,19 +30,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import io.netopen.hotbitmapgg.library.view.RingProgressBar;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.BlurBuilder;
 import licenta.books.androidmobile.activities.others.CheckForSDCard;
@@ -64,6 +55,7 @@ import retrofit2.Response;
 
 
 public class DetailsActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, View.OnClickListener {
+    ProgressBar progressBar;
 
     Intent intent;
     BookEDao bookEDao;
@@ -74,6 +66,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+        progressBar = findViewById(R.id.progress_bar);
 
         compositeDisposable = new CompositeDisposable();
         bookEDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookEDao();
@@ -108,7 +101,6 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                         description.setText(book.getDescription());
                     }
                 });
-
 
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetJavaScriptEnabled")
@@ -156,7 +148,8 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
     @Override
     public void onPermissionsGranted(int requestCode, List<String> perms) {
-        DownloadFile();
+
+        TestDownloadRxJava();
 
 
     }
@@ -173,7 +166,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
     private void TestDownloadRxJava(){
         final BookE book = intent.getParcelableExtra("ceva");
-        DownloadProgressListener listener = new DownloadProgressListener() {
+        final DownloadProgressListener listener = new DownloadProgressListener() {
             @Override
             public void update(long bytesRead, long contentLength, boolean done) {
                 Download download = new Download();
@@ -181,16 +174,21 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                 download.setCurrentFileSize(bytesRead);
                 int progress = (int) ((bytesRead * 100) / contentLength);
                 download.setProgress(progress);
+                progressBar.setProgress(progress);
+                //progressBarDownloading(progress);
+
+
 
 
             }
         };
 
-        File outputFile = new File(getExternalFilesDir(null) + File.separator +"test.epub");
+        final File outputFile = new File(getExternalFilesDir(null) + File.separator +"test.epub");
 
-        new ApiClient(listener).downloadAPK("books/"+book.get_id(), outputFile, new Observer() {
+        new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer() {
             @Override
             public void onSubscribe(Disposable d) {
+
             }
 
             @Override
@@ -200,15 +198,17 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
             @Override
             public void onError(Throwable e) {
-                Toast.makeText(getApplicationContext(),"S-a descarcat cu mare failed",Toast.LENGTH_LONG).show();
 
             }
 
             @Override
             public void onComplete() {
-                Toast.makeText(getApplicationContext(),"S-a descarcat",Toast.LENGTH_LONG).show();
+
+                Toast.makeText(getApplicationContext(),"Fucking finally",Toast.LENGTH_LONG).show();
             }
         });
+//        new ApiClient(listener).downloadAPK("http://www.bookrix.com/Books/Download.html?bookID=bx.dickens_1276691363.9406330585&format=epub", outputFile);
+
     }
 
 
@@ -298,7 +298,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         }
     }
 
-    private void progressBarDownloading(){
+    private void progressBarDownloading(int progress){
         int[] location = new int[2]; //coordonatele absolute;
         btnDownload.getLocationOnScreen(location);
         int x = location[0];
@@ -312,6 +312,8 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         ringProgressBar.setTextSize(16);
         ringProgressBar.setMax(100);
         ringProgressBar.setRingWidth(width);
+
+
 
 
     }
