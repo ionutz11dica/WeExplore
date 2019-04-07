@@ -15,8 +15,10 @@ import licenta.books.androidmobile.classes.Converters.ArrayStringConverter;
 @Entity(tableName = "book")
 public class BookE implements Parcelable {
 
-    @PrimaryKey(autoGenerate = true)
-    private Integer bookId;
+    @NonNull
+    @PrimaryKey
+    @ColumnInfo(name = "bookId")
+    private String _id;
     private String title;
     @TypeConverters({ArrayStringConverter.class})
     private ArrayList<String> authors;
@@ -39,8 +41,7 @@ public class BookE implements Parcelable {
     private String fileID;
     @Ignore
     private String imageLink;
-    @Ignore
-    private String _id;
+
     @Ignore
     private Boolean isEbook; //---??
     @Ignore
@@ -54,9 +55,9 @@ public class BookE implements Parcelable {
 
 
     @Ignore
-    public BookE(Integer bookId, String title, ArrayList<String> authors, ArrayList<String> categories, ArrayList<Review> reviews,
-                 Integer pageCount, String description, String publisher, String publishedDate, String imageLink, String _id, String fileID,String pathFile,String isbn) {
-        this.bookId = bookId;
+    public BookE( String title, ArrayList<String> authors, ArrayList<String> categories, ArrayList<Review> reviews,
+                 Integer pageCount, String description, String publisher, String publishedDate, String imageLink, String fileID,String pathFile,String isbn) {
+
         this.title = title;
         this.authors = authors;
         this.categories = categories;
@@ -66,15 +67,15 @@ public class BookE implements Parcelable {
         this.publisher = publisher;
         this.publishedDate = publishedDate;
         this.imageLink = imageLink;
-        this._id = _id;
+
         this.fileID = fileID;
         this.pathFile = pathFile;
         this.isbn = isbn;
     }
     //Database constructor
-    public BookE( String title, ArrayList<String> authors, ArrayList<String> categories, Integer pageCount, String description, String publisher,
+    public BookE(String _id, String title, ArrayList<String> authors, ArrayList<String> categories, Integer pageCount, String description, String publisher,
                  String publishedDate, byte[] image, String pathFile, String isbn) {
-
+        this._id = _id;
         this.title = title;
         this.authors = authors;
         this.categories = categories;
@@ -87,16 +88,17 @@ public class BookE implements Parcelable {
         this.isbn = isbn;
     }
 
+    @Ignore
+    public BookE() {
+        super();
+    }
+
+
     protected BookE(Parcel in) {
-        if (in.readByte() == 0) {
-            bookId = null;
-        } else {
-            bookId = in.readInt();
-        }
+
         title = in.readString();
         authors = in.createStringArrayList();
         categories = in.createStringArrayList();
-        reviews = in.createTypedArrayList(Review.CREATOR);
         if (in.readByte() == 0) {
             pageCount = null;
         } else {
@@ -105,11 +107,12 @@ public class BookE implements Parcelable {
         description = in.readString();
         publisher = in.readString();
         publishedDate = in.readString();
-        imageLink = in.readString();
         image = in.createByteArray();
-        fileID = in.readString();
         pathFile = in.readString();
         isbn = in.readString();
+        reviews = in.createTypedArrayList(Review.CREATOR);
+        fileID = in.readString();
+        imageLink = in.readString();
         _id = in.readString();
         byte tmpIsEbook = in.readByte();
         isEbook = tmpIsEbook == 0 ? null : tmpIsEbook == 1;
@@ -122,16 +125,10 @@ public class BookE implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if (bookId == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeInt(bookId);
-        }
+
         dest.writeString(title);
         dest.writeStringList(authors);
         dest.writeStringList(categories);
-        dest.writeTypedList(reviews);
         if (pageCount == null) {
             dest.writeByte((byte) 0);
         } else {
@@ -141,11 +138,12 @@ public class BookE implements Parcelable {
         dest.writeString(description);
         dest.writeString(publisher);
         dest.writeString(publishedDate);
-        dest.writeString(imageLink);
         dest.writeByteArray(image);
-        dest.writeString(fileID);
         dest.writeString(pathFile);
         dest.writeString(isbn);
+        dest.writeTypedList(reviews);
+        dest.writeString(fileID);
+        dest.writeString(imageLink);
         dest.writeString(_id);
         dest.writeByte((byte) (isEbook == null ? 0 : isEbook ? 1 : 2));
         dest.writeByte((byte) (publicDomain == null ? 0 : publicDomain ? 1 : 2));
@@ -170,13 +168,7 @@ public class BookE implements Parcelable {
         }
     };
 
-    public Integer getBookId() {
-        return bookId;
-    }
 
-    public void setBookId(Integer bookId) {
-        this.bookId = bookId;
-    }
 
     public String getTitle() {
         return title;

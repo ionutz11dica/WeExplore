@@ -2,6 +2,7 @@ package licenta.books.androidmobile.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,6 +21,9 @@ import java.util.List;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.DetailsActivity;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.classes.User;
+import licenta.books.androidmobile.classes.UserBookJoin;
+import licenta.books.androidmobile.database.DAO.UserDao;
 import licenta.books.androidmobile.interfaces.Constants;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> {
@@ -91,17 +95,28 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
                     int pos = getAdapterPosition();
                     Log.i("Poz: ",String.valueOf(pos));
                     if (pos != RecyclerView.NO_POSITION){
-                        BookE clickedDataItem = bookList.get(pos);
-                        String bookCover = bookList.get(pos).getImageLink().replace("zoom=0","zoom=4");
-                    Intent intent = new Intent(mContext, DetailsActivity.class);
-                    intent.putExtra(Constants.KEY_IMAGE_URL,bookCover);
-                    intent.putExtra("ceva",bookList.get(pos));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivity(intent);
-                   // Toast.makeText(v.getContext(), "You clicked " + clickedDataItem.getTitle(), Toast.LENGTH_SHORT).show();
-                }
+                        initIntentWithData(pos);
+                    }
                 }
             });
         }
     }
+
+    private void initIntentWithData(int pos){
+        BookE clickedDataItem = bookList.get(pos);
+
+
+
+        String bookCover = bookList.get(pos).getImageLink().replace("zoom=0","zoom=4");
+        bookCover = bookCover.replace("curl","none");
+        Intent intent = new Intent(mContext, DetailsActivity.class);
+
+        intent.putExtra(Constants.KEY_IMAGE_URL,bookCover);
+        intent.putExtra(Constants.KEY_BOOK,clickedDataItem);
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mContext.startActivity(intent);
+    }
+
+
 }

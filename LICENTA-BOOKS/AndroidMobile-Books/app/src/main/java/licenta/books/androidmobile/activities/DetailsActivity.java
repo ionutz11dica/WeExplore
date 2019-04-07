@@ -3,7 +3,9 @@ package licenta.books.androidmobile.activities;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -25,25 +27,33 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 
-import io.netopen.hotbitmapgg.library.view.RingProgressBar;
 import io.reactivex.Observer;
-import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.BlurBuilder;
 import licenta.books.androidmobile.activities.others.CheckForSDCard;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.classes.User;
+import licenta.books.androidmobile.classes.UserBookJoin;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.BookEDao;
+import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
+import licenta.books.androidmobile.database.DAO.UserDao;
+import licenta.books.androidmobile.database.DaoMethods.BookMethods;
+import licenta.books.androidmobile.database.DaoMethods.UserBookMethods;
+import licenta.books.androidmobile.database.DaoMethods.UserMethods;
 import licenta.books.androidmobile.downloadProgress.Download;
 import licenta.books.androidmobile.downloadProgress.DownloadProgressListener;
 import licenta.books.androidmobile.interfaces.Constants;
@@ -52,29 +62,45 @@ import pub.devrel.easypermissions.EasyPermissions;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 public class DetailsActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, View.OnClickListener {
     ProgressBar progressBar;
+    Button btnDownload;
 
     Intent intent;
+    ApiService apiService;
+
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
+
+    UserBookJoinDao userBookJoinDao;
     BookEDao bookEDao;
-    private CompositeDisposable compositeDisposable;
-    Button btnDownload;
+    UserDao userDao;
+
+    UserMethods userMethods;
+    BookMethods bookMethods;
+    UserBookMethods userBookMethods;
+
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+        openDao();
         progressBar = findViewById(R.id.progress_bar);
-
-        compositeDisposable = new CompositeDisposable();
-        bookEDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookEDao();
 
 
         intent = getIntent();
+        apiService = ApiClient.getRetrofit().create(ApiService.class);
+
+
+        sharedPreferences = getSharedPreferences(Constants.KEY_PREF_USER, 0);
+        editor = sharedPreferences.edit();
         final String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
-        final BookE book = intent.getParcelableExtra("ceva");
+        final BookE book = intent.getParcelableExtra(Constants.KEY_BOOK);
 
 
         final LinearLayout parent = findViewById(R.id.ll_details_parent);
@@ -93,7 +119,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                     @Override
                     public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                         Bitmap resultImg = BlurBuilder.blurImage(getApplicationContext(), resource);
-                        Bitmap brightnessImg = BlurBuilder.changeBitmapContrastBrightness(resultImg,0.55f,1);
+                        Bitmap brightnessImg = BlurBuilder.changeBitmapContrastBrightness(resultImg, 0.55f, 1);
                         BitmapDrawable drawable = new BitmapDrawable(brightnessImg);
 
                         blurBackground.setBackgroundDrawable(drawable);
@@ -111,7 +137,8 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                 if (CheckForSDCard.isSDCardPresent()) {
                     //check if app has permission to write to the external storage.
                     if (EasyPermissions.hasPermissions(DetailsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                       TestDownloadRxJava();
+
+                        TestDownloadRxJava();
 
                     } else {
                         //If permission is not present request for the same.
@@ -128,17 +155,6 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private void insertBook(final BookE bookE) {
-        new AsyncTask<Void,Void,Void>(){
-            @Override
-            protected Void doInBackground(Void... voids) {
-                bookEDao.insert(bookE);
-
-                return null;
-            }
-        }.execute();
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -164,78 +180,52 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
     }
 
-    private void TestDownloadRxJava(){
-        final BookE book = intent.getParcelableExtra("ceva");
-        final DownloadProgressListener listener = new DownloadProgressListener() {
-            @Override
-            public void update(long bytesRead, long contentLength, boolean done) {
-                Download download = new Download();
-                download.setTotalFileSize(contentLength);
-                download.setCurrentFileSize(bytesRead);
-                int progress = (int) ((bytesRead * 100) / contentLength);
-                download.setProgress(progress);
-                progressBar.setProgress(progress);
-                //progressBarDownloading(progress);
+    private void TestDownloadRxJava() {
+        final BookE book = intent.getParcelableExtra(Constants.KEY_BOOK);
+        final File outputFile = new File(getExternalFilesDir(null) + File.separator + book.getTitle() + ".epub");
+//
+//        Glide.with(this)
+//                .asBitmap()
+//                .load(book.getImageLink())
+//                .into(new SimpleTarget<Bitmap>() {
+//                    @Override
+//                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+////                        int size = resource.getRowBytes() * resource.getHeight();
+////                        ByteBuffer byteBuffer =  ByteBuffer.allocate(size);
+////                        resource.copyPixelsToBuffer(byteBuffer);
+//
+//                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                        resource.compress(Bitmap.CompressFormat.PNG   , 100,stream);
+//
+//                        byte[] byteArray = stream.toByteArray();
+//
+//                        try {
+//                            stream.close();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+////                        byte[] byteArray = byteBuffer.array();
+//                        book.setImage(byteArray);
+//                        book.setPathFile(outputFile.getPath());
+//                    }
+//                });
 
-
-
-
-            }
-        };
-
-        final File outputFile = new File(getExternalFilesDir(null) + File.separator +"test.epub");
-
-        new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer() {
-            @Override
-            public void onSubscribe(Disposable d) {
-
-            }
-
-            @Override
-            public void onNext(Object o) {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-                Toast.makeText(getApplicationContext(),"Fucking finally",Toast.LENGTH_LONG).show();
-            }
-        });
-//        new ApiClient(listener).downloadAPK("http://www.bookrix.com/Books/Download.html?bookID=bx.dickens_1276691363.9406330585&format=epub", outputFile);
-
-    }
-
-
-    private void DownloadFile(){
-        final BookE book = intent.getParcelableExtra("ceva");
-        ApiService downloadService = ApiClient.getRetrofit().create(ApiService.class);
-
-        Call<ResponseBody> call = downloadService.downloadBookSync2(book.getFileID());
+        Call<ResponseBody> call = apiService.downloadBitmap(book.getImageLink());
 
         call.enqueue(new Callback<ResponseBody>() {
-            @SuppressLint("StaticFieldLeak")
             @Override
-            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    final String fileName = "marogladumenzau.epub";
-                    new AsyncTask<Void,Void,Void>(){
-                        @Override
-                        protected Void doInBackground(Void... voids) {
-                            boolean writtenToDisk = writeResponseBodyToDisk(response.body(),fileName);
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.isSuccessful()){
+                    if(response.body()!=null){
+                        Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.PNG,100,stream);
 
-                            Log.d("TAG: ", "file download was a success? " + writtenToDisk);
-                            return null;
-                        }
-                    }.execute();
+                        byte[] bytes = stream.toByteArray();
 
-                } else {
-                    Log.d("TAG: ", "server contact failed");
+                        book.setImage(bytes);
+                        book.setPathFile(outputFile.getPath());
+                    }
                 }
             }
 
@@ -244,77 +234,107 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
             }
         });
+
+
+        final UserBookJoin[] userBookJoin = new UserBookJoin[1];
+        createUserBookJoin(book, userBookJoin);
+
+
+        final DownloadProgressListener listener = new DownloadProgressListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void update(long bytesRead, long contentLength, boolean done) {
+                Download download = new Download();
+                download.setTotalFileSize(contentLength);
+                download.setCurrentFileSize(bytesRead);
+                int progress = (int) ((bytesRead * 100) / contentLength);
+                download.setProgress(progress);
+            }
+        };
+
+
+        new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                btnDownload.setText("Wait...");
+            }
+
+            @Override
+            public void onNext(Object object) {
+            }
+
+            @Override
+            public void onError(Throwable e) {
+            }
+
+            @Override
+            public void onComplete() {
+                btnDownload.setText("READ");
+                bookMethods.insertBook(book);
+                userBookMethods.insertUserBook(userBookJoin[0]);
+            }
+        });
     }
 
+    private void createUserBookJoin(final BookE book, final UserBookJoin[] userBookJoin) {
+        String status = sharedPreferences.getString(Constants.KEY_STATUS,null);
 
-    private boolean writeResponseBodyToDisk(ResponseBody body,String fileName) {
-        try {
+        if(status.equals("with")){
+            final String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
+            Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
+            userSingle.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new SingleObserver<User>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
 
-            File epubFile = new File(getExternalFilesDir(null) + File.separator + fileName );
+                        }
 
-            InputStream inputStream = null;
-            OutputStream outputStream = null;
+                        @Override
+                        public void onSuccess(User user) {
+                            Log.d("User id: ",user.getUserId().toString());
+                            userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
+                        }
 
-            try {
-                byte[] fileReader = new byte[1024*100];
+                        @Override
+                        public void onError(Throwable e) {
 
-                long fileSize = body.contentLength();
-                long fileSizeDownloaded = 0;
+                        }
+                    });
+        }else{
+            final String username = sharedPreferences.getString(Constants.KEY_USER_USERNAME, null);
+            final String password = sharedPreferences.getString(Constants.KEY_USER_PASSWORD, null);
 
-                inputStream = body.byteStream();
-                outputStream = new FileOutputStream(epubFile);
+            Single<User> userSingle = userMethods.verifyAvailableAccount(username,password);
+            userSingle.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new SingleObserver<User>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
 
-                while (true) {
-                    int read = inputStream.read(fileReader);
+                        }
 
-                    if (read == -1) {
-                        break;
-                    }
+                        @Override
+                        public void onSuccess(User user) {
+                            Log.d("User id: ",user.getUserId().toString());
+                            userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
+                        }
 
-                    outputStream.write(fileReader, 0, read);
+                        @Override
+                        public void onError(Throwable e) {
 
-                    fileSizeDownloaded += read;
-
-
-                    Log.d("TAG", "file download: " + fileSizeDownloaded + " of " + fileSize);
-                }
-
-                outputStream.flush();
-
-                return true;
-            } catch (IOException e) {
-                return false;
-            } finally {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-            }
-        } catch (IOException e) {
-            return false;
+                        }
+                    });
         }
     }
 
-    private void progressBarDownloading(int progress){
-        int[] location = new int[2]; //coordonatele absolute;
-        btnDownload.getLocationOnScreen(location);
-        int x = location[0];
-        int y = location[1];
 
-        int width = btnDownload.getWidth()/4;
-        int height = btnDownload.getHeight();
-
-        btnDownload.setVisibility(View.GONE);
-        RingProgressBar ringProgressBar = new RingProgressBar(getApplicationContext());
-        ringProgressBar.setTextSize(16);
-        ringProgressBar.setMax(100);
-        ringProgressBar.setRingWidth(width);
-
-
-
-
+    private void openDao() {
+        bookEDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookEDao();
+        userBookJoinDao = AppRoomDatabase.getInstance(getApplicationContext()).getUserBookDao();
+        userDao = AppRoomDatabase.getInstance(getApplicationContext()).getUserDao();
+        userMethods = UserMethods.getInstance(userDao);
+        bookMethods = BookMethods.getInstance(bookEDao);
+        userBookMethods = UserBookMethods.getInstance(userBookJoinDao);
     }
 }

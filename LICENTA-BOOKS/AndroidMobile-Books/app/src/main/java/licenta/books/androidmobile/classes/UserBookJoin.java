@@ -24,10 +24,10 @@ import android.support.annotation.NonNull;
     })
 public class UserBookJoin {
 
-        public @NonNull  final Integer bookId;
+        public @NonNull  final String bookId;
         public @NonNull   final Integer userId;
 
-        public UserBookJoin(@NonNull  final Integer bookId,@NonNull final  Integer userId) {
+        public UserBookJoin(@NonNull  final String bookId,@NonNull final  Integer userId) {
             this.bookId = bookId;
             this.userId = userId;
         }
