@@ -1,7 +1,4 @@
 package licenta.books.androidmobile.interfaces;
-
-import android.content.SharedPreferences;
-
 public interface Constants {
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;

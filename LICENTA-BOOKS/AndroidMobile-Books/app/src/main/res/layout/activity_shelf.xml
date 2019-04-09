@@ -1,9 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".activities.ShelfActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/shelfbooks_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/granite"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+    </android.support.v7.widget.Toolbar>
+
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/shelfbooks_tablayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/granite"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" >
+
+        <android.support.design.widget.TabItem
+            android:id="@+id/tabitem_recentlyReads"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recently Reads"/>
+
+        <android.support.design.widget.TabItem
+            android:id="@+id/tabitem_shelfBooks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ShelfBooks"/>
+
+        <android.support.design.widget.TabItem
+            android:id="@+id/tabitem_collectionsBooks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Collections Books"/>
+    </android.support.design.widget.TabLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/shelfbooks_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent">
+    </android.support.v4.view.ViewPager>
+
+
+</LinearLayout>

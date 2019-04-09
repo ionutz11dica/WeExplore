@@ -29,10 +29,10 @@ public class Bookmark implements Parcelable {
     private Integer bookmarkId;
     private Integer pagePosition;
     private Integer noChapter;
-    private  Integer bookId;
+    private  String bookId;
     private  Integer userId;
 
-    public Bookmark( Integer pagePosition, Integer noChapter, Integer bookId, Integer userId) {
+    public Bookmark( Integer pagePosition, Integer noChapter, String bookId, Integer userId) {
         this.pagePosition = pagePosition;
         this.noChapter = noChapter;
         this.bookId = bookId;
@@ -58,7 +58,7 @@ public class Bookmark implements Parcelable {
         if (in.readByte() == 0) {
             bookId = null;
         } else {
-            bookId = in.readInt();
+            bookId = in.readString();
         }
         if (in.readByte() == 0) {
             userId = null;
@@ -91,7 +91,7 @@ public class Bookmark implements Parcelable {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeInt(bookId);
+            dest.writeString(bookId);
         }
         if (userId == null) {
             dest.writeByte((byte) 0);
@@ -142,11 +142,11 @@ public class Bookmark implements Parcelable {
         this.noChapter = noChapter;
     }
 
-    public Integer getBookId() {
+    public String getBookId() {
         return bookId;
     }
 
-    public void setBookId(Integer bookId) {
+    public void setBookId(String bookId) {
         this.bookId = bookId;
     }
 

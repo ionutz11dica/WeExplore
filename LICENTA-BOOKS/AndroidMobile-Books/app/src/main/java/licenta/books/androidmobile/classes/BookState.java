@@ -10,14 +10,14 @@ import android.os.Parcelable;
         parentColumns = "bookId",
         childColumns = "stateId"))
 public class BookState implements Parcelable {
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     private Integer stateId;
     private Integer pagePosition;
     private Integer noChapter;
-    private Integer bookId;
+    private String bookId;
 
 
-    public BookState(Integer stateId, Integer pagePosition, Integer noChapter,Integer bookId) {
+    public BookState(Integer stateId, Integer pagePosition, Integer noChapter,String bookId) {
         this.stateId = stateId;
         this.pagePosition = pagePosition;
         this.noChapter = noChapter;
@@ -44,7 +44,7 @@ public class BookState implements Parcelable {
         if (in.readByte() == 0) {
             bookId = null;
         } else {
-            bookId = in.readInt();
+            bookId = in.readString();
         }
     }
 
@@ -72,7 +72,7 @@ public class BookState implements Parcelable {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeInt(bookId);
+            dest.writeString(bookId);
         }
     }
 
@@ -93,11 +93,11 @@ public class BookState implements Parcelable {
         }
     };
 
-    public Integer getBookId() {
+    public String getBookId() {
         return bookId;
     }
 
-    public void setBookId(Integer bookId) {
+    public void setBookId(String bookId) {
         this.bookId = bookId;
     }
 

@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,8 +28,6 @@ import com.bumptech.glide.request.transition.Transition;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import io.reactivex.Observer;
@@ -62,7 +59,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 
 public class DetailsActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, View.OnClickListener {
@@ -84,65 +80,33 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     UserBookMethods userBookMethods;
 
 
+    @SuppressLint("CommitPrefEdits")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         openDao();
-        progressBar = findViewById(R.id.progress_bar);
-
+        btnDownload = findViewById(R.id.btn_details_download);
 
         intent = getIntent();
         apiService = ApiClient.getRetrofit().create(ApiService.class);
 
-
         sharedPreferences = getSharedPreferences(Constants.KEY_PREF_USER, 0);
         editor = sharedPreferences.edit();
-        final String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
-        final BookE book = intent.getParcelableExtra(Constants.KEY_BOOK);
 
-
-        final LinearLayout parent = findViewById(R.id.ll_details_parent);
-        final LinearLayout blurBackground = parent.findViewById(R.id.ll_details);
-        final ImageView bookCover = blurBackground.findViewById(R.id.iv_bookcover);
-        final TextView description = parent.findViewById(R.id.tv_book_description);
-        parent.setOnClickListener(this);
-        blurBackground.setOnClickListener(this);
-        btnDownload = findViewById(R.id.btn_details_download);
-
-
-        Glide.with(this)
-                .asBitmap()
-                .load(url)
-                .into(new SimpleTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        Bitmap resultImg = BlurBuilder.blurImage(getApplicationContext(), resource);
-                        Bitmap brightnessImg = BlurBuilder.changeBitmapContrastBrightness(resultImg, 0.55f, 1);
-                        BitmapDrawable drawable = new BitmapDrawable(brightnessImg);
-
-                        blurBackground.setBackgroundDrawable(drawable);
-                        bookCover.setImageBitmap(resource);
-                        description.setText(book.getDescription());
-                    }
-                });
+        blurCoverBook();
 
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetJavaScriptEnabled")
             @Override
             public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(),"SD Card not found",Toast.LENGTH_LONG).show();
-
                 if (CheckForSDCard.isSDCardPresent()) {
-                    //check if app has permission to write to the external storage.
                     if (EasyPermissions.hasPermissions(DetailsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
                         TestDownloadRxJava();
-
                     } else {
-                        //If permission is not present request for the same.
-                        EasyPermissions.requestPermissions(DetailsActivity.this, getString(R.string.write_file), Constants.WRITE_REQUEST_CODE, Manifest.permission.READ_EXTERNAL_STORAGE);
+                        EasyPermissions.requestPermissions(DetailsActivity.this, getString(R.string.write_file),
+                                Constants.WRITE_REQUEST_CODE, Manifest.permission.READ_EXTERNAL_STORAGE);
                     }
                 } else {
                     Toast.makeText(getApplicationContext(),
@@ -151,8 +115,6 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
             }
         });
-
-
     }
 
 
@@ -183,43 +145,17 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     private void TestDownloadRxJava() {
         final BookE book = intent.getParcelableExtra(Constants.KEY_BOOK);
         final File outputFile = new File(getExternalFilesDir(null) + File.separator + book.getTitle() + ".epub");
-//
-//        Glide.with(this)
-//                .asBitmap()
-//                .load(book.getImageLink())
-//                .into(new SimpleTarget<Bitmap>() {
-//                    @Override
-//                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-////                        int size = resource.getRowBytes() * resource.getHeight();
-////                        ByteBuffer byteBuffer =  ByteBuffer.allocate(size);
-////                        resource.copyPixelsToBuffer(byteBuffer);
-//
-//                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                        resource.compress(Bitmap.CompressFormat.PNG   , 100,stream);
-//
-//                        byte[] byteArray = stream.toByteArray();
-//
-//                        try {
-//                            stream.close();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-////                        byte[] byteArray = byteBuffer.array();
-//                        book.setImage(byteArray);
-//                        book.setPathFile(outputFile.getPath());
-//                    }
-//                });
 
         Call<ResponseBody> call = apiService.downloadBitmap(book.getImageLink());
 
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if(response.isSuccessful()){
-                    if(response.body()!=null){
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
                         Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG,100,stream);
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
 
                         byte[] bytes = stream.toByteArray();
 
@@ -235,10 +171,8 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             }
         });
 
-
         final UserBookJoin[] userBookJoin = new UserBookJoin[1];
         createUserBookJoin(book, userBookJoin);
-
 
         final DownloadProgressListener listener = new DownloadProgressListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -277,9 +211,9 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     }
 
     private void createUserBookJoin(final BookE book, final UserBookJoin[] userBookJoin) {
-        String status = sharedPreferences.getString(Constants.KEY_STATUS,null);
+        String status = sharedPreferences.getString(Constants.KEY_STATUS, null);
 
-        if(status.equals("with")){
+        if (status.equals("with")) {
             final String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
             Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
             userSingle.subscribeOn(Schedulers.io())
@@ -292,7 +226,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                         @Override
                         public void onSuccess(User user) {
-                            Log.d("User id: ",user.getUserId().toString());
+                            Log.d("User id: ", user.getUserId().toString());
                             userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
                         }
 
@@ -301,11 +235,11 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                         }
                     });
-        }else{
+        } else {
             final String username = sharedPreferences.getString(Constants.KEY_USER_USERNAME, null);
             final String password = sharedPreferences.getString(Constants.KEY_USER_PASSWORD, null);
 
-            Single<User> userSingle = userMethods.verifyAvailableAccount(username,password);
+            Single<User> userSingle = userMethods.verifyAvailableAccount(username, password);
             userSingle.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new SingleObserver<User>() {
@@ -316,7 +250,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                         @Override
                         public void onSuccess(User user) {
-                            Log.d("User id: ",user.getUserId().toString());
+                            Log.d("User id: ", user.getUserId().toString());
                             userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
                         }
 
@@ -328,6 +262,36 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private void blurCoverBook() {
+        final String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
+        final BookE book = intent.getParcelableExtra(Constants.KEY_BOOK);
+
+
+        final LinearLayout parent = findViewById(R.id.ll_details_parent);
+        final LinearLayout blurBackground = parent.findViewById(R.id.ll_details);
+        final ImageView bookCover = blurBackground.findViewById(R.id.iv_bookcover);
+        final TextView description = parent.findViewById(R.id.tv_book_description);
+        parent.setOnClickListener(this);
+        blurBackground.setOnClickListener(this);
+
+
+        Glide.with(this)
+                .asBitmap()
+                .load(url)
+                .into(new SimpleTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        Bitmap resultImg = BlurBuilder.blurImage(getApplicationContext(), resource);
+                        Bitmap brightnessImg = BlurBuilder.changeBitmapContrastBrightness(resultImg, 0.55f, 1);
+                        BitmapDrawable drawable = new BitmapDrawable(brightnessImg);
+
+                        blurBackground.setBackgroundDrawable(drawable);
+                        bookCover.setImageBitmap(resource);
+                        description.setText(book.getDescription());
+                    }
+                });
+    }
 
     private void openDao() {
         bookEDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookEDao();

@@ -15,7 +15,6 @@ public interface BookEDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertBook(BookE... book);
 
-    @Query("SELECT * FROM book where bookId  = :bookId")
-    Flowable<List<BookE>> getBooksFromDb(Integer bookId);
+
 
 }

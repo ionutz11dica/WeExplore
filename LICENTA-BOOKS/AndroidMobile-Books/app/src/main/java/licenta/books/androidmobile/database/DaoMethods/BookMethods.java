@@ -39,8 +39,4 @@ public class BookMethods implements BookEDao {
                     .subscribe();
     }
 
-    @Override
-    public Flowable<List<BookE>> getBooksFromDb(Integer bookId) {
-        return null;
-    }
 }

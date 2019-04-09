@@ -48,17 +48,6 @@
 
 
         </LinearLayout>
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:indeterminate="false"
-            android:background="@color/granite"
-
-            android:max="100"
-
-            />
 
 
         <TextView
