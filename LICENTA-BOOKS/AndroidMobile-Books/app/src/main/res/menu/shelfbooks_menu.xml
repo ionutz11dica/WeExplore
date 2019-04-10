@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/shelfbooks_menu_details"
+        android:icon="@drawable/ic_details_black_24dp"
+        android:title="Details"/>
+    <item
+        android:id="@+id/shelfbooks_menu_addCollection"
+        android:icon="@drawable/ic_collections_bookmark_black_24dp"
+        android:title="Add to Collection"/>
+</menu>

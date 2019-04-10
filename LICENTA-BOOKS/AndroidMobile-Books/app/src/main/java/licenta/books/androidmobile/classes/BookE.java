@@ -34,13 +34,13 @@ public class BookE implements Parcelable {
     private  byte[] image;
     private String pathFile;
     private String isbn;
+    private String imageLink;
 
     @Ignore
     private ArrayList<Review> reviews;
     @Ignore
     private String fileID;
-    @Ignore
-    private String imageLink;
+
 
     @Ignore
     private Boolean isEbook; //---??
@@ -74,7 +74,7 @@ public class BookE implements Parcelable {
     }
     //Database constructor
     public BookE(String _id, String title, ArrayList<String> authors, ArrayList<String> categories, Integer pageCount, String description, String publisher,
-                 String publishedDate, byte[] image, String pathFile, String isbn) {
+                 String publishedDate, byte[] image, String pathFile, String isbn,String imageLink) {
         this._id = _id;
         this.title = title;
         this.authors = authors;
@@ -86,6 +86,7 @@ public class BookE implements Parcelable {
         this.image = image;
         this.pathFile = pathFile;
         this.isbn = isbn;
+        this.imageLink = imageLink;
     }
 
     @Ignore

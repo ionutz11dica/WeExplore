@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.Observer;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -78,6 +79,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     UserMethods userMethods;
     BookMethods bookMethods;
     UserBookMethods userBookMethods;
+    BookE book;
 
 
     @SuppressLint("CommitPrefEdits")
@@ -87,13 +89,18 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         openDao();
+        sharedPreferences = getSharedPreferences(Constants.KEY_PREF_USER, 0);
+        editor = sharedPreferences.edit();
+
         btnDownload = findViewById(R.id.btn_details_download);
 
         intent = getIntent();
+        book = intent.getParcelableExtra(Constants.KEY_BOOK);
+        createUserBookJoin(book,null);
+
         apiService = ApiClient.getRetrofit().create(ApiService.class);
 
-        sharedPreferences = getSharedPreferences(Constants.KEY_PREF_USER, 0);
-        editor = sharedPreferences.edit();
+
 
         blurCoverBook();
 
@@ -143,71 +150,75 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     }
 
     private void TestDownloadRxJava() {
-        final BookE book = intent.getParcelableExtra(Constants.KEY_BOOK);
-        final File outputFile = new File(getExternalFilesDir(null) + File.separator + book.getTitle() + ".epub");
-
-        Call<ResponseBody> call = apiService.downloadBitmap(book.getImageLink());
-
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-                        byte[] bytes = stream.toByteArray();
-
-                        book.setImage(bytes);
-                        book.setPathFile(outputFile.getPath());
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-            }
-        });
 
         final UserBookJoin[] userBookJoin = new UserBookJoin[1];
         createUserBookJoin(book, userBookJoin);
 
-        final DownloadProgressListener listener = new DownloadProgressListener() {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public void update(long bytesRead, long contentLength, boolean done) {
-                Download download = new Download();
-                download.setTotalFileSize(contentLength);
-                download.setCurrentFileSize(bytesRead);
-                int progress = (int) ((bytesRead * 100) / contentLength);
-                download.setProgress(progress);
-            }
-        };
+
+        final File outputFile = new File(getExternalFilesDir(null) + File.separator + book.getTitle() + ".epub");
+
+        Call<ResponseBody> call = apiService.downloadBitmap(book.getImageLink());
+        if(btnDownload.getText().toString().equals("Download")) {
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        if (response.body() != null) {
+                            Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+                            byte[] bytes = stream.toByteArray();
+
+                            book.setImage(bytes);
+                            book.setPathFile(outputFile.getPath());
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                }
+            });
+
+            final DownloadProgressListener listener = new DownloadProgressListener() {
+                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    Download download = new Download();
+                    download.setTotalFileSize(contentLength);
+                    download.setCurrentFileSize(bytesRead);
+                    int progress = (int) ((bytesRead * 100) / contentLength);
+                    download.setProgress(progress);
+                }
+            };
 
 
-        new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                btnDownload.setText("Wait...");
-            }
+            new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer() {
+                @Override
+                public void onSubscribe(Disposable d) {
+                    btnDownload.setText("Wait...");
+                }
 
-            @Override
-            public void onNext(Object object) {
-            }
+                @Override
+                public void onNext(Object object) {
+                }
 
-            @Override
-            public void onError(Throwable e) {
-            }
+                @Override
+                public void onError(Throwable e) {
+                }
 
-            @Override
-            public void onComplete() {
-                btnDownload.setText("READ");
-                bookMethods.insertBook(book);
-                userBookMethods.insertUserBook(userBookJoin[0]);
-            }
-        });
+                @Override
+                public void onComplete() {
+                    btnDownload.setText("READ");
+                    bookMethods.insertBook(book);
+                    userBookMethods.insertUserBook(userBookJoin[0]);
+                }
+            });
+        }else{
+            Toast.makeText(getApplicationContext(),"Va urma!",Toast.LENGTH_LONG).show();
+        }
     }
 
     private void createUserBookJoin(final BookE book, final UserBookJoin[] userBookJoin) {
@@ -218,21 +229,30 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
             userSingle.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
+
                     .subscribe(new SingleObserver<User>() {
                         @Override
                         public void onSubscribe(Disposable d) {
 
                         }
 
+                        @SuppressLint("CheckResult")
                         @Override
-                        public void onSuccess(User user) {
+                        public void onSuccess(final User user) {
                             Log.d("User id: ", user.getUserId().toString());
-                            userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
+                            if(userBookJoin==null){
+                                verifyExistanceBook(book.get_id(),user.getUserId());
+                            }else {
+                                userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
+
+                            }
+
+
                         }
 
                         @Override
                         public void onError(Throwable e) {
-
+                            Log.d("Err: ", e.getMessage());
                         }
                     });
         } else {
@@ -251,7 +271,13 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                         @Override
                         public void onSuccess(User user) {
                             Log.d("User id: ", user.getUserId().toString());
-                            userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
+                            if(userBookJoin==null){
+                                verifyExistanceBook(book.get_id(),user.getUserId());
+                            }else {
+                                userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
+
+                            }
+
                         }
 
                         @Override
@@ -260,6 +286,35 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                         }
                     });
         }
+    }
+
+
+
+    private void verifyExistanceBook(String bookId,Integer userId){
+//        final UserBookJoin[] userBookJoin = new UserBookJoin[1];
+//
+//        createUserBookJoin(book, userBookJoin);
+        final User user = intent.getParcelableExtra("ceva");
+
+        Single<BookE> bookESingle = userBookMethods.getBookFromDatabase(userId,bookId);
+        bookESingle.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<BookE>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(BookE bookE) {
+                        btnDownload.setText("Read");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        btnDownload.setText("Download");
+                    }
+                });
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)

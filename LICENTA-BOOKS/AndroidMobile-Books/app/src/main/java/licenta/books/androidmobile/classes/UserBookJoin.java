@@ -1,5 +1,6 @@
 package licenta.books.androidmobile.classes;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
@@ -23,13 +24,16 @@ import android.support.annotation.NonNull;
                 @Index(value = "bookId")
     })
 public class UserBookJoin {
-
+        @ColumnInfo(name = "bookId")
         public @NonNull  final String bookId;
+        @ColumnInfo(name = "userId")
         public @NonNull   final Integer userId;
 
         public UserBookJoin(@NonNull  final String bookId,@NonNull final  Integer userId) {
             this.bookId = bookId;
             this.userId = userId;
         }
+
+
 
 }

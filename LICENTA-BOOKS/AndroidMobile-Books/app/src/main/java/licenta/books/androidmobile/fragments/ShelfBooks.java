@@ -8,18 +8,19 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
-import org.reactivestreams.Subscription;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Flowable;
-import io.reactivex.FlowableSubscriber;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -27,9 +28,9 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.adapters.ShelfAdapter;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.User;
-import licenta.books.androidmobile.classes.UserBookJoin;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
 import licenta.books.androidmobile.database.DAO.UserDao;
@@ -47,38 +48,46 @@ public class ShelfBooks extends Fragment {
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
 
+    RecyclerView recyclerView;
+    ShelfAdapter adapter;
+
     public ShelfBooks() {
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_shelfbooks,container,false);
         openDb();
+        initComp(view);
         initSharedPref();
         getUserBooks();
-        View view = inflater.inflate(R.layout.fragment_shelfbooks,container,false);
+
         return view;
     }
 
 
     @SuppressLint("CheckResult")
-    private void getUserBooks(){
-        User[] user = new User[1];
-        List<BookE> Bookers = new ArrayList<>();
-        createUser(user);
-        Flowable<List<BookE>> books = userBookMethods.getAllUserBooksFromDatabase(2);
+    private void setRecycleView(User user){
+
+
+        Flowable<List<BookE>> books = userBookMethods.getAllUserBooksFromDatabase(user.getUserId());
         books.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<BookE>>() {
                     @Override
                     public void accept(List<BookE> bookES) throws Exception {
                         Log.d("SIZE LISTA: ",String.valueOf(bookES.size()));
+                        adapter = new ShelfAdapter(bookES,getContext());
+                        recyclerView.setAdapter(adapter);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                        setRecyclerViewAnim();
                     }
                 });
     }
 
 
-    private void createUser(final User[] userr) {
+    private void getUserBooks() {
         String status = sharedPreferences.getString(Constants.KEY_STATUS, null);
 
         if (status.equals("with")) {
@@ -95,7 +104,7 @@ public class ShelfBooks extends Fragment {
                         @Override
                         public void onSuccess(User user) {
                             Log.d("User id: ", user.getUserId().toString());
-                            userr[0] = user;
+                            setRecycleView(user);
                         }
 
                         @Override
@@ -119,7 +128,7 @@ public class ShelfBooks extends Fragment {
                         @Override
                         public void onSuccess(User user) {
                             Log.d("User id: ", user.getUserId().toString());
-                            userr[0] = user;
+                            setRecycleView(user);
                         }
 
                         @Override
@@ -130,7 +139,18 @@ public class ShelfBooks extends Fragment {
         }
     }
 
+    private void setRecyclerViewAnim(){
+        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
+        itemAnimator.setAddDuration(1000);
+        itemAnimator.setRemoveDuration(1000);
+        recyclerView.setItemAnimator(itemAnimator);
 
+    }
+
+    public void animate(RecyclerView.ViewHolder viewHolder) {
+        final Animation animAnticipateOvershoot = AnimationUtils.loadAnimation(getContext(), R.anim.bounce_interpolator);
+        viewHolder.itemView.setAnimation(animAnticipateOvershoot);
+    }
 
     @SuppressLint("CommitPrefEdits")
     private void initSharedPref(){
@@ -138,6 +158,9 @@ public class ShelfBooks extends Fragment {
         editor = sharedPreferences.edit();
     }
 
+    private void initComp(View view){
+        recyclerView = view.findViewById(R.id.shelfbooks_recyclerview);
+    }
 
     private void openDb(){
         userBookJoinDao = AppRoomDatabase.getInstance(getContext()).getUserBookDao();

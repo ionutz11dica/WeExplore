@@ -21,6 +21,6 @@ public interface UserBookJoinDao  {
     @Query("SELECT * FROM book INNER JOIN user_book_join ON book.bookId = user_book_join.bookId WHERE user_book_join.userId = :userId")
     Flowable<List<BookE>> getAllUserBooksFromDatabase(final int userId);
 
-    @Query("SELECT bookId FROM user_book_join where userId = :userId AND bookId = :bookId")
+    @Query("SELECT * FROM user_book_join where userId = :userId AND bookId = :bookId")
     Single<BookE> getBookFromDatabase(Integer userId, String bookId);
 }

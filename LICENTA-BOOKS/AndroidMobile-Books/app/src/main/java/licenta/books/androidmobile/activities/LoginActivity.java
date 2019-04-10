@@ -420,7 +420,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 }
                  if(response.code() == 201){
                     userMethods.insertUser(user);
+                     editor.putString(Constants.KEY_USER_USERNAME,tie_signupUsername.getText().toString());
+                     editor.putString(Constants.KEY_USER_PASSWORD,tie_signupPassword.getText().toString());
+                     editor.apply();
                     Toast.makeText(getApplicationContext(),"User "+ user.getEmail()+ " created successfully",Toast.LENGTH_LONG).show();
+
                     startActivity(new Intent(getApplicationContext(),MainActivity.class));
                  }else if(response.code() == 200){
                     customToast.show("That email is already used", getApplicationContext());
