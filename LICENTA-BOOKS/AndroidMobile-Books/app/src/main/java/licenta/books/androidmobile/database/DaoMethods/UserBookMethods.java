@@ -42,7 +42,7 @@ public class UserBookMethods implements UserBookJoinDao {
     }
 
     @Override
-    public Flowable<List<BookE>> getAllUserBooksFromDatabase(int userId) {
+    public Flowable<List<BookE>> getAllUserBooksFromDatabase(Integer userId) {
         return userBookJoinDao.getAllUserBooksFromDatabase(userId);
     }
 
@@ -50,4 +50,22 @@ public class UserBookMethods implements UserBookJoinDao {
     public Single<BookE> getBookFromDatabase(Integer userId, String bookId) {
         return userBookJoinDao.getBookFromDatabase(userId,bookId);
     }
+
+    @Override
+    public Single<String> getPathBookFromDatabase(String bookId) {
+        return userBookJoinDao.getPathBookFromDatabase(bookId);
+    }
+
+    @Override
+    public void deleteUserBook(final UserBookJoin... userBookJoin) {
+        Completable.fromRunnable(new Runnable() {
+            @Override
+            public void run() {
+                userBookJoinDao.deleteUserBook(userBookJoin);
+            }
+        }).subscribeOn(Schedulers.io())
+                .subscribe();
+    }
+
+
 }

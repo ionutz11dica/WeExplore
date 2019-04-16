@@ -3,7 +3,6 @@ package licenta.books.androidmobile.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
@@ -28,8 +27,6 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.Task;
 
-import io.reactivex.Completable;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -40,6 +37,7 @@ import licenta.books.androidmobile.activities.others.CheckForNetwork;
 import licenta.books.androidmobile.activities.others.CustomToast;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
+import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.UserDao;
@@ -265,6 +263,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
                     @Override
                     public void onSuccess(User user) {
+                        RxBus.publishUser(user);
                         startActivity(intent);
                     }
 
@@ -523,7 +522,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 }
             @Override
             public void onFailure(Call<User> call, Throwable t) {
-
+                t.getCause();
             }
         });
 

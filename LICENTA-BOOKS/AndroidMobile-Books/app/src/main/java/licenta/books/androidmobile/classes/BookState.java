@@ -2,23 +2,26 @@ package licenta.books.androidmobile.classes;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-@Entity(foreignKeys = @ForeignKey(entity = BookE.class,
+@Entity(tableName = "bookstate",
+        foreignKeys = @ForeignKey(entity = BookE.class,
         parentColumns = "bookId",
-        childColumns = "stateId"))
+        childColumns = "bookId"),
+    indices = {@Index(value = {"bookId"},unique = true)})
 public class BookState implements Parcelable {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private Integer stateId;
-    private Integer pagePosition;
+    private Float pagePosition;
     private Integer noChapter;
+
     private String bookId;
 
 
-    public BookState(Integer stateId, Integer pagePosition, Integer noChapter,String bookId) {
-        this.stateId = stateId;
+    public BookState(Float pagePosition, Integer noChapter,String bookId) {
         this.pagePosition = pagePosition;
         this.noChapter = noChapter;
         this.bookId = bookId;
@@ -34,18 +37,14 @@ public class BookState implements Parcelable {
         if (in.readByte() == 0) {
             pagePosition = null;
         } else {
-            pagePosition = in.readInt();
+            pagePosition = in.readFloat();
         }
         if (in.readByte() == 0) {
             noChapter = null;
         } else {
             noChapter = in.readInt();
         }
-        if (in.readByte() == 0) {
-            bookId = null;
-        } else {
-            bookId = in.readString();
-        }
+        bookId = in.readString();
     }
 
     @Override
@@ -60,7 +59,7 @@ public class BookState implements Parcelable {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeInt(pagePosition);
+            dest.writeFloat(pagePosition);
         }
         if (noChapter == null) {
             dest.writeByte((byte) 0);
@@ -68,12 +67,7 @@ public class BookState implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(noChapter);
         }
-        if (bookId == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeString(bookId);
-        }
+        dest.writeString(bookId);
     }
 
     @Override
@@ -109,11 +103,11 @@ public class BookState implements Parcelable {
         this.stateId = stateId;
     }
 
-    public Integer getPagePosition() {
+    public Float getPagePosition() {
         return pagePosition;
     }
 
-    public void setPagePosition(Integer pagePosition) {
+    public void setPagePosition(Float pagePosition) {
         this.pagePosition = pagePosition;
     }
 

@@ -16,5 +16,4 @@ public interface BookEDao {
     void insertBook(BookE... book);
 
 
-
 }

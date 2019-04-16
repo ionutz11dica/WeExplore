@@ -32,9 +32,12 @@ public class BookE implements Parcelable {
 
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
     private  byte[] image;
-    private String pathFile;
+    @ColumnInfo(name = "path_file")
+    @NonNull
+    private String pathBook;
     private String isbn;
     private String imageLink;
+
 
     @Ignore
     private ArrayList<Review> reviews;
@@ -52,29 +55,9 @@ public class BookE implements Parcelable {
     private String downloadLink; //---??
 
 
-
-
-    @Ignore
-    public BookE( String title, ArrayList<String> authors, ArrayList<String> categories, ArrayList<Review> reviews,
-                 Integer pageCount, String description, String publisher, String publishedDate, String imageLink, String fileID,String pathFile,String isbn) {
-
-        this.title = title;
-        this.authors = authors;
-        this.categories = categories;
-        this.reviews = reviews;
-        this.pageCount = pageCount;
-        this.description = description;
-        this.publisher = publisher;
-        this.publishedDate = publishedDate;
-        this.imageLink = imageLink;
-
-        this.fileID = fileID;
-        this.pathFile = pathFile;
-        this.isbn = isbn;
-    }
     //Database constructor
-    public BookE(String _id, String title, ArrayList<String> authors, ArrayList<String> categories, Integer pageCount, String description, String publisher,
-                 String publishedDate, byte[] image, String pathFile, String isbn,String imageLink) {
+    public BookE(@NonNull String _id, String title, ArrayList<String> authors, ArrayList<String> categories, Integer pageCount, String description, String publisher,
+                 String publishedDate, byte[] image, @NonNull String pathBook, String isbn, String imageLink) {
         this._id = _id;
         this.title = title;
         this.authors = authors;
@@ -83,11 +66,32 @@ public class BookE implements Parcelable {
         this.description = description;
         this.publisher = publisher;
         this.publishedDate = publishedDate;
-        this.image = image;
-        this.pathFile = pathFile;
-        this.isbn = isbn;
         this.imageLink = imageLink;
+        this.image = image;
+        this.pathBook = pathBook;
+        this.isbn = isbn;
+
     }
+
+//    @Ignore
+//    public BookE( String title, ArrayList<String> authors, ArrayList<String> categories, ArrayList<Review> reviews,
+//                 Integer pageCount, String description, String publisher, String publishedDate, String imageLink, String fileID,String pathBook,String isbn) {
+//
+//        this.title = title;
+//        this.authors = authors;
+//        this.categories = categories;
+//        this.reviews = reviews;
+//        this.pageCount = pageCount;
+//        this.description = description;
+//        this.publisher = publisher;
+//        this.publishedDate = publishedDate;
+//        this.imageLink = imageLink;
+//
+//        this.fileID = fileID;
+//        this.pathBook = pathBook;
+//        this.isbn = isbn;
+//    }
+
 
     @Ignore
     public BookE() {
@@ -109,7 +113,7 @@ public class BookE implements Parcelable {
         publisher = in.readString();
         publishedDate = in.readString();
         image = in.createByteArray();
-        pathFile = in.readString();
+        pathBook = in.readString();
         isbn = in.readString();
         reviews = in.createTypedArrayList(Review.CREATOR);
         fileID = in.readString();
@@ -140,7 +144,7 @@ public class BookE implements Parcelable {
         dest.writeString(publisher);
         dest.writeString(publishedDate);
         dest.writeByteArray(image);
-        dest.writeString(pathFile);
+        dest.writeString(pathBook);
         dest.writeString(isbn);
         dest.writeTypedList(reviews);
         dest.writeString(fileID);
@@ -259,12 +263,12 @@ public class BookE implements Parcelable {
         this.fileID = fileID;
     }
 
-    public String getPathFile() {
-        return pathFile;
+    public String getPathBook() {
+        return pathBook;
     }
 
-    public void setPathFile(String pathFile) {
-        this.pathFile = pathFile;
+    public void setPathBook(String pathBook) {
+        this.pathBook = pathBook;
     }
 
     public String get_id() {

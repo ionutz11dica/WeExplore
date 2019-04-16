@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import java.io.IOException;
 
+import licenta.books.androidmobile.classes.RxJava.RxBus;
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 import okio.Buffer;
@@ -53,8 +54,11 @@ public class DownloadProgressResponseBody extends ResponseBody{
                 long bytesRead = super.read(sink,byteCount);
                 totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
+                float percent = bytesRead == -1 ? 100f : (((float)totalBytesRead / (float) responseBody.contentLength()) * 100);
+
                 if (null != progressListener) {
                     progressListener.update(totalBytesRead, responseBody.contentLength(), bytesRead == -1);
+                    RxBus.publishsDownloadProgress(percent);
                 }
                 return bytesRead;
             }

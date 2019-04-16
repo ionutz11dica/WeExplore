@@ -24,9 +24,9 @@ import android.support.annotation.NonNull;
                 @Index(value = "bookId")
     })
 public class UserBookJoin {
-        @ColumnInfo(name = "bookId")
+//        @ColumnInfo(name = "bookId")
         public @NonNull  final String bookId;
-        @ColumnInfo(name = "userId")
+//        @ColumnInfo(name = "userId")
         public @NonNull   final Integer userId;
 
         public UserBookJoin(@NonNull  final String bookId,@NonNull final  Integer userId) {

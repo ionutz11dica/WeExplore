@@ -2,6 +2,7 @@ package licenta.books.androidmobile.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
@@ -22,26 +23,55 @@ import android.widget.Toast;
 import java.util.Collections;
 import java.util.List;
 
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.DetailsActivity;
+import licenta.books.androidmobile.api.ApiClient;
+import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.Converters.ArrayStringConverter;
+import licenta.books.androidmobile.classes.User;
+import licenta.books.androidmobile.classes.UserBookJoin;
+import licenta.books.androidmobile.database.AppRoomDatabase;
+import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
+import licenta.books.androidmobile.database.DAO.UserDao;
+import licenta.books.androidmobile.database.DaoMethods.UserBookMethods;
+import licenta.books.androidmobile.database.DaoMethods.UserMethods;
 import licenta.books.androidmobile.interfaces.Constants;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ShelfViewHolder> {
+    private ApiService apiService;
     private List<BookE> list = Collections.emptyList();
     private Context context;
+    private SharedPreferences sharedPreferences;
+
+    private UserBookJoinDao userBookJoinDao;
+    private UserBookMethods userBookMethods;
+    private UserDao userDao;
+    private UserMethods userMethods;
+
 
 
     public ShelfAdapter(List<BookE> list, Context context) {
         this.list = list;
         this.context = context;
+        apiService = ApiClient.getRetrofit().create(ApiService.class);
+        sharedPreferences = context.getSharedPreferences(Constants.KEY_PREF_USER,Context.MODE_PRIVATE);
     }
 
     @NonNull
     @Override
     public ShelfViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.shelf_card,viewGroup,false);
+        openDb();
         return new ShelfViewHolder(view);
     }
 
@@ -59,6 +89,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ShelfViewHol
         shelfViewHolder.buttonContext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 PopupMenu popupMenu = new PopupMenu(context,button);
                 popupMenu.inflate(R.menu.shelfbooks_menu);
 
@@ -77,7 +108,69 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ShelfViewHol
                                 context.startActivity(intent);
                                 return true;
                             case R.id.shelfbooks_menu_addCollection:
+
                                 Toast.makeText(context,"Va urma!",Toast.LENGTH_LONG).show();
+                            case R.id.shelfbooks_menu_delete:
+                                String status = sharedPreferences.getString(Constants.KEY_STATUS,null);
+
+                                if(status.equals("with")){
+                                    String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL,null);
+                                    final Call<ResponseBody> call = apiService.syncUserBooksDeleteEmail(email,list.get(i).get_id());
+
+                                    Single<User> user = userMethods.verifyExistenceGoogleAcount(email);
+                                    user.subscribeOn(Schedulers.io())
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe(new SingleObserver<User>() {
+                                                @Override
+                                                public void onSubscribe(Disposable d) {
+
+                                                }
+
+                                                @Override
+                                                public synchronized void onSuccess(User user) {
+                                                    UserBookJoin userBookJoin = new UserBookJoin(list.get(i).get_id(),user.getUserId());
+                                                    userBookMethods.deleteUserBook(userBookJoin);
+                                                    deleteBookCloud(call);
+                                                    remove(list.get(i));
+                                                }
+
+                                                @Override
+                                                public void onError(Throwable e) {
+
+                                                }
+                                            });
+
+
+
+                                }else{
+                                    String username = sharedPreferences.getString(Constants.KEY_USER_USERNAME,null);
+                                    String password = sharedPreferences.getString(Constants.KEY_USER_PASSWORD,null);
+                                    final Call<ResponseBody> call = apiService.syncUserBooksDeleteUsername(username,password,list.get(i).get_id());
+                                    Single<User> user = userMethods.verifyAvailableAccount(username,password);
+                                    user.subscribeOn(Schedulers.io())
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe(new SingleObserver<User>() {
+                                                @Override
+                                                public void onSubscribe(Disposable d) {
+
+                                                }
+
+                                                @Override
+                                                public synchronized void onSuccess(User user) {
+                                                    UserBookJoin userBookJoin = new UserBookJoin(list.get(i).get_id(),user.getUserId());
+                                                    userBookMethods.deleteUserBook(userBookJoin);
+                                                    deleteBookCloud(call);
+                                                    remove(list.get(i));
+                                                }
+
+                                                @Override
+                                                public void onError(Throwable e) {
+
+                                                }
+                                            });
+                                }
+
+
                         }
                         return false;
                     }
@@ -87,6 +180,29 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ShelfViewHol
         });
 
 
+    }
+
+    private void openDb(){
+        userBookJoinDao = AppRoomDatabase.getInstance(context).getUserBookDao();
+        userBookMethods = UserBookMethods.getInstance(userBookJoinDao);
+        userDao = AppRoomDatabase.getInstance(context).getUserDao();
+        userMethods = UserMethods.getInstance(userDao);
+    }
+
+    private void deleteBookCloud(Call<ResponseBody> call) {
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.isSuccessful()){
+                    Log.d("Succes: ", response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
     }
 
     @Override

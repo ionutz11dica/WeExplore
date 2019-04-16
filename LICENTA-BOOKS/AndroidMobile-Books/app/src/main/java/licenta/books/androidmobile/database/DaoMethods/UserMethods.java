@@ -10,7 +10,7 @@ public class UserMethods implements UserDao {
     private  UserDao userDao;
     private static UserMethods userMethods;
 
-    public UserMethods(UserDao userDao) {
+    private UserMethods(UserDao userDao) {
         this.userDao = userDao;
     }
 

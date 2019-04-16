@@ -30,19 +30,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
 
-import io.reactivex.Completable;
 import io.reactivex.Observer;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.BlurBuilder;
+import licenta.books.androidmobile.activities.others.CheckForNetwork;
 import licenta.books.androidmobile.activities.others.CheckForSDCard;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.classes.UserBookJoin;
 import licenta.books.androidmobile.database.AppRoomDatabase;
@@ -93,12 +95,12 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         editor = sharedPreferences.edit();
 
         btnDownload = findViewById(R.id.btn_details_download);
-
+        apiService = ApiClient.getRetrofit().create(ApiService.class);
         intent = getIntent();
         book = intent.getParcelableExtra(Constants.KEY_BOOK);
         createUserBookJoin(book,null);
+        fetchBookBehaviour(book);
 
-        apiService = ApiClient.getRetrofit().create(ApiService.class);
 
 
 
@@ -156,7 +158,8 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
 
         final File outputFile = new File(getExternalFilesDir(null) + File.separator + book.getTitle() + ".epub");
-
+        @SuppressLint("SdCardPath") final String pathFile = "/sdcard/Android/data/licenta.books.androidmobile/files/"+book.getTitle() +".epub";
+//        String filepath = outputFile.getAbsolutePath();
         Call<ResponseBody> call = apiService.downloadBitmap(book.getImageLink());
         if(btnDownload.getText().toString().equals("Download")) {
             call.enqueue(new Callback<ResponseBody>() {
@@ -171,7 +174,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                             byte[] bytes = stream.toByteArray();
 
                             book.setImage(bytes);
-                            book.setPathFile(outputFile.getPath());
+                            book.setPathBook(pathFile);
                         }
                     }
                 }
@@ -198,11 +201,19 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer() {
                 @Override
                 public void onSubscribe(Disposable d) {
+
                     btnDownload.setText("Wait...");
                 }
 
                 @Override
                 public void onNext(Object object) {
+                    Disposable d = RxBus.subscribeDownloadProgress(new Consumer<Float>() {
+                        @Override
+                        public void accept(Float aFloat) throws Exception {
+                            Log.d("Percent -> ",String.valueOf(aFloat));
+                        }
+                    });
+                    d.dispose();
                 }
 
                 @Override
@@ -214,22 +225,29 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                     btnDownload.setText("READ");
                     bookMethods.insertBook(book);
                     userBookMethods.insertUserBook(userBookJoin[0]);
+
+
                 }
             });
         }else{
-            Toast.makeText(getApplicationContext(),"Va urma!",Toast.LENGTH_LONG).show();
+            intent.putExtra(Constants.KEY_BOOK,book);
+            intent = new Intent(getApplicationContext(),ReaderActivity.class);
+            startActivity(intent);
+//            Toast.makeText(getApplicationContext(),"Va urma!",Toast.LENGTH_LONG).show();
         }
     }
 
     private void createUserBookJoin(final BookE book, final UserBookJoin[] userBookJoin) {
         String status = sharedPreferences.getString(Constants.KEY_STATUS, null);
 
+
         if (status.equals("with")) {
             final String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
+            final Call<ResponseBody> call = apiService.syncUserBooksAddEmail(book.get_id(),email);
+
             Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
             userSingle.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-
                     .subscribe(new SingleObserver<User>() {
                         @Override
                         public void onSubscribe(Disposable d) {
@@ -238,13 +256,13 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                         @SuppressLint("CheckResult")
                         @Override
-                        public void onSuccess(final User user) {
+                        public synchronized void onSuccess(final User user) {
                             Log.d("User id: ", user.getUserId().toString());
                             if(userBookJoin==null){
                                 verifyExistanceBook(book.get_id(),user.getUserId());
                             }else {
                                 userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
-
+                                userBookAddCloud(call);
                             }
 
 
@@ -258,6 +276,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         } else {
             final String username = sharedPreferences.getString(Constants.KEY_USER_USERNAME, null);
             final String password = sharedPreferences.getString(Constants.KEY_USER_PASSWORD, null);
+            final Call<ResponseBody> call = apiService.syncUserBooksAddUsername(book.get_id(),username,password);
 
             Single<User> userSingle = userMethods.verifyAvailableAccount(username, password);
             userSingle.subscribeOn(Schedulers.io())
@@ -275,7 +294,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                                 verifyExistanceBook(book.get_id(),user.getUserId());
                             }else {
                                 userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
-
+                                userBookAddCloud(call);
                             }
 
                         }
@@ -288,6 +307,26 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         }
     }
 
+    private void userBookAddCloud(Call<ResponseBody> call) {
+        if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("ADD Sync: ", response.message());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                }
+            });
+        }else{
+
+        }
+
+    }
 
 
     private void verifyExistanceBook(String bookId,Integer userId){
@@ -346,6 +385,10 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                         description.setText(book.getDescription());
                     }
                 });
+    }
+
+    private void fetchBookBehaviour(BookE bookE){
+        RxBus.publishBook(bookE);
     }
 
     private void openDao() {

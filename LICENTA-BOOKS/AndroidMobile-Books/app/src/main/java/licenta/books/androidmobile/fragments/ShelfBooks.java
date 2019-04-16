@@ -38,6 +38,7 @@ import licenta.books.androidmobile.database.DaoMethods.UserBookMethods;
 import licenta.books.androidmobile.database.DaoMethods.UserMethods;
 import licenta.books.androidmobile.interfaces.Constants;
 
+
 public class ShelfBooks extends Fragment {
     private OnFragmentInteractionListener listener;
     private UserBookJoinDao userBookJoinDao;
@@ -51,6 +52,8 @@ public class ShelfBooks extends Fragment {
     RecyclerView recyclerView;
     ShelfAdapter adapter;
 
+
+
     public ShelfBooks() {
     }
 
@@ -58,6 +61,7 @@ public class ShelfBooks extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_shelfbooks,container,false);
+
         openDb();
         initComp(view);
         initSharedPref();
@@ -91,6 +95,7 @@ public class ShelfBooks extends Fragment {
         String status = sharedPreferences.getString(Constants.KEY_STATUS, null);
 
         if (status.equals("with")) {
+
             final String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
             Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
             userSingle.subscribeOn(Schedulers.io())

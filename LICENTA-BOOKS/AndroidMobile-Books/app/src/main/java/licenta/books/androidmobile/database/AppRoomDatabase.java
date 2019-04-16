@@ -15,16 +15,18 @@ import licenta.books.androidmobile.classes.Review;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.classes.UserBookJoin;
 import licenta.books.androidmobile.database.DAO.BookEDao;
+import licenta.books.androidmobile.database.DAO.BookStateDao;
 import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
 import licenta.books.androidmobile.database.DAO.UserDao;
 
 @Database(entities = {User.class, BookE.class, Review.class, Highlight.class, Bookmark.class,
-        BookState.class, UserBookJoin.class},version = 3,exportSchema = false)
+        BookState.class, UserBookJoin.class},version = 11,exportSchema = false)
 public abstract class AppRoomDatabase extends RoomDatabase {
     //database object
     public abstract BookEDao getBookEDao();
     public abstract UserDao getUserDao();
     public abstract UserBookJoinDao getUserBookDao();
+    public abstract BookStateDao getBookStateDao();
 
 
 
