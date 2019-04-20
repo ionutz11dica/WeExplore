@@ -13,7 +13,7 @@ public final class RxBus {
     private static BehaviorSubject<User> behaviorSubjectUser = BehaviorSubject.create();
     private static BehaviorSubject<BookE> behaviorSubjectBook = BehaviorSubject.create();
     private static BehaviorSubject<BookState> behaviorSubjectBookState = BehaviorSubject.create();
-    private static BehaviorSubject<Float> behaviorSubjectDownloadPercent = BehaviorSubject.create();
+    private static BehaviorSubject<Integer> behaviorSubjectDownloadPercent = BehaviorSubject.create();
 
     public static Disposable subscribeUser(@NonNull Consumer<User> action){
         return behaviorSubjectUser.subscribe(action);
@@ -39,11 +39,11 @@ public final class RxBus {
         behaviorSubjectBookState.onNext(message);
     }
 
-    public static Disposable subscribeDownloadProgress(@NonNull Consumer<Float> action){
+    public static Disposable subscribeDownloadProgress(@NonNull Consumer<Integer> action){
         return behaviorSubjectDownloadPercent.subscribe(action);
     }
 
-    public static void publishsDownloadProgress(@NonNull Float message){
+    public static void publishsDownloadProgress(@NonNull Integer message){
         behaviorSubjectDownloadPercent.onNext(message);
     }
 }

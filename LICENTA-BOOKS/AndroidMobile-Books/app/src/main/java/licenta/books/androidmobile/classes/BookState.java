@@ -4,8 +4,13 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.Date;
+
+import licenta.books.androidmobile.classes.Converters.TimestampConverter;
 
 @Entity(tableName = "bookstate",
         foreignKeys = @ForeignKey(entity = BookE.class,
@@ -17,14 +22,16 @@ public class BookState implements Parcelable {
     private Integer stateId;
     private Float pagePosition;
     private Integer noChapter;
-
+    @TypeConverters({TimestampConverter.class})
+    private Date readDate;
     private String bookId;
 
 
-    public BookState(Float pagePosition, Integer noChapter,String bookId) {
+    public BookState(Float pagePosition, Integer noChapter,String bookId,Date readDate) {
         this.pagePosition = pagePosition;
         this.noChapter = noChapter;
         this.bookId = bookId;
+        this.readDate = readDate;
     }
 
 
@@ -86,6 +93,14 @@ public class BookState implements Parcelable {
             return new BookState[size];
         }
     };
+
+    public Date getReadDate() {
+        return readDate;
+    }
+
+    public void setReadDate(Date readDate) {
+        this.readDate = readDate;
+    }
 
     public String getBookId() {
         return bookId;

@@ -1,11 +1,14 @@
 package licenta.books.androidmobile.activities;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -13,6 +16,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageButton;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import in.nashapp.epublibdroid.EpubReaderView;
 import io.reactivex.Single;
@@ -25,14 +35,15 @@ import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
-import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.BookStateDao;
 import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
 import licenta.books.androidmobile.database.DaoMethods.BookStateMethods;
 import licenta.books.androidmobile.database.DaoMethods.UserBookMethods;
+import nl.siegmann.epublib.domain.Resource;
+import nl.siegmann.epublib.domain.TOCReference;
 
-public class ReaderActivity extends AppCompatActivity {
+public class ReaderActivity extends AppCompatActivity  {
     EpubReaderView epubReaderView;
     Toolbar toolbar;
     Toolbar toolbarBottom;
@@ -46,17 +57,58 @@ public class ReaderActivity extends AppCompatActivity {
     BookStateMethods bookStateMethods;
     boolean show = true;
 
-
+    CoordinatorLayout coordinatorLayout;
+    TextView tvPage;
+    SeekBar seekBarPager;
+    ImageButton imgBtnContent;
+    ImageButton imgBtnDayNightMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reader);
         openDb();
+        initComp();
         initBookRead();
+//        test();
 
+        imgBtnDayNightMode.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void onClick(View v) {
+                if(epubReaderView.GetTheme() == 1){
+                    imgBtnDayNightMode.setImageResource(R.drawable.ic_highlight_off_black_24dp);
+                    epubReaderView.SetTheme(0);
+                    coordinatorLayout.setBackgroundColor(Color.parseColor("#000000"));
+                }else{
+                    imgBtnDayNightMode.setImageResource(R.drawable.ic_highlight_black_24dp);
+                    epubReaderView.SetTheme(1);
+                    coordinatorLayout.setBackgroundColor(Color.parseColor("#ffffff"));
+
+                }
+            }
+        });
+
+        imgBtnContent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(),AnnotationBookActivity.class));
+            }
+        });
 
     }
+
+    private void initComp(){
+        coordinatorLayout = findViewById(R.id.coordinator_layout);
+
+        seekBarPager = findViewById(R.id.reader_seekBar);
+        tvPage = findViewById(R.id.reader_tv_page);
+
+        imgBtnContent = findViewById(R.id.image_button_content);
+        imgBtnDayNightMode = findViewById(R.id.image_button_dayNight);
+
+    }
+
 
     private void initToolbar(BookE bookE){
 
@@ -105,10 +157,19 @@ public class ReaderActivity extends AppCompatActivity {
         intent = getIntent();
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+        //epubReaderView.book.get
+
+
         epubReaderView.setEpubReaderListener(new EpubReaderView.EpubReaderListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void OnPageChangeListener(int ChapterNumber, int PageNumber, float ProgressStart, float ProgressEnd) {
-                    BookState bookState = new BookState(ProgressStart,ChapterNumber,bookE1.get_id());
+                    Log.d("Chapter name: ", epubReaderView.ChapterList.get(ChapterNumber).getName());
+                    String chapterName = getChapterTitleFromToc(ChapterNumber);
+                    tvPage.setText(String.valueOf(PageNumber)+" Page - "+ String.valueOf(ChapterNumber) + " Chapter" );
+
+                    Date date = Calendar.getInstance().getTime();
+                    BookState bookState = new BookState(ProgressStart,ChapterNumber,bookE1.get_id(), date);
                     RxBus.publishBook(bookState);
 //                    bookStateMethods.insertBookState(bookState);
                     Log.d("Prog page: ->",String.valueOf(PageNumber));
@@ -177,6 +238,28 @@ public class ReaderActivity extends AppCompatActivity {
 
 
 
+    private String getChapterTitleFromToc(int chapter) {
+        // Is there no easier way to connect a TOCReference
+        // to an absolute spine index?
+        String title = "";
+        int counter = 0;
+        Resource targetResource = epubReaderView.book.getTableOfContents().getAllUniqueResources().get(chapter);
+        ArrayList<TOCReference> references = (ArrayList<TOCReference>) epubReaderView.book.getTableOfContents().getTocReferences();
+        for (TOCReference ref : references) {
+            if (ref.getResource().equals(targetResource)) {
+                return ref.getTitle();
+            }
+            for (TOCReference childRef : ref.getChildren()) {
+                if (childRef.getResource().equals(targetResource)) {
+                    return childRef.getTitle();
+                }
+            }
+        }
+        return title;
+    }
+
+
+
     private void openDb(){
         userBookJoinDao = AppRoomDatabase.getInstance(getApplicationContext()).getUserBookDao();
         userBookMethods = UserBookMethods.getInstance(userBookJoinDao);
@@ -242,6 +325,12 @@ public class ReaderActivity extends AppCompatActivity {
     public void onBackPressed() {
         insertBookStateDb();
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        insertBookStateDb();
+        super.onDestroy();
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)

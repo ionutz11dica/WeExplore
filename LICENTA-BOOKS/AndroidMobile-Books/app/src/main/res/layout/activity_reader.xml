@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".activities.ReaderActivity"
     android:background="#ffffff"
+    android:id="@+id/coordinator_layout"
     >
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -62,6 +63,7 @@
                     >
 
                     <ImageButton
+                        android:id="@+id/image_button_content"
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"
@@ -69,30 +71,36 @@
                         android:gravity="center"
                         android:src="@drawable/ic_menu_black_24dp" />
                     <ImageButton
+                        android:id="@+id/image_button_dayNight"
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"
                         android:background="@drawable/rounded_button_corner"
                         android:gravity="center"
-                        android:src="@drawable/ic_menu_black_24dp" />
+                        android:src="@drawable/ic_highlight_black_24dp" />
                     <ImageButton
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"
                         android:background="@drawable/rounded_button_corner"
                         android:gravity="center"
-                        android:src="@drawable/ic_menu_black_24dp" />
+                        android:src="@drawable/ic_format_size_black_24dp" />
                     <ImageButton
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"
                         android:background="@drawable/rounded_button_corner"
                         android:gravity="center"
-                        android:src="@drawable/ic_menu_black_24dp" />
+                        android:src="@drawable/ic_location_searching_black_24dp" />
                 </LinearLayout>
+                <View
+                    android:layout_marginTop="10dp"
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dp"
+                    android:background="#c0c0c0"/>
 
                 <LinearLayout
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="10dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
@@ -107,6 +115,7 @@
                         android:progress="70" />
 
                     <TextView
+                        android:id="@+id/reader_tv_page"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
 

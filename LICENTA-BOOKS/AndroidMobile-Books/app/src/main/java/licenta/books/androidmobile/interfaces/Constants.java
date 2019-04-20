@@ -3,14 +3,15 @@ public interface Constants {
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;
 
-      String BASE_URL = "http://192.168.1.11:4000/";
+      String BASE_URL = "http://192.168.1.12:4000/";
 
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
 
+      String TIME_STAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+
 
       String KEY_IMAGE_URL = "keyImgUrl";
-      String TIME_STAMP_FORMAT = "dd-mm-yyyy";
 
       String KEY_PREF_USER = "prefUser";
       String KEY_USER_EMAIL = "keyUserEmail";

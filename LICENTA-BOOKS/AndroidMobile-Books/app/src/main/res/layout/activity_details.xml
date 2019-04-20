@@ -63,6 +63,13 @@
             android:paddingRight="@dimen/book_title_padding"
 
              />
+        <ProgressBar
+            android:id="@+id/id_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:max="100"
+            />
         <TextView
             android:id="@+id/tv_book_description"
             android:layout_width="match_parent"

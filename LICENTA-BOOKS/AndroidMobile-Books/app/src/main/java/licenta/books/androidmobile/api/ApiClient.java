@@ -47,6 +47,7 @@ public class ApiClient {
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
+
                 .retryOnConnectionFailure(true)
                 .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .build();

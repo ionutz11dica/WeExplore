@@ -1,8 +1,13 @@
 package licenta.books.androidmobile.downloadProgress;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import okhttp3.MediaType;
@@ -54,11 +59,15 @@ public class DownloadProgressResponseBody extends ResponseBody{
                 long bytesRead = super.read(sink,byteCount);
                 totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
+//                BufferedInputStream bufferedInputStream = new BufferedInputStream(responseBody.byteStream());
+//                ByteBuffer baf = new ByteBuffer(bufferedInputStream);
+
                 float percent = bytesRead == -1 ? 100f : (((float)totalBytesRead / (float) responseBody.contentLength()) * 100);
+                Log.d("Percent ->",String.valueOf(percent));
 
                 if (null != progressListener) {
                     progressListener.update(totalBytesRead, responseBody.contentLength(), bytesRead == -1);
-                    RxBus.publishsDownloadProgress(percent);
+//                    RxBus.publishsDownloadProgress(percent);
                 }
                 return bytesRead;
             }

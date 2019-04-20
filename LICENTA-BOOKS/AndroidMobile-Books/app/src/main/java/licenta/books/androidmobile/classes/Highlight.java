@@ -35,18 +35,16 @@ public class Highlight implements Parcelable {
     private Integer highlightId;
     private Integer pagePosition;
     private Integer noChapter;
-    @TypeConverters({TimestampConverter.class})
-    private Date date;
     private Integer colorCode;
     private String content;
     private  Integer bookId;
     private  Integer userId;
 
-    public Highlight( Integer pagePosition, Integer noChapter, Date date, Integer colorCode, String content,Integer bookId,Integer userId) {
+    public Highlight( Integer pagePosition, Integer noChapter,Integer colorCode, String content,Integer bookId,Integer userId) {
 
         this.pagePosition = pagePosition;
         this.noChapter = noChapter;
-        this.date = date;
+
         this.colorCode = colorCode;
         this.content = content;
         this.bookId = bookId;
@@ -170,13 +168,7 @@ public class Highlight implements Parcelable {
         this.noChapter = noChapter;
     }
 
-    public Date getDate() {
-        return date;
-    }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
 
     public Integer getColorCode() {
         return colorCode;

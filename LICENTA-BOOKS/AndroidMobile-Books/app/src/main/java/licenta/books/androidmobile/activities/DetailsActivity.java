@@ -2,6 +2,7 @@ package licenta.books.androidmobile.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.arch.persistence.room.Index;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -91,6 +92,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         openDao();
+        progressBar = findViewById(R.id.id_progress);
         sharedPreferences = getSharedPreferences(Constants.KEY_PREF_USER, 0);
         editor = sharedPreferences.edit();
 
@@ -201,19 +203,20 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer() {
                 @Override
                 public void onSubscribe(Disposable d) {
-
+//                    d = RxBus.subscribeDownloadProgress(new Consumer<Integer>() {
+//                        @Override
+//                        public void accept(Integer integer) throws Exception {
+//                            Log.d("Percent -> ",String.valueOf(integer));
+//                            progressBar.setProgress(integer);
+//                        }
+//                    });
+//                    d.dispose();
                     btnDownload.setText("Wait...");
                 }
 
                 @Override
                 public void onNext(Object object) {
-                    Disposable d = RxBus.subscribeDownloadProgress(new Consumer<Float>() {
-                        @Override
-                        public void accept(Float aFloat) throws Exception {
-                            Log.d("Percent -> ",String.valueOf(aFloat));
-                        }
-                    });
-                    d.dispose();
+
                 }
 
                 @Override
