@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.ReaderBookActivity">
+
+    <!--<RelativeLayout-->
+        <!--android:id="@+id/workSpaceLayout"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent">-->
+    <RelativeLayout
+        android:id="@+id/readerRelativeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+   />
+        <!--<include-->
+            <!--android:id="@+id/toolbarLinearLayoutTop"-->
+            <!--layout="@layout/toolbar_layout"-->
+            <!--android:visibility="invisible"/>-->
+
+        <!--<include-->
+            <!--android:id="@+id/toolbarLinearLayoutBottom"-->
+            <!--layout="@layout/toolbar_layout_bottom"-->
+            <!--android:visibility="invisible"/>-->
+    <!--</RelativeLayout>-->
+
+
+
+</RelativeLayout>

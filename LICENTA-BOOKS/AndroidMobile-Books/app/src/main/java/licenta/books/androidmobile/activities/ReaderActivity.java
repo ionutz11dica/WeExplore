@@ -6,20 +6,26 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
+
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -32,6 +38,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
+//import licenta.books.androidmobile.activities.PopupWindow.NotifyingSelectionWebView;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
@@ -40,8 +47,12 @@ import licenta.books.androidmobile.database.DAO.BookStateDao;
 import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
 import licenta.books.androidmobile.database.DaoMethods.BookStateMethods;
 import licenta.books.androidmobile.database.DaoMethods.UserBookMethods;
-import nl.siegmann.epublib.domain.Resource;
-import nl.siegmann.epublib.domain.TOCReference;
+import licenta.books.androidmobile.interfaces.Constants;
+import nl.siegmann.epublib.domain.Book;
+//import nl.siegmann.epublib.domain.Book;
+//import nl.siegmann.epublib.domain.Resource;
+//import nl.siegmann.epublib.domain.Spine;
+//import nl.siegmann.epublib.domain.TOCReference;
 
 public class ReaderActivity extends AppCompatActivity  {
     EpubReaderView epubReaderView;
@@ -62,14 +73,23 @@ public class ReaderActivity extends AppCompatActivity  {
     SeekBar seekBarPager;
     ImageButton imgBtnContent;
     ImageButton imgBtnDayNightMode;
+//    Magnifier magnifier;
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reader);
+
+
+
+
         openDb();
         initComp();
         initBookRead();
+
+//        magnifier.show(epubReaderView.getWidth() / 2, epubReaderView.getHeight() / 2);
 //        test();
 
         imgBtnDayNightMode.setOnClickListener(new View.OnClickListener() {
@@ -92,9 +112,21 @@ public class ReaderActivity extends AppCompatActivity  {
         imgBtnContent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(),AnnotationBookActivity.class));
+                startActivityForResult(new Intent(getApplicationContext(),AnnotationBookActivity.class), Constants.RESULT_CODE_CHAPTER);
+//                startActivity(new Intent(getApplicationContext(),AnnotationBookActivity.class));
             }
         });
+
+//        final Magnifier magnifier = new Magnifier(epubReaderView);
+//
+//        epubReaderView.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                magnifier.update();
+//            }
+//        });
+
+
 
     }
 
@@ -143,7 +175,13 @@ public class ReaderActivity extends AppCompatActivity  {
                     @Override
                     public void onSuccess(String s) {
                         epubReaderView.OpenEpubFile(s);
+                        ArrayList<String> chapters = new ArrayList<>();
+                        for(int i = 0 ; i < epubReaderView.ChapterList.size();i++){
+                            chapters.add(epubReaderView.ChapterList.get(i).getName());
+                        }
+                        RxBus.publishsChapterList(chapters);
                         setBookState();
+//                        setChapterFromChapterList();
                     }
 
                     @Override
@@ -157,23 +195,26 @@ public class ReaderActivity extends AppCompatActivity  {
         intent = getIntent();
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        //epubReaderView.book.get
+
 
 
         epubReaderView.setEpubReaderListener(new EpubReaderView.EpubReaderListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void OnPageChangeListener(int ChapterNumber, int PageNumber, float ProgressStart, float ProgressEnd) {
-                    Log.d("Chapter name: ", epubReaderView.ChapterList.get(ChapterNumber).getName());
-                    String chapterName = getChapterTitleFromToc(ChapterNumber);
+//                    Log.d("Chapter name: ", epubReaderView.ChapterList.get(ChapterNumber).getName());
+//                    String string = epubReaderView.ChapterList.get(0).getHref();
+//                    String chapterName = getChapterTitleFromToc(ChapterNumber);
                     tvPage.setText(String.valueOf(PageNumber)+" Page - "+ String.valueOf(ChapterNumber) + " Chapter" );
 
                     Date date = Calendar.getInstance().getTime();
                     BookState bookState = new BookState(ProgressStart,ChapterNumber,bookE1.get_id(), date);
                     RxBus.publishBook(bookState);
 //                    bookStateMethods.insertBookState(bookState);
-                    Log.d("Prog page: ->",String.valueOf(PageNumber));
-                    Log.d("Progress: ->",String.valueOf(ProgressStart));
+//                    Log.d("Prog page: ->",String.valueOf(PageNumber));
+//                    Log.d("Progress: ->",String.valueOf(ProgressStart));
+//
+//                    ArrayList<String> list = getBookContent(epubReaderView.book);
 
             }
 
@@ -182,9 +223,32 @@ public class ReaderActivity extends AppCompatActivity  {
 
             }
 
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public void OnTextSelectionModeChangeListner(Boolean mode) {
 
+//                epubReaderView.setOnTouchListener(new View.OnTouchListener() {
+//                    @RequiresApi(api = Build.VERSION_CODES.P)
+//                    @Override
+//                    public boolean onTouch(View v, MotionEvent event) {
+//
+//                        switch (event.getActionMasked()){
+//                            case MotionEvent.ACTION_HOVER_MOVE:{
+//                                final int[] viewPosition = new int[2];
+//                                v.getLocationOnScreen(viewPosition);
+//                                magnifier.show(event.getRawX() - viewPosition[0],
+//                                        event.getRawY() - viewPosition[1]);
+//                                break;
+//                            }
+//                            case MotionEvent.ACTION_CANCEL:
+//                                // Fall through.
+//                            case MotionEvent.ACTION_UP: {
+//                                magnifier.dismiss();
+//                            }
+//                        }
+//                        return true;
+//                    }
+//                });
             }
 
             @Override
@@ -235,30 +299,53 @@ public class ReaderActivity extends AppCompatActivity  {
         initToolbar(bookE1);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void calculateBounds(){
 
 
-
-    private String getChapterTitleFromToc(int chapter) {
-        // Is there no easier way to connect a TOCReference
-        // to an absolute spine index?
-        String title = "";
-        int counter = 0;
-        Resource targetResource = epubReaderView.book.getTableOfContents().getAllUniqueResources().get(chapter);
-        ArrayList<TOCReference> references = (ArrayList<TOCReference>) epubReaderView.book.getTableOfContents().getTocReferences();
-        for (TOCReference ref : references) {
-            if (ref.getResource().equals(targetResource)) {
-                return ref.getTitle();
-            }
-            for (TOCReference childRef : ref.getChildren()) {
-                if (childRef.getResource().equals(targetResource)) {
-                    return childRef.getTitle();
-                }
-            }
-        }
-        return title;
     }
 
 
+
+    private String formatLine(String line) {
+        if (line.contains("http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd")) {
+            line = line.substring(line.indexOf(">") + 1, line.length());
+        }
+
+        // REMOVE STYLES AND COMMENTS IN HTML
+        if ((line.contains("{") && line.contains("}"))
+                || ((line.contains("/*")) && line.contains("*/"))
+                || (line.contains("<!--") && line.contains("-->"))) {
+            line = line.substring(line.length());
+        }
+        return line;
+    }
+
+
+
+    private void setChapterFromChapterList(){
+        intent = getIntent();
+        if(intent.hasExtra("keye")){
+            Disposable d = RxBus.subscribeChapter(new Consumer<Integer>() {
+                @Override
+                public void accept(Integer integer) throws Exception {
+                    epubReaderView.GotoPosition(integer,(float)0);
+                }
+            });
+            d.dispose();
+        }else{
+
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == Constants.RESULT_CODE_CHAPTER && RESULT_OK == resultCode && data!=null){
+            epubReaderView.GotoPosition(data.getIntExtra(Constants.KEY_CHAPTER,0),(float)0);
+//            setBookState();
+        }else if(requestCode == Constants.RESULT_CODE_BOOKMARK && RESULT_OK == resultCode && data!=null);
+    }
 
     private void openDb(){
         userBookJoinDao = AppRoomDatabase.getInstance(getApplicationContext()).getUserBookDao();
@@ -312,6 +399,7 @@ public class ReaderActivity extends AppCompatActivity  {
                     @Override
                     public void onSuccess(BookState bookState) {
                         epubReaderView.GotoPosition(bookState.getNoChapter(),bookState.getPagePosition());
+                        RxBus.publishBook(bookState);
                     }
 
                     @Override

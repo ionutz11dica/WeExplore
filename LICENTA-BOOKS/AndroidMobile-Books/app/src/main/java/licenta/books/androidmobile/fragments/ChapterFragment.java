@@ -1,17 +1,32 @@
 package licenta.books.androidmobile.fragments;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.TextView;
 
+import java.util.ArrayList;
+
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.ReaderActivity;
+import licenta.books.androidmobile.adapters.ChapterAdapter;
+import licenta.books.androidmobile.classes.RxJava.RxBus;
+import licenta.books.androidmobile.interfaces.Constants;
 
 
 public class ChapterFragment extends Fragment {
+    ListView chapterListView;
+    ArrayList<String> arrayList = new ArrayList<>();
 
 
     private OnFragmentInteractionListener mListener;
@@ -25,8 +40,31 @@ public class ChapterFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_chpater, container, false);
+        initComp(view);
+        chapterListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                RxBus.publishsChapter(position);
+                Intent intent = new Intent(getActivity(), ReaderActivity.class);
+                intent.putExtra(Constants.KEY_CHAPTER,position);
+                getActivity().setResult(Activity.RESULT_OK,intent);
+                getActivity().finish();
 
-        return inflater.inflate(R.layout.fragment_chpater, container, false);
+            }
+        });
+        return view;
+    }
+
+    private void initComp(View view){
+        getChapterName();
+
+
+
+        ChapterAdapter chapterAdapter = new ChapterAdapter(getActivity(),arrayList);
+        chapterListView = view.findViewById(R.id.chapter_fragment_listview);
+        chapterListView.setAdapter(chapterAdapter);
+
     }
 
     public void onButtonPressed(Uri uri) {
@@ -35,6 +73,16 @@ public class ChapterFragment extends Fragment {
         }
     }
 
+    private void getChapterName(){
+        Disposable d = RxBus.subscribeChapterList(new Consumer<ArrayList<String>>() {
+            @Override
+            public void accept(ArrayList<String> strings) throws Exception {
+                arrayList = strings;
+            }
+        });
+        d.dispose();
+
+    }
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);

@@ -62,7 +62,7 @@ public class ApiClient {
 
     @SuppressLint("CheckResult")
     public void downloadAPK(@NonNull String url, final File file, Observer observer) {
-        Log.d("Downloader: ", "downloading " +retrofit.baseUrl().toString()+ url);
+        Log.d("Downloader: ", "downloading " + url);
 
         retrofit.create(ApiService.class)
                 .downloadBookAsync(url)

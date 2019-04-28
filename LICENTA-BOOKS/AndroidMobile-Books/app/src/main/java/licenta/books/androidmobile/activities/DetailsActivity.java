@@ -175,7 +175,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                             byte[] bytes = stream.toByteArray();
 
-                            book.setImage(bytes);
+//                            book.setImage(bytes);
                             book.setPathBook(pathFile);
                         }
                     }
@@ -221,6 +221,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                 @Override
                 public void onError(Throwable e) {
+                    Log.d("Error:",e.getMessage());
                 }
 
                 @Override
@@ -265,7 +266,9 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                                 verifyExistanceBook(book.get_id(),user.getUserId());
                             }else {
                                 userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
-                                userBookAddCloud(call);
+                                if(btnDownload.getText().toString().equals("Wait..")){
+                                    userBookAddCloud(call);
+                                }
                             }
 
 
@@ -297,7 +300,9 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                                 verifyExistanceBook(book.get_id(),user.getUserId());
                             }else {
                                 userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
-                                userBookAddCloud(call);
+                                if(btnDownload.getText().toString().equals("Wait..")){
+                                    userBookAddCloud(call);
+                                }
                             }
 
                         }
@@ -354,6 +359,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                     @Override
                     public void onError(Throwable e) {
+                        Log.d("Eroare?:",e.getMessage());
                         btnDownload.setText("Download");
                     }
                 });

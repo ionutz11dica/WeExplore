@@ -286,4 +286,17 @@ public class BookE implements Parcelable {
     public void setIsbn(String isbn) {
         this.isbn = isbn;
     }
+
+    public static String convertFromArray(ArrayList<String> authors){
+        StringBuilder sb = new StringBuilder();
+        for(String s : authors){
+            if(authors.size() == 1){
+                sb.append(s);
+            }else{
+                sb.append(s).append(", ");
+            }
+
+        }
+        return sb.toString();
+    }
 }

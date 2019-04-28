@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="-15dp"
+        android:layout_gravity="bottom">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/reader_toolbar_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="130dp"
+            android:background="@color/colorBlackTrans">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+
+                android:orientation="vertical">
+
+                <LinearLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    >
+
+                    <ImageButton
+                        android:id="@+id/image_button_content"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/rounded_button_corner"
+                        android:gravity="center"
+                        android:src="@drawable/ic_menu_black_24dp" />
+                    <ImageButton
+                        android:id="@+id/image_button_dayNight"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/rounded_button_corner"
+                        android:gravity="center"
+                        android:src="@drawable/ic_highlight_black_24dp" />
+                    <ImageButton
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/rounded_button_corner"
+                        android:gravity="center"
+                        android:src="@drawable/ic_format_size_black_24dp" />
+                    <ImageButton
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/rounded_button_corner"
+                        android:gravity="center"
+                        android:src="@drawable/ic_location_searching_black_24dp" />
+                </LinearLayout>
+                <View
+                    android:layout_marginTop="10dp"
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dp"
+                    android:background="#c0c0c0"/>
+
+                <LinearLayout
+                    android:layout_marginTop="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+                    <SeekBar
+                        android:id="@+id/reader_seekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:progress="70" />
+
+                    <TextView
+                        android:id="@+id/reader_tv_page"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:text="page"
+                        android:textAlignment="center"
+                        android:textSize="15dp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </android.support.v7.widget.Toolbar>
+    </android.support.design.widget.AppBarLayout>
+
+
+</LinearLayout>

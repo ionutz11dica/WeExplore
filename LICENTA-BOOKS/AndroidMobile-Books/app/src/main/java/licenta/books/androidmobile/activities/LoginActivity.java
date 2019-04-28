@@ -522,7 +522,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 }
             @Override
             public void onFailure(Call<User> call, Throwable t) {
-                t.getCause();
+                Toast.makeText(getApplicationContext(),t.getMessage(),Toast.LENGTH_LONG).show();
             }
         });
 
