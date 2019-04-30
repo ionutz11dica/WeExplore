@@ -75,7 +75,7 @@ public class ReaderActivity extends AppCompatActivity  {
     ImageButton imgBtnDayNightMode;
 //    Magnifier magnifier;
 
-    @RequiresApi(api = Build.VERSION_CODES.P)
+//    @RequiresApi(api = Build.VERSION_CODES.P)
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
