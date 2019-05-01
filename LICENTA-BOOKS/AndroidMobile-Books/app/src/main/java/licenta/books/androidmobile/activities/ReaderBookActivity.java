@@ -1,26 +1,42 @@
 package licenta.books.androidmobile.activities;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Magnifier;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.skytree.epub.Highlight;
 import com.skytree.epub.PageInformation;
 import com.skytree.epub.PageMovedListener;
 import com.skytree.epub.PageTransition;
 import com.skytree.epub.ReflowableControl;
+import com.skytree.epub.SelectionListener;
 import com.skytree.epub.SkyProvider;
 import com.skytree.epub.State;
 import com.skytree.epub.StateListener;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -33,10 +49,12 @@ import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
+import licenta.books.androidmobile.classes.Chapter;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.BookStateDao;
 import licenta.books.androidmobile.database.DaoMethods.BookStateMethods;
+import licenta.books.androidmobile.interfaces.Constants;
 import retrofit2.http.PATCH;
 
 //import android.widget.RelativeLayout;
@@ -68,11 +86,19 @@ public class ReaderBookActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
 
+    //Handlers
+    SelectionHandler selectionHandler;
     StateHandler stateHandler;
     PageMoveHandler pageMoveHandler;
+    Magnifier magnifier;
+
+    //toolbar controllers
+    TextView tvPage;
+    SeekBar seekBarPager;
+    ImageButton imgBtnContent;
+    ImageButton imgBtnDayNightMode;
 
 
-//    @SuppressLint("SdCardPath")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,10 +112,26 @@ public class ReaderBookActivity extends AppCompatActivity {
     private void initComp(){
         progressDialog = new ProgressDialog(this);
 
-        topToolbar = findViewById(R.id.reader_toolbar_top);
-        bottomToolbar = findViewById(R.id.reader_toolbar_bottom);
+        topToolbar=findViewById(R.id.reader_toolbar_top);
+        bottomToolbar=findViewById(R.id.reader_toolbar_bottom);
+        topToolbar.setVisibility(View.GONE);
+        bottomToolbar.setVisibility(View.GONE);
+
+        //bottom toolbar components
+        imgBtnContent = findViewById(R.id.image_button_content);
 
         renderRelative = findViewById(R.id.readerRelativeLayout);
+
+        eventClickContent();
+    }
+
+    private void eventClickContent() {
+        imgBtnContent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(new Intent(getApplicationContext(), AnnotationBookActivity.class), Constants.RESULT_CODE_CHAPTER);
+            }
+        });
     }
 
     private void initPathBook(){
@@ -100,21 +142,22 @@ public class ReaderBookActivity extends AppCompatActivity {
             }
         });
         d.dispose();
+        topToolbar.setTitle(book.getTitle());
+        topToolbar.setSubtitle(convertFromArray(book.getAuthors()));
+        setSupportActionBar(topToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         initBookVariableFromDataBase(fontType,fontSize,pagePosition);
 
         String fileName = book.getTitle()+".epub";
-        String pathFile = Environment.getExternalStorageDirectory().getPath();
         renderRelative.addView(setUpReflowableController(fileName,"/sdcard/Android/data/licenta.books.androidmobile/files"));
 
     }
 
     private ReflowableControl setUpReflowableController(String fileName, String baseDirectoryPath) {
-
         showLog("baseDirectoryPath",baseDirectoryPath);
 
         reflowableControl = new ReflowableControl(this);
-
-//        fileName = prepareFileNameWithWhiteSpaceReplacement(fileName);
 
         showLog("fileName", String.valueOf(fileName));
 
@@ -125,21 +168,6 @@ public class ReaderBookActivity extends AppCompatActivity {
         reflowableControl.setLicenseKey("04FE-082A-0B15-0CFB");
 
         reflowableControl.setDoublePagedForLandscape(true);
-
-//        Disposable d = RxBus.subscribeBookState(new Consumer<BookState>() {
-//            @Override
-//            public void accept(BookState bookState) throws Exception {
-////                testBookstate = bookState;
-//                showLog("Ceva",testBookstate.getFontType());
-//            }
-//        });
-//        d.dispose();
-
-
-//        if(fontSize == null && fontType == null){
-//            fontSize=15;fontType="TimesRoman";
-//        }
-//        reflowableControl.setFont(fontType, fontSize);
 
         reflowableControl.setLineSpacing(135); // the value is supposed to be percent(%).
 
@@ -164,8 +192,6 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         reflowableControl.setContentProvider(skyProvider);
 
-//        reflowableControl.setStartPositionInBook(pagePosition);
-
         reflowableControl.useDOMForHighlight(false);
 
         reflowableControl.setNavigationAreaWidthRatio(0.0f); // both left and right side.
@@ -177,9 +203,9 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         showLog("Media Overlay Available : ", String.valueOf(reflowableControl.isMediaOverlayAvailable()));
 
-//        //Listeners
-//        selectionHandler = new SelectionHandler();
-//        reflowableControl.setSelectionListener(selectionHandler);
+        //Listeners
+        selectionHandler = new SelectionHandler();
+        reflowableControl.setSelectionListener(selectionHandler);
 //
         pageMoveHandler = new PageMoveHandler();
         reflowableControl.setPageMovedListener(pageMoveHandler);
@@ -226,18 +252,95 @@ public class ReaderBookActivity extends AppCompatActivity {
                         insertBookState(bookState);
                     }
                 });
-        fontS=plm[0];
+
     }
 
+    private class SelectionHandler implements SelectionListener {
 
+        @Override
+        public void selectionStarted(Highlight highlight, Rect rect, Rect rect1) {
+
+        }
+
+        @Override
+        public void selectionChanged(Highlight highlight, Rect rect, Rect rect1) {
+
+        }
+
+        @Override
+        public void selectionEnded(Highlight highlight, Rect rect, Rect rect1) {
+
+        }
+
+        @Override
+        public void selectionCancelled() {
+            showOrHideToolbar();
+        }
+    }
+
+    private class StateHandler implements StateListener {
+
+        @Override
+        public void onStateChanged(State state) {
+            if(state.equals(State.NORMAL)){
+                showLog("State =>", "NORMAL");
+                hideProgressDialog();
+            } else if(state.equals(State.LOADING)) {
+                showLog("State =>", "LOADING");
+                showProgressDialog("Loading","Please wait..",false);
+            }else if (state.equals(State.ROTATING)){
+                showLog("State =>", "ROTATING");
+                showProgressDialog("Loading","Please wait..",false);
+            }else if (state.equals(State.BUSY)){
+                showLog("State =>", "BUSY");
+                showProgressDialog("Loading","Please wait..",false);
+            }
+        }
+    }
+
+    private class PageMoveHandler implements PageMovedListener {
+
+        @Override
+        public void onPageMoved(PageInformation pageInformation) {
+            show=true;
+            showOrHideToolbar();
+            pagePosition = pageInformation.pagePositionInBook;
+            RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,book.get_id()));
+            showLog("PageInfo",String.valueOf(reflowableControl.getNumberOfChaptersInBook()));
+//            for(int i =0;i<reflowableControl.getNumberOfPagesInBook();i++){
+//                Toast.makeText(getApplicationContext(),reflowableControl.getChapterTitle(15),Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(),reflowableControl.getNumberOfPagesInChapter(4),Toast.LENGTH_LONG).show();
+            showLog("PageInfo",String.valueOf(reflowableControl.getNumberOfPagesInChapter()));
+
+        }
+
+        @Override
+        public void onChapterLoaded(int i) {
+            ArrayList<String> chapterList = new ArrayList<>();
+            for(int j = 0 ;j < reflowableControl.getNumberOfChaptersInBook();j++){
+                if(reflowableControl.getChapterTitle(j)!=null){
+                    chapterList.add(reflowableControl.getChapterTitle(j));
+                }
+            }
+            RxBus.publishsChapterList(chapterList);
+            RxBus.publishsChapter(reflowableControl.getNumberOfPagesInChapter());
+            int y=0;
+
+        }
+
+        @Override
+        public void onFailedToMove(boolean b) {
+
+        }
+    }
 
     private void showOrHideToolbar(){
         if(show){
-            toolbarTop.animate().translationY(-toolbarTop.getBottom()).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
-            toolbarTop.setVisibility(View.GONE);
+            topToolbar.animate().translationY(-topToolbar.getBottom()).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
+            topToolbar.setVisibility(View.GONE);
 
-            toolbarBottom.animate().translationY(-topToolbar.getBottom()).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
-            toolbarBottom.setVisibility(View.GONE);
+            bottomToolbar.animate().translationY(-bottomToolbar.getBottom()).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
+            bottomToolbar.setVisibility(View.GONE);
 
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -246,11 +349,11 @@ public class ReaderBookActivity extends AppCompatActivity {
 
             show = false;
         }else {
-            toolbarTop.animate().translationY(0).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
-            toolbarTop.setVisibility(View.VISIBLE);
+            topToolbar.animate().translationY(0).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
+            topToolbar.setVisibility(View.VISIBLE);
 
-            toolbarBottom.animate().translationY(0).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
-            toolbarBottom.setVisibility(View.VISIBLE);
+            bottomToolbar.animate().translationY(0).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
+            bottomToolbar.setVisibility(View.VISIBLE);
 
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 //                    showStatusBar(toolbar);
@@ -287,44 +390,17 @@ public class ReaderBookActivity extends AppCompatActivity {
         reflowableControl.setPageTransition(pageTransition);
     }
 
-    private class StateHandler implements StateListener {
-
-        @Override
-        public void onStateChanged(State state) {
-            if(state.equals(State.NORMAL)){
-                showLog("State =>", "NORMAL");
-                hideProgressDialog();
-            } else if(state.equals(State.LOADING)) {
-                showLog("State =>", "LOADING");
-                showProgressDialog("Loading","Please wait..",false);
-            }else if (state.equals(State.ROTATING)){
-                showLog("State =>", "ROTATING");
-                showProgressDialog("Loading","Please wait..",false);
-            }else if (state.equals(State.BUSY)){
-                showLog("State =>", "BUSY");
-                showProgressDialog("Loading","Please wait..",false);
+    private String convertFromArray(ArrayList<String> authors){
+        StringBuilder sb = new StringBuilder();
+        for(String s : authors){
+            if(authors.size() == 1){
+                sb.append(s);
+            }else{
+                sb.append(s).append(", ");
             }
-        }
-    }
-
-    private class PageMoveHandler implements PageMovedListener {
-
-        @Override
-        public void onPageMoved(PageInformation pageInformation) {
-            pagePosition = pageInformation.pagePositionInBook;
-            RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,book.get_id()));
-            showLog("PageInfo",String.valueOf(pagePosition));
-        }
-
-        @Override
-        public void onChapterLoaded(int i) {
 
         }
-
-        @Override
-        public void onFailedToMove(boolean b) {
-
-        }
+        return sb.toString();
     }
 
     private void insertBookState(BookState bookState){
@@ -347,6 +423,35 @@ public class ReaderBookActivity extends AppCompatActivity {
     private void openDb(){
         bookStateDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookStateDao();
         bookStateMethods = BookStateMethods.getInstance(bookStateDao);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == Constants.RESULT_CODE_CHAPTER && RESULT_OK == resultCode && data!=null){
+            reflowableControl.gotoPageByNavPointIndex(data.getIntExtra(Constants.KEY_CHAPTER,0));
+        }else if(requestCode == Constants.RESULT_CODE_BOOKMARK && RESULT_OK == resultCode && data!=null){
+
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_toolbar,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                insertBookState(subscribeBookState());
+                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

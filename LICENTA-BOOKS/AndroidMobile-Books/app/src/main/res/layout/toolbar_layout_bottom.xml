@@ -13,7 +13,7 @@
             android:id="@+id/reader_toolbar_bottom"
             android:layout_width="match_parent"
             android:layout_height="130dp"
-            android:background="@color/colorBlackTrans">
+            android:background="@color/colorAccentTrans">
 
             <LinearLayout
                 android:layout_width="match_parent"

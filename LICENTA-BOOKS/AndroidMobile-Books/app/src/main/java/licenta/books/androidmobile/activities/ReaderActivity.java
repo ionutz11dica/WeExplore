@@ -299,11 +299,6 @@ public class ReaderActivity extends AppCompatActivity  {
         initToolbar(bookE1);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void calculateBounds(){
-
-
-    }
 
 
 

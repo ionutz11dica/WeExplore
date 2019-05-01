@@ -10,7 +10,7 @@
             android:id="@+id/reader_toolbar_top"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/book_title">
+            android:background="@color/colorAccentTrans">
         </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>

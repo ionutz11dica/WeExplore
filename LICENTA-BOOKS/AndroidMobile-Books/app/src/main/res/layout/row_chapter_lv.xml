@@ -15,10 +15,18 @@
             android:id="@+id/tv_chapter"
             android:layout_width="0dp"
             android:layout_height="45dp"
-            android:layout_weight="0.97"
+            android:layout_weight="0.80"
             android:textAlignment="center"
             android:gravity="center"
             android:text="Ceva"
+            android:textSize="18dp"/>
+        <TextView
+            android:id="@+id/tv_noPage"
+            android:layout_width="0dp"
+            android:layout_weight="0.17"
+            android:layout_height="45dp"
+            android:textAlignment="center"
+            android:gravity="center"
             android:textSize="18dp"/>
 
 

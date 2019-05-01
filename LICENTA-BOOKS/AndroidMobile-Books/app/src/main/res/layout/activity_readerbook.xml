@@ -13,4 +13,13 @@
         android:layout_height="match_parent"
    />
 
+    <include
+        android:id="@+id/toolbar_top"
+        layout="@layout/toolbar_layout"/>
+
+    <include
+        android:id="@+id/toolbar_bottom"
+        layout="@layout/toolbar_layout_bottom"
+        />
+
 </RelativeLayout>
