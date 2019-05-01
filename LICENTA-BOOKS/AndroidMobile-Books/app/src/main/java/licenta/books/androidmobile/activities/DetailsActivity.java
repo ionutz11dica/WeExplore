@@ -29,6 +29,7 @@ import com.bumptech.glide.request.transition.Transition;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import io.reactivex.Observer;
@@ -200,22 +201,14 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             };
 
 
-            new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer() {
+            new ApiClient(listener).downloadAPK(Constants.BASE_URL + "books/download/" + book.getFileID(), outputFile, new Observer<InputStream>() {
                 @Override
                 public void onSubscribe(Disposable d) {
-//                    d = RxBus.subscribeDownloadProgress(new Consumer<Integer>() {
-//                        @Override
-//                        public void accept(Integer integer) throws Exception {
-//                            Log.d("Percent -> ",String.valueOf(integer));
-//                            progressBar.setProgress(integer);
-//                        }
-//                    });
-//                    d.dispose();
                     btnDownload.setText("Wait...");
                 }
 
                 @Override
-                public void onNext(Object object) {
+                public void onNext(InputStream object) {
 
                 }
 
@@ -235,7 +228,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             });
         }else{
             intent.putExtra(Constants.KEY_BOOK,book);
-            intent = new Intent(getApplicationContext(),ReaderActivity.class);
+            intent = new Intent(getApplicationContext(),ReaderBookActivity.class);
             startActivity(intent);
 //            Toast.makeText(getApplicationContext(),"Va urma!",Toast.LENGTH_LONG).show();
         }
@@ -337,34 +330,6 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     }
 
 
-    private void verifyExistanceBook(String bookId,Integer userId){
-//        final UserBookJoin[] userBookJoin = new UserBookJoin[1];
-//
-//        createUserBookJoin(book, userBookJoin);
-        final User user = intent.getParcelableExtra("ceva");
-
-        Single<BookE> bookESingle = userBookMethods.getBookFromDatabase(userId,bookId);
-        bookESingle.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<BookE>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(BookE bookE) {
-                        btnDownload.setText("Read");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d("Eroare?:",e.getMessage());
-                        btnDownload.setText("Download");
-                    }
-                });
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void blurCoverBook() {
         final String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
@@ -407,5 +372,28 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         userMethods = UserMethods.getInstance(userDao);
         bookMethods = BookMethods.getInstance(bookEDao);
         userBookMethods = UserBookMethods.getInstance(userBookJoinDao);
+    }
+
+    private void verifyExistanceBook(String bookId,Integer userId){
+        Single<BookE> bookESingle = userBookMethods.getBookFromDatabase(userId,bookId);
+        bookESingle.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<BookE>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(BookE bookE) {
+                        btnDownload.setText("Read");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d("Eroare?:",e.getMessage());
+                        btnDownload.setText("Download");
+                    }
+                });
     }
 }

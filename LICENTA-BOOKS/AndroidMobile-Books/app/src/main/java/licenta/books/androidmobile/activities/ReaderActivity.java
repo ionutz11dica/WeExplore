@@ -208,8 +208,8 @@ public class ReaderActivity extends AppCompatActivity  {
                     tvPage.setText(String.valueOf(PageNumber)+" Page - "+ String.valueOf(ChapterNumber) + " Chapter" );
 
                     Date date = Calendar.getInstance().getTime();
-                    BookState bookState = new BookState(ProgressStart,ChapterNumber,bookE1.get_id(), date);
-                    RxBus.publishBook(bookState);
+//                    BookState bookState = new BookState(ProgressStart,ChapterNumber,bookE1.get_id(), date);
+//                    RxBus.publishBook(bookState);
 //                    bookStateMethods.insertBookState(bookState);
 //                    Log.d("Prog page: ->",String.valueOf(PageNumber));
 //                    Log.d("Progress: ->",String.valueOf(ProgressStart));
@@ -398,8 +398,8 @@ public class ReaderActivity extends AppCompatActivity  {
 
                     @Override
                     public void onSuccess(BookState bookState) {
-                        epubReaderView.GotoPosition(bookState.getNoChapter(),bookState.getPagePosition());
-                        RxBus.publishBook(bookState);
+//                        epubReaderView.GotoPosition(bookState.getNoChapter(),bookState.getPagePosition());
+//                        RxBus.publishBook(bookState);
                     }
 
                     @Override

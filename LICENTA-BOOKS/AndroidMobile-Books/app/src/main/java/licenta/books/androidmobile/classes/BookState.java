@@ -8,8 +8,11 @@ import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.skytree.epub.PageTransition;
+
 import java.util.Date;
 
+import licenta.books.androidmobile.classes.Converters.PageTransitionConverter;
 import licenta.books.androidmobile.classes.Converters.TimestampConverter;
 
 @Entity(tableName = "bookstate",
@@ -20,18 +23,28 @@ import licenta.books.androidmobile.classes.Converters.TimestampConverter;
 public class BookState implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private Integer stateId;
-    private Float pagePosition;
+    private Double pagePosition;
     private Integer noChapter;
     @TypeConverters({TimestampConverter.class})
     private Date readDate;
+    private String fontType;
+    private Integer fontSize;
+    private Integer backgroundColor;
+    private Integer colorText;
+    @TypeConverters({PageTransitionConverter.class})
+    private PageTransition pageTransition;
     private String bookId;
 
-
-    public BookState(Float pagePosition, Integer noChapter,String bookId,Date readDate) {
+    public BookState( Double pagePosition, Integer noChapter, Date readDate, String fontType, Integer fontSize, Integer backgroundColor, Integer colorText, PageTransition pageTransition, String bookId) {
         this.pagePosition = pagePosition;
         this.noChapter = noChapter;
-        this.bookId = bookId;
         this.readDate = readDate;
+        this.fontType = fontType;
+        this.fontSize = fontSize;
+        this.backgroundColor = backgroundColor;
+        this.colorText = colorText;
+        this.pageTransition = pageTransition;
+        this.bookId = bookId;
     }
 
 
@@ -44,12 +57,28 @@ public class BookState implements Parcelable {
         if (in.readByte() == 0) {
             pagePosition = null;
         } else {
-            pagePosition = in.readFloat();
+            pagePosition = in.readDouble();
         }
         if (in.readByte() == 0) {
             noChapter = null;
         } else {
             noChapter = in.readInt();
+        }
+        fontType = in.readString();
+        if (in.readByte() == 0) {
+            fontSize = null;
+        } else {
+            fontSize = in.readInt();
+        }
+        if (in.readByte() == 0) {
+            backgroundColor = null;
+        } else {
+            backgroundColor = in.readInt();
+        }
+        if (in.readByte() == 0) {
+            colorText = null;
+        } else {
+            colorText = in.readInt();
         }
         bookId = in.readString();
     }
@@ -66,13 +95,32 @@ public class BookState implements Parcelable {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeFloat(pagePosition);
+            dest.writeDouble(pagePosition);
         }
         if (noChapter == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
             dest.writeInt(noChapter);
+        }
+        dest.writeString(fontType);
+        if (fontSize == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(fontSize);
+        }
+        if (backgroundColor == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(backgroundColor);
+        }
+        if (colorText == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(colorText);
         }
         dest.writeString(bookId);
     }
@@ -94,22 +142,6 @@ public class BookState implements Parcelable {
         }
     };
 
-    public Date getReadDate() {
-        return readDate;
-    }
-
-    public void setReadDate(Date readDate) {
-        this.readDate = readDate;
-    }
-
-    public String getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(String bookId) {
-        this.bookId = bookId;
-    }
-
     public Integer getStateId() {
         return stateId;
     }
@@ -118,11 +150,11 @@ public class BookState implements Parcelable {
         this.stateId = stateId;
     }
 
-    public Float getPagePosition() {
+    public Double getPagePosition() {
         return pagePosition;
     }
 
-    public void setPagePosition(Float pagePosition) {
+    public void setPagePosition(Double pagePosition) {
         this.pagePosition = pagePosition;
     }
 
@@ -132,5 +164,61 @@ public class BookState implements Parcelable {
 
     public void setNoChapter(Integer noChapter) {
         this.noChapter = noChapter;
+    }
+
+    public Date getReadDate() {
+        return readDate;
+    }
+
+    public void setReadDate(Date readDate) {
+        this.readDate = readDate;
+    }
+
+    public String getFontType() {
+        return fontType;
+    }
+
+    public void setFontType(String fontType) {
+        this.fontType = fontType;
+    }
+
+    public Integer getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
+    }
+
+    public Integer getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(Integer backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    public Integer getColorText() {
+        return colorText;
+    }
+
+    public void setColorText(Integer colorText) {
+        this.colorText = colorText;
+    }
+
+    public PageTransition getPageTransition() {
+        return pageTransition;
+    }
+
+    public void setPageTransition(PageTransition pageTransition) {
+        this.pageTransition = pageTransition;
+    }
+
+    public String getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(String bookId) {
+        this.bookId = bookId;
     }
 }

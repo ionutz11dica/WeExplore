@@ -39,7 +39,7 @@ public final class RxBus {
         return behaviorSubjectBookState.subscribe(action);
     }
 
-    public static void publishBook(@NonNull BookState message){
+    public static void publishBookState(@NonNull BookState message){
         behaviorSubjectBookState.onNext(message);
     }
 
