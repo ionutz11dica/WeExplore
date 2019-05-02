@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -15,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,6 +41,7 @@ import com.skytree.epub.SkyProvider;
 import com.skytree.epub.State;
 import com.skytree.epub.StateListener;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -86,12 +89,15 @@ public class ReaderBookActivity extends AppCompatActivity {
     User user;
     Menu menuItems;
 
+    private Rect bookmarkRect, bookmarkedRect;
+
     //book information
     static double pagePosition;
     static Integer fontSize;
     static String fontType;
     PageTransition pageTransition;
     BookState disposableBookstate;
+    Bookmark disposableBookmark;
 
 
     ProgressDialog progressDialog;
@@ -109,7 +115,7 @@ public class ReaderBookActivity extends AppCompatActivity {
     ImageButton imgBtnDayNightMode;
 
     //lists
-    ArrayList<Bookmark> bookmarksList;
+    List<Bookmark> bookmarksList;
 
 
     @Override
@@ -240,8 +246,8 @@ public class ReaderBookActivity extends AppCompatActivity {
         stateHandler = new StateHandler();
         reflowableControl.setStateListener(stateHandler);
 //
-        bookmarkHandler = new BookmarkHandler();
-        reflowableControl.setBookmarkListener(bookmarkHandler);
+//        bookmarkHandler = new BookmarkHandler();
+//        reflowableControl.setBookmarkListener(bookmarkHandler);
 
         return reflowableControl;
     }
@@ -285,15 +291,27 @@ public class ReaderBookActivity extends AppCompatActivity {
 
     @SuppressLint("CheckResult")
     private void loadBookMarkFromDb(User user) {
-        Flowable<List<Bookmark>> bookMarks = bookmarkMethods.getAllBookmark(book.get_id(),user.getUserId());
+        Single<List<Bookmark>> bookMarks = bookmarkMethods.getAllBookmark(book.get_id(),user.getUserId());
+
         bookMarks.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<Bookmark>>() {
+                .subscribe(new SingleObserver<List<Bookmark>>() {
                     @Override
-                    public void accept(List<Bookmark> bookmarks) throws Exception {
-                        loadBookmarkList(bookmarksList);
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(List<Bookmark> arrayList) {
+                        loadBookmarkList(arrayList);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        showLog("Eroare bookmark ", e.getMessage());
                     }
                 });
+        int y =0;
     }
 
     private class SelectionHandler implements SelectionListener {
@@ -343,16 +361,25 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         @Override
         public void onPageMoved(PageInformation pageInformation) {
+            Integer bookmarkCode = getBookmarkCode(pageInformation.chapterIndex,pageInformation.pageIndex);
+            Double pagePos = pageInformation.pagePositionInBook;
+            Integer chapterIndex = pageInformation.chapterIndex;
+            Integer pageIndex = pageInformation.pageIndex;
+            String bookmarkPageInfo = "Chapter : " + pageInformation.chapterIndex + " Page In Chapter : " + pageInformation.pageIndex;
+            String bookId = book.get_id();
+            Integer userId = user.getUserId();
+            Bookmark bookmark = new Bookmark(bookmarkCode,pagePos,chapterIndex,pageIndex,bookmarkPageInfo,bookId,userId);
+            boolean isBookmark = isBookmarkExists(bookmark);
+            if(isBookmark){
+                menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_black_24dp));
+            }else{
+                menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_border_black_24dp));
+            }
             show=true;
             showOrHideToolbar();
             pagePosition = pageInformation.pagePositionInBook;
             RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,book.get_id()));
-            showLog("PageInfo",String.valueOf(reflowableControl.getNumberOfChaptersInBook()));
-//            for(int i =0;i<reflowableControl.getNumberOfPagesInBook();i++){
-//                Toast.makeText(getApplicationContext(),reflowableControl.getChapterTitle(15),Toast.LENGTH_LONG).show();
-//            Toast.makeText(getApplicationContext(),reflowableControl.getNumberOfPagesInChapter(4),Toast.LENGTH_LONG).show();
-            showLog("PageInfo",String.valueOf(reflowableControl.getNumberOfPagesInChapter()));
-
+            RxBus.publishBookMark(bookmark);
         }
 
         @Override
@@ -366,7 +393,7 @@ public class ReaderBookActivity extends AppCompatActivity {
             RxBus.publishsChapterList(chapterList);
             RxBus.publishsChapterName(reflowableControl.getChapterTitle(i));
             RxBus.publishsChapter(reflowableControl.getNumberOfPagesInChapter());
-            int y=0;
+//            calculateFrames();
 
         }
 
@@ -395,7 +422,8 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         @Override
         public Rect getBookmarkRect(boolean b) {
-            return null;
+            if (b) return bookmarkedRect;
+            return bookmarkRect;
         }
 
         @Override
@@ -427,13 +455,13 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         Drawable markIcon = ResourcesCompat.getDrawable(getResources(),R.drawable.ic_bookmark_border_black_24dp,null);
 
-        assert markIcon != null;
+//        assert markIcon != null;
         return Bitmap.createBitmap(markIcon.getIntrinsicWidth(), markIcon.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
     }
 
     private Bitmap getBookmarkedIcon(){
         Drawable markIcon = ResourcesCompat.getDrawable(getResources(),R.drawable.ic_bookmark_black_24dp,null);
-        assert markIcon != null;
+//        assert markIcon != null;
         return ((BitmapDrawable)markIcon).getBitmap();
     }
 
@@ -441,7 +469,7 @@ public class ReaderBookActivity extends AppCompatActivity {
         return chapterIndex * 1000 + pageIndex;
     }
 
-    private void loadBookmarkList(ArrayList<Bookmark> arrayList){
+    private void loadBookmarkList(List<Bookmark> arrayList){
         bookmarksList = arrayList;
     }
 
@@ -449,10 +477,9 @@ public class ReaderBookActivity extends AppCompatActivity {
         if(bookmarksList !=null){
             for(Bookmark bookmarkTemp : bookmarksList){
                 if(bookmarkTemp.getBookmarkCode().equals(bookmark.getBookmarkCode())){
-                    menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_black_24dp));
+//                    menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_black_24dp));
+//                    verifyBookMark(bookmark);
                     return true;
-                }else{
-                    menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.ic_bookmark_border_black_24dp));
                 }
             }
         }
@@ -472,14 +499,109 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         if(bookmarkIndex != -1){
             bookmarkMethods.deleteBookmark(bookmark);
+            bookmarksList.remove(bookmark);
+            menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_border_black_24dp));
         }else{
             bookmarkMethods.insertBookmark(bookmark);
+            menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_black_24dp));
         }
         //refresh list
         loadBookMarkFromDb(user);
     }
 
 
+    private int getDensity() {
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int density = metrics.densityDpi;
+        return density;
+    }
+
+    private float getFactor() {
+        return (float) getDensity() / 240.f;
+    }
+
+    private int getPX(float dp) {
+        return (int) (dp * getFactor());
+    }
+
+    public boolean isTablet() {
+        return (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
+    }
+
+    public boolean isPortrait() {
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_PORTRAIT)
+            return true;
+        else
+            return false;
+    }
+
+    public int getWidth() {
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int width = metrics.widthPixels;
+        return width;
+    }
+
+    public int getPXFromRight(float dip) {
+        int ps = this.getPX(dip);
+        int ms = this.getWidth() - ps;
+        return ms;
+    }
+
+    public int getPYFromTop(float dip) {
+        int ps = this.getPX(dip);
+        return ps;
+    }
+
+    public int pxr(float dp) {
+        return this.getPXFromRight(dp);
+    }
+
+    public int pyt(float dp) {
+        return this.getPYFromTop(dp);
+    }
+
+
+    public void calculateFrames() {
+
+        if (!this.isTablet()) { // for phones
+            if (this.isPortrait()) {
+                int brx = 36 + (44) * 1;
+                int bry = 23;
+                bookmarkRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 40), pyt(bry + 40));
+                bookmarkedRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 38), pyt(bry + 70));
+            } else {
+
+                int brx = 40 + (48 + 12) * 1;
+                int bry = 14;
+                bookmarkRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 40), pyt(bry + 40));
+                bookmarkedRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 38), pyt(bry + 70));
+            }
+        } else { // for tables
+            if (this.isPortrait()) {
+                int ox = 50;
+                int rx = 100;
+                int oy = 30;
+
+                int brx = rx - 10 + (44) * 1;
+                int bry = oy + 10;
+                bookmarkRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 50), pyt(bry + 50));
+                bookmarkedRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 50), pyt(bry + 90));
+            } else {
+                int sd = getPX(40);
+                int ox = 40;
+                int rx = 130;
+                int oy = 20;
+
+
+                int brx = rx - 20 + (48 + 12) * 1;
+                int bry = oy + 10;
+                bookmarkRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 40), pyt(bry + 40));
+                bookmarkedRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 38), pyt(bry + 70));
+            }
+        }
+
+    }
 
     private void showOrHideToolbar(){
         if(show){
@@ -567,6 +689,17 @@ public class ReaderBookActivity extends AppCompatActivity {
         return disposableBookstate;
     }
 
+    private Bookmark subscribeBookmark(){
+        Disposable disposable = RxBus.subscribeBookMark(new Consumer<Bookmark>() {
+            @Override
+            public void accept(Bookmark bookmark) throws Exception {
+                disposableBookmark = bookmark;
+            }
+        });
+        disposable.dispose();
+        return disposableBookmark;
+    }
+
     private void openDb(){
         bookStateDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookStateDao();
         bookStateMethods = BookStateMethods.getInstance(bookStateDao);
@@ -601,6 +734,8 @@ public class ReaderBookActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             case R.id.bookmark_id:
+                verifyBookMark(subscribeBookmark());
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);

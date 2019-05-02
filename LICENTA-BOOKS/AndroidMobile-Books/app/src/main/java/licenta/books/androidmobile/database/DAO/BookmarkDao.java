@@ -8,7 +8,7 @@ import android.arch.persistence.room.Query;
 
 import java.util.List;
 
-import io.reactivex.Flowable;
+import io.reactivex.Single;
 import licenta.books.androidmobile.classes.Bookmark;
 
 @Dao
@@ -16,9 +16,9 @@ public interface BookmarkDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertBookmark(Bookmark... bookmark);
 
-    @Delete
-    void deleteBookmark(Bookmark... bookmark);
+    @Query("DELETE from bookmark_join WHERE bookmarkId=:bookmarkId")
+    void deleteBookmark(Integer bookmarkId);
 
     @Query("SELECT * FROM bookmark_join WHERE bookId =:bookId AND userId =:userId")
-    Flowable<List<Bookmark>> getAllBookmark(String bookId,Integer userId);
+    Single<List<Bookmark>> getAllBookmark(String bookId, Integer userId);
 }

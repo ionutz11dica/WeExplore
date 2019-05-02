@@ -1,9 +1,12 @@
 package licenta.books.androidmobile.database.DaoMethods;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.classes.Bookmark;
 import licenta.books.androidmobile.database.DAO.BookmarkDao;
@@ -50,7 +53,7 @@ public class BookmarkMethods implements BookmarkDao {
     }
 
     @Override
-    public Flowable<List<Bookmark>> getAllBookmark(String bookId, Integer userId) {
+    public Single<List<Bookmark>> getAllBookmark(String bookId, Integer userId) {
         return bookmarkDao.getAllBookmark(bookId,userId);
     }
 }
