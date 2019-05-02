@@ -24,7 +24,7 @@ import licenta.books.androidmobile.classes.RxJava.RxBus;
 public class ChapterAdapter extends ArrayAdapter<String> {
     private final Activity context;
     private final ArrayList<String> content;
-    private  BookState bookStateUse;
+    private  String chapterName;
     private Integer noPageChapter;
 
     public ChapterAdapter(Activity context, ArrayList<String> content) {
@@ -45,11 +45,10 @@ public class ChapterAdapter extends ArrayAdapter<String> {
         View viewStatus = rowView.findViewById(R.id.view_chapter);
         final TextView noPage = rowView.findViewById(R.id.tv_noPage);
 
-
-        Disposable d = RxBus.subscribeBookState(new Consumer<BookState>() {
+        Disposable d = RxBus.subscribeChapterName(new Consumer<String>() {
             @Override
-            public void accept(BookState bookState) throws Exception {
-                bookStateUse = bookState;
+            public void accept(String nameChapter) throws Exception {
+                chapterName = nameChapter;
             }
         });
         d.dispose();
@@ -61,10 +60,11 @@ public class ChapterAdapter extends ArrayAdapter<String> {
             }
         });
         disposable.dispose();
-        if(bookStateUse.getNoChapter() != content.indexOf(content.get(position))){
+
+        if(!chapterName.equals(content.get(position))){
             viewStatus.setBackgroundColor(Color.TRANSPARENT);
             noPage.setVisibility(View.GONE);
-            tvContent.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT,0.97f));
+            tvContent.setLayoutParams(new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.WRAP_CONTENT,0.97f));
         }else{
             noPage.setVisibility(View.VISIBLE);
             noPage.setText("p."+noPageChapter);

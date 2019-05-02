@@ -18,6 +18,7 @@ public final class RxBus {
     private static BehaviorSubject<Integer> behaviorSubjectDownloadPercent = BehaviorSubject.create();
     private static BehaviorSubject<ArrayList<String>> behaviorSubjectChapterList = BehaviorSubject.create();
     private static BehaviorSubject<Integer> behaviorSubjectChapter = BehaviorSubject.create();
+    private static BehaviorSubject<String> behaviorSubjectChapterName = BehaviorSubject.create();
 
     public static Disposable subscribeUser(@NonNull Consumer<User> action){
         return behaviorSubjectUser.subscribe(action);
@@ -65,5 +66,13 @@ public final class RxBus {
 
     public static void publishsChapterList(@NonNull ArrayList<String> message){
         behaviorSubjectChapterList.onNext(message);
+    }
+
+    public static Disposable subscribeChapterName(@NonNull Consumer<String> action){
+        return behaviorSubjectChapterName.subscribe(action);
+    }
+
+    public static void publishsChapterName(@NonNull String message){
+        behaviorSubjectChapterName.onNext(message);
     }
 }

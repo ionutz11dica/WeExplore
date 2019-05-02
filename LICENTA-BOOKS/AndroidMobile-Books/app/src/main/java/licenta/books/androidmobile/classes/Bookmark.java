@@ -27,17 +27,25 @@ import android.os.Parcelable;
 public class Bookmark implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private Integer bookmarkId;
-    private Integer pagePosition;
-    private Integer noChapter;
-    private  String bookId;
-    private  Integer userId;
+    private Integer bookmarkCode;
+    private Double pagePosition;
+    private Integer chapterIndex;
+    private Integer pageIndex;
+    private String bookmarkPageInfo;
+    private String bookId;
+    private Integer userId;
 
-    public Bookmark( Integer pagePosition, Integer noChapter, String bookId, Integer userId) {
+    public Bookmark( Integer bookmarkCode, Double pagePosition, Integer chapterIndex, Integer pageIndex, String bookmarkPageInfo, String bookId, Integer userId) {
+
+        this.bookmarkCode = bookmarkCode;
         this.pagePosition = pagePosition;
-        this.noChapter = noChapter;
+        this.chapterIndex = chapterIndex;
+        this.pageIndex = pageIndex;
+        this.bookmarkPageInfo = bookmarkPageInfo;
         this.bookId = bookId;
         this.userId = userId;
     }
+
 
     protected Bookmark(Parcel in) {
         if (in.readByte() == 0) {
@@ -46,20 +54,27 @@ public class Bookmark implements Parcelable {
             bookmarkId = in.readInt();
         }
         if (in.readByte() == 0) {
+            bookmarkCode = null;
+        } else {
+            bookmarkCode = in.readInt();
+        }
+        if (in.readByte() == 0) {
             pagePosition = null;
         } else {
-            pagePosition = in.readInt();
+            pagePosition = in.readDouble();
         }
         if (in.readByte() == 0) {
-            noChapter = null;
+            chapterIndex = null;
         } else {
-            noChapter = in.readInt();
+            chapterIndex = in.readInt();
         }
         if (in.readByte() == 0) {
-            bookId = null;
+            pageIndex = null;
         } else {
-            bookId = in.readString();
+            pageIndex = in.readInt();
         }
+        bookmarkPageInfo = in.readString();
+        bookId = in.readString();
         if (in.readByte() == 0) {
             userId = null;
         } else {
@@ -75,24 +90,32 @@ public class Bookmark implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(bookmarkId);
         }
+        if (bookmarkCode == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(bookmarkCode);
+        }
         if (pagePosition == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeInt(pagePosition);
+            dest.writeDouble(pagePosition);
         }
-        if (noChapter == null) {
+        if (chapterIndex == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeInt(noChapter);
+            dest.writeInt(chapterIndex);
         }
-        if (bookId == null) {
+        if (pageIndex == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeString(bookId);
+            dest.writeInt(pageIndex);
         }
+        dest.writeString(bookmarkPageInfo);
+        dest.writeString(bookId);
         if (userId == null) {
             dest.writeByte((byte) 0);
         } else {
@@ -126,20 +149,44 @@ public class Bookmark implements Parcelable {
         this.bookmarkId = bookmarkId;
     }
 
-    public Integer getPagePosition() {
+    public Integer getBookmarkCode() {
+        return bookmarkCode;
+    }
+
+    public void setBookmarkCode(Integer bookmarkCode) {
+        this.bookmarkCode = bookmarkCode;
+    }
+
+    public Double getPagePosition() {
         return pagePosition;
     }
 
-    public void setPagePosition(Integer pagePosition) {
+    public void setPagePosition(Double pagePosition) {
         this.pagePosition = pagePosition;
     }
 
-    public Integer getNoChapter() {
-        return noChapter;
+    public Integer getChapterIndex() {
+        return chapterIndex;
     }
 
-    public void setNoChapter(Integer noChapter) {
-        this.noChapter = noChapter;
+    public void setChapterIndex(Integer chapterIndex) {
+        this.chapterIndex = chapterIndex;
+    }
+
+    public Integer getPageIndex() {
+        return pageIndex;
+    }
+
+    public void setPageIndex(Integer pageIndex) {
+        this.pageIndex = pageIndex;
+    }
+
+    public String getBookmarkPageInfo() {
+        return bookmarkPageInfo;
+    }
+
+    public void setBookmarkPageInfo(String bookmarkPageInfo) {
+        this.bookmarkPageInfo = bookmarkPageInfo;
     }
 
     public String getBookId() {
