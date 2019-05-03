@@ -2,7 +2,6 @@ package licenta.books.androidmobile.activities;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -21,17 +20,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Magnifier;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.skytree.epub.BookmarkListener;
 import com.skytree.epub.Highlight;
+import com.skytree.epub.NavPoints;
 import com.skytree.epub.PageInformation;
 import com.skytree.epub.PageMovedListener;
 import com.skytree.epub.PageTransition;
@@ -41,13 +39,11 @@ import com.skytree.epub.SkyProvider;
 import com.skytree.epub.State;
 import com.skytree.epub.StateListener;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -58,6 +54,7 @@ import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
+import licenta.books.androidmobile.classes.Chapter;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
@@ -74,6 +71,8 @@ public class ReaderBookActivity extends AppCompatActivity {
 
     LinearLayout toolbarTop;
     LinearLayout toolbarBottom;
+
+    RelativeLayout selectionButtonsPopup;
 
     Toolbar topToolbar;
     Toolbar bottomToolbar;
@@ -135,6 +134,8 @@ public class ReaderBookActivity extends AppCompatActivity {
         bottomToolbar=findViewById(R.id.reader_toolbar_bottom);
         topToolbar.setVisibility(View.GONE);
         bottomToolbar.setVisibility(View.GONE);
+        selectionButtonsPopup = findViewById(R.id.selectionButtonsPopup);
+
 
         //bottom toolbar components
         imgBtnContent = findViewById(R.id.image_button_content);
@@ -222,7 +223,7 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         reflowableControl.setContentProvider(skyProvider);
 
-        reflowableControl.useDOMForHighlight(false);
+        reflowableControl.useDOMForHighlight(true);
 
         reflowableControl.setNavigationAreaWidthRatio(0.0f); // both left and right side.
 
@@ -318,22 +319,46 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         @Override
         public void selectionStarted(Highlight highlight, Rect rect, Rect rect1) {
-
+            hideSelectionButtonsPopup();
         }
 
         @Override
         public void selectionChanged(Highlight highlight, Rect rect, Rect rect1) {
-
+            hideSelectionButtonsPopup();
         }
 
         @Override
-        public void selectionEnded(Highlight highlight, Rect rect, Rect rect1) {
+        public void selectionEnded(Highlight highlight, Rect startRect, Rect endRect) {
+            String selectedText = highlight.text;
 
+            if(startRect.top < (reflowableControl.getHeight()/2) && endRect.bottom < (reflowableControl.getHeight()/2)){
+                if((reflowableControl.getWidth() - startRect.left) > selectionButtonsPopup.getWidth()){
+                    moveSelectionButtonPopupToBellow(endRect.bottom + 30, startRect.left);
+                }else{
+                    moveSelectionButtonPopupToBellow(endRect.bottom + 30, reflowableControl.getWidth() - selectionButtonsPopup.getWidth());
+                }
+            }else if(startRect.top > (reflowableControl.getHeight()/2)&& endRect.bottom > (selectionButtonsPopup.getHeight()/2)){
+                if ((reflowableControl.getWidth() - startRect.left) > selectionButtonsPopup.getWidth()) {
+                    moveSelectionButtonPopupToUpper(startRect.top - selectionButtonsPopup.getHeight() - 30, startRect.left);
+                } else {
+                    moveSelectionButtonPopupToUpper(startRect.top - selectionButtonsPopup.getHeight() - 30, reflowableControl.getWidth() - selectionButtonsPopup.getWidth());
+                }
+            } else {
+                //This vertical center is center of selection not reflowable contrller layout center
+                int verticalCenter = startRect.top + (int) ((endRect.bottom - startRect.top) / 2);
+                //Now we have to check whether left of starRect is > than multiple button width
+                if ((reflowableControl.getWidth() - startRect.left) > selectionButtonsPopup.getWidth()) {
+                    moveSelectionButtonPopupToMiddle(verticalCenter, startRect.left);
+                } else {
+                    moveSelectionButtonPopupToMiddle(verticalCenter, reflowableControl.getWidth() - selectionButtonsPopup.getWidth());
+                }
+            }
         }
 
         @Override
         public void selectionCancelled() {
-            showOrHideToolbar();
+            hideSelectionButtonsPopup();
+//            showOrHideToolbar();
         }
     }
 
@@ -384,17 +409,18 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         @Override
         public void onChapterLoaded(int i) {
-            ArrayList<String> chapterList = new ArrayList<>();
-            for(int j = 0 ;j < reflowableControl.getNumberOfChaptersInBook();j++){
-                if(reflowableControl.getChapterTitle(j)!=null){
-                    chapterList.add(reflowableControl.getChapterTitle(j));
-                }
-            }
-            RxBus.publishsChapterList(chapterList);
-            RxBus.publishsChapterName(reflowableControl.getChapterTitle(i));
-            RxBus.publishsChapter(reflowableControl.getNumberOfPagesInChapter());
-//            calculateFrames();
+            NavPoints tocNavPoints = reflowableControl.getNavPoints();
+            ArrayList<Chapter> chapterList = new ArrayList<>();
 
+            for(int index = 0 ;index < tocNavPoints.getSize();index++){
+                chapterList.add(new Chapter(tocNavPoints.getNavPoint(index).text,tocNavPoints.getNavPoint(index).chapterIndex));
+            }
+
+            RxBus.publishsChapterList(chapterList);
+            if(reflowableControl.getChapterTitle(i) !=null){
+                RxBus.publishsChapterName(reflowableControl.getChapterTitle(i));
+                RxBus.publishsChapter(reflowableControl.getChapterIndex());
+            }
         }
 
         @Override
@@ -498,7 +524,7 @@ public class ReaderBookActivity extends AppCompatActivity {
         }
 
         if(bookmarkIndex != -1){
-            bookmarkMethods.deleteBookmark(bookmark);
+            bookmarkMethods.deleteBookmark(bookmark.getPagePosition());
             bookmarksList.remove(bookmark);
             menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_border_black_24dp));
         }else{
@@ -509,6 +535,56 @@ public class ReaderBookActivity extends AppCompatActivity {
         loadBookMarkFromDb(user);
     }
 
+    //Highlight
+
+    private void showSelectionButtonsPopup(){
+        selectionButtonsPopup.setVisibility(View.VISIBLE);
+    }
+
+    private void hideSelectionButtonsPopup(){
+        selectionButtonsPopup.setVisibility(View.INVISIBLE);
+
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.leftMargin = 0;
+        layoutParams.topMargin = 0;
+
+        selectionButtonsPopup.setLayoutParams(layoutParams);
+    }
+
+    public void moveSelectionButtonPopupToUpper(int topMargin,int leftMargin){
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.leftMargin = leftMargin;
+        layoutParams.topMargin = topMargin;
+        layoutParams.bottomMargin = 30;
+
+        selectionButtonsPopup.setLayoutParams(layoutParams);
+
+        showSelectionButtonsPopup();
+    }
+
+    public void moveSelectionButtonPopupToBellow(int topMargin,int leftMargin){
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.leftMargin = leftMargin;
+        layoutParams.topMargin = topMargin;
+
+        selectionButtonsPopup.setLayoutParams(layoutParams);
+
+        showSelectionButtonsPopup();
+    }
+
+    public void moveSelectionButtonPopupToMiddle(int topMargin,int leftMargin){
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.leftMargin = leftMargin;
+        layoutParams.topMargin = topMargin;
+
+        selectionButtonsPopup.setLayoutParams(layoutParams);
+
+        showSelectionButtonsPopup();
+    }
 
     private int getDensity() {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -611,7 +687,7 @@ public class ReaderBookActivity extends AppCompatActivity {
             bottomToolbar.animate().translationY(-bottomToolbar.getBottom()).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
             bottomToolbar.setVisibility(View.GONE);
 
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
 //                    hideSystemUI();
@@ -624,7 +700,7 @@ public class ReaderBookActivity extends AppCompatActivity {
             bottomToolbar.animate().translationY(0).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
             bottomToolbar.setVisibility(View.VISIBLE);
 
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 //                    showStatusBar(toolbar);
             show = true;
         }
@@ -711,7 +787,12 @@ public class ReaderBookActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == Constants.RESULT_CODE_CHAPTER && RESULT_OK == resultCode && data!=null){
-            reflowableControl.gotoPageByNavPointIndex(data.getIntExtra(Constants.KEY_CHAPTER ,0)-1);
+            if(data.getIntExtra(Constants.KEY_CHAPTER,0)-1 <0){
+                reflowableControl.gotoPageByNavPointIndex(0);
+            }else{
+                reflowableControl.gotoPageByNavPointIndex(data.getIntExtra(Constants.KEY_CHAPTER,0));
+            }
+
             insertBookState(subscribeBookState());
         }else if(requestCode == Constants.RESULT_CODE_BOOKMARK && RESULT_OK == resultCode && data!=null){
 

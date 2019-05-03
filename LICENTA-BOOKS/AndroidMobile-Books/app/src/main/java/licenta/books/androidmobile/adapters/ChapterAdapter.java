@@ -19,15 +19,16 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.classes.BookState;
+import licenta.books.androidmobile.classes.Chapter;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 
-public class ChapterAdapter extends ArrayAdapter<String> {
+public class ChapterAdapter extends ArrayAdapter<Chapter> {
     private final Activity context;
-    private final ArrayList<String> content;
+    private final ArrayList<Chapter> content;
     private  String chapterName;
     private Integer noPageChapter;
 
-    public ChapterAdapter(Activity context, ArrayList<String> content) {
+    public ChapterAdapter(Activity context, ArrayList<Chapter> content) {
         super(context, R.layout.row_chapter_lv, content);
         // TODO Auto-generated constructor stub
 
@@ -61,7 +62,9 @@ public class ChapterAdapter extends ArrayAdapter<String> {
         });
         disposable.dispose();
 
-        if(!chapterName.equals(content.get(position))){
+
+        if(!noPageChapter.equals(content.get(position).getNoPage())) {
+//        if(chapterName !=null && !chapterName.equals(content.get(position).getChapterName())){
             viewStatus.setBackgroundColor(Color.TRANSPARENT);
             noPage.setVisibility(View.GONE);
             tvContent.setLayoutParams(new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.WRAP_CONTENT,0.97f));
@@ -69,7 +72,7 @@ public class ChapterAdapter extends ArrayAdapter<String> {
             noPage.setVisibility(View.VISIBLE);
             noPage.setText("p."+noPageChapter);
         }
-        tvContent.setText(content.get(position));
+        tvContent.setText(content.get(position).getChapterName());
 
         return rowView;
 

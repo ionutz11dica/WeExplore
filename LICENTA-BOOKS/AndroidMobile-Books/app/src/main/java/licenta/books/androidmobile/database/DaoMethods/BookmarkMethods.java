@@ -42,11 +42,11 @@ public class BookmarkMethods implements BookmarkDao {
     }
 
     @Override
-    public void deleteBookmark(final Bookmark... bookmark) {
+    public void deleteBookmark(final Double bookmarkId) {
         Completable.fromRunnable(new Runnable() {
             @Override
             public void run() {
-                bookmarkDao.deleteBookmark(bookmark);
+                bookmarkDao.deleteBookmark(bookmarkId);
             }
         }).subscribeOn(Schedulers.io())
                 .subscribe();

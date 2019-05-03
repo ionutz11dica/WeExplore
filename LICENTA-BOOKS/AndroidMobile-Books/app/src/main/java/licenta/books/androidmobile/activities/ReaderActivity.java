@@ -41,6 +41,7 @@ import licenta.books.androidmobile.R;
 //import licenta.books.androidmobile.activities.PopupWindow.NotifyingSelectionWebView;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
+import licenta.books.androidmobile.classes.Chapter;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.BookStateDao;
@@ -175,9 +176,9 @@ public class ReaderActivity extends AppCompatActivity  {
                     @Override
                     public void onSuccess(String s) {
                         epubReaderView.OpenEpubFile(s);
-                        ArrayList<String> chapters = new ArrayList<>();
+                        ArrayList<Chapter> chapters = new ArrayList<>();
                         for(int i = 0 ; i < epubReaderView.ChapterList.size();i++){
-                            chapters.add(epubReaderView.ChapterList.get(i).getName());
+//                            chapters.add(epubReaderView.ChapterList.get(i).getName());
                         }
                         RxBus.publishsChapterList(chapters);
                         setBookState();

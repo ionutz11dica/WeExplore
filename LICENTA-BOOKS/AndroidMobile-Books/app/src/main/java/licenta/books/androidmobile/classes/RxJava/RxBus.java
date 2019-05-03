@@ -10,6 +10,7 @@ import io.reactivex.subjects.BehaviorSubject;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
+import licenta.books.androidmobile.classes.Chapter;
 import licenta.books.androidmobile.classes.User;
 
 public final class RxBus {
@@ -17,7 +18,7 @@ public final class RxBus {
     private static BehaviorSubject<BookE> behaviorSubjectBook = BehaviorSubject.create();
     private static BehaviorSubject<BookState> behaviorSubjectBookState = BehaviorSubject.create();
     private static BehaviorSubject<Integer> behaviorSubjectDownloadPercent = BehaviorSubject.create();
-    private static BehaviorSubject<ArrayList<String>> behaviorSubjectChapterList = BehaviorSubject.create();
+    private static BehaviorSubject<ArrayList<Chapter>> behaviorSubjectChapterList = BehaviorSubject.create();
     private static BehaviorSubject<Integer> behaviorSubjectChapter = BehaviorSubject.create();
     private static BehaviorSubject<String> behaviorSubjectChapterName = BehaviorSubject.create();
     private static BehaviorSubject<Bookmark> behaviorSubjectBookmark = BehaviorSubject.create();
@@ -62,11 +63,11 @@ public final class RxBus {
         behaviorSubjectChapter.onNext(message);
     }
 
-    public static Disposable subscribeChapterList(@NonNull Consumer<ArrayList<String>> action){
+    public static Disposable subscribeChapterList(@NonNull Consumer<ArrayList<Chapter>> action){
         return behaviorSubjectChapterList.subscribe(action);
     }
 
-    public static void publishsChapterList(@NonNull ArrayList<String> message){
+    public static void publishsChapterList(@NonNull ArrayList<Chapter> message){
         behaviorSubjectChapterList.onNext(message);
     }
 

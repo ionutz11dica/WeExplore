@@ -20,13 +20,14 @@ import io.reactivex.functions.Consumer;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.ReaderActivity;
 import licenta.books.androidmobile.adapters.ChapterAdapter;
+import licenta.books.androidmobile.classes.Chapter;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.interfaces.Constants;
 
 
 public class ChapterFragment extends Fragment {
     ListView chapterListView;
-    ArrayList<String> arrayList = new ArrayList<>();
+    ArrayList<Chapter> arrayList = new ArrayList<>();
 
 
     private OnFragmentInteractionListener mListener;
@@ -74,9 +75,9 @@ public class ChapterFragment extends Fragment {
     }
 
     private void getChapterName(){
-        Disposable d = RxBus.subscribeChapterList(new Consumer<ArrayList<String>>() {
+        Disposable d = RxBus.subscribeChapterList(new Consumer<ArrayList<Chapter>>() {
             @Override
-            public void accept(ArrayList<String> strings) throws Exception {
+            public void accept(ArrayList<Chapter> strings) throws Exception {
                 arrayList = strings;
             }
         });
