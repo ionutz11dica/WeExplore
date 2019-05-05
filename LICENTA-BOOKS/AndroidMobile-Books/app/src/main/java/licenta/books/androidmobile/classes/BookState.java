@@ -33,9 +33,10 @@ public class BookState implements Parcelable {
     private Integer colorText;
     @TypeConverters({PageTransitionConverter.class})
     private PageTransition pageTransition;
+    private Boolean themeState;
     private String bookId;
 
-    public BookState( Double pagePosition, Integer noChapter, Date readDate, String fontType, Integer fontSize, Integer backgroundColor, Integer colorText, PageTransition pageTransition, String bookId) {
+    public BookState(Double pagePosition, Integer noChapter, Date readDate, String fontType, Integer fontSize, Integer backgroundColor, Integer colorText, PageTransition pageTransition, Boolean themeState, String bookId) {
         this.pagePosition = pagePosition;
         this.noChapter = noChapter;
         this.readDate = readDate;
@@ -44,9 +45,9 @@ public class BookState implements Parcelable {
         this.backgroundColor = backgroundColor;
         this.colorText = colorText;
         this.pageTransition = pageTransition;
+        this.themeState = themeState;
         this.bookId = bookId;
     }
-
 
     protected BookState(Parcel in) {
         if (in.readByte() == 0) {
@@ -80,6 +81,8 @@ public class BookState implements Parcelable {
         } else {
             colorText = in.readInt();
         }
+        byte tmpThemeState = in.readByte();
+        themeState = tmpThemeState == 0 ? null : tmpThemeState == 1;
         bookId = in.readString();
     }
 
@@ -122,6 +125,7 @@ public class BookState implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(colorText);
         }
+        dest.writeByte((byte) (themeState == null ? 0 : themeState ? 1 : 2));
         dest.writeString(bookId);
     }
 
@@ -212,6 +216,14 @@ public class BookState implements Parcelable {
 
     public void setPageTransition(PageTransition pageTransition) {
         this.pageTransition = pageTransition;
+    }
+
+    public Boolean getThemeState() {
+        return themeState;
+    }
+
+    public void setThemeState(Boolean themeState) {
+        this.themeState = themeState;
     }
 
     public String getBookId() {

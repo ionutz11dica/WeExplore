@@ -3,8 +3,8 @@ package licenta.books.androidmobile.activities;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,7 +15,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,13 +25,19 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.skytree.epub.BookmarkListener;
+import com.skytree.epub.Caret;
 import com.skytree.epub.Highlight;
+import com.skytree.epub.HighlightListener;
+import com.skytree.epub.Highlights;
 import com.skytree.epub.NavPoints;
 import com.skytree.epub.PageInformation;
 import com.skytree.epub.PageMovedListener;
 import com.skytree.epub.PageTransition;
+import com.skytree.epub.PagingInformation;
+import com.skytree.epub.PagingListener;
 import com.skytree.epub.ReflowableControl;
 import com.skytree.epub.SelectionListener;
 import com.skytree.epub.SkyProvider;
@@ -55,17 +60,20 @@ import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
 import licenta.books.androidmobile.classes.Chapter;
+import licenta.books.androidmobile.classes.Converters.TimestampConverter;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.BookStateDao;
 import licenta.books.androidmobile.database.DAO.BookmarkDao;
+import licenta.books.androidmobile.database.DAO.HighlightDao;
 import licenta.books.androidmobile.database.DaoMethods.BookStateMethods;
 import licenta.books.androidmobile.database.DaoMethods.BookmarkMethods;
+import licenta.books.androidmobile.database.DaoMethods.HighlightMethods;
 import licenta.books.androidmobile.interfaces.Constants;
 
 
-public class ReaderBookActivity extends AppCompatActivity {
+public class ReaderBookActivity extends AppCompatActivity implements View.OnClickListener {
     ReflowableControl reflowableControl;
     RelativeLayout renderRelative;
 
@@ -82,6 +90,8 @@ public class ReaderBookActivity extends AppCompatActivity {
     BookStateMethods bookStateMethods;
     BookmarkDao bookmarkDao;
     BookmarkMethods bookmarkMethods;
+    HighlightDao highlightDao;
+    HighlightMethods highlightMethods;
 
     boolean show = true;
     BookE book;
@@ -104,8 +114,18 @@ public class ReaderBookActivity extends AppCompatActivity {
     //Handlers
     SelectionHandler selectionHandler;
     StateHandler stateHandler;
-    PageMoveHandler pageMoveHandler;
+    PagerMoveHandler pageMoveHandler;
     BookmarkHandler bookmarkHandler;
+    HighLightHandler highLightHandler;
+
+    //Highlight colors
+    ImageButton highlightColorYellow;
+    ImageButton highlightColorGreen;
+    ImageButton highlightColorPink;
+    ImageButton highlightColorBlue;
+    ImageButton highlightColorOrange;
+    int currentColor;
+
 
     //toolbar controllers
     TextView tvPage;
@@ -115,7 +135,8 @@ public class ReaderBookActivity extends AppCompatActivity {
 
     //lists
     List<Bookmark> bookmarksList;
-
+    List<licenta.books.androidmobile.classes.Highlight> highlightsList;
+    Highlights chapterHighlightsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,21 +156,37 @@ public class ReaderBookActivity extends AppCompatActivity {
         topToolbar.setVisibility(View.GONE);
         bottomToolbar.setVisibility(View.GONE);
         selectionButtonsPopup = findViewById(R.id.selectionButtonsPopup);
+        selectionButtonsPopup.setVisibility(View.GONE);
+        renderRelative = findViewById(R.id.readerRelativeLayout);
+
 
 
         //bottom toolbar components
         imgBtnContent = findViewById(R.id.image_button_content);
 
-        renderRelative = findViewById(R.id.readerRelativeLayout);
+        //highlight buttons
+        highlightColorYellow = findViewById(R.id.highlight_yellow);
+        highlightColorGreen = findViewById(R.id.highlight_green);
+        highlightColorPink = findViewById(R.id.highlight_pink);
+        highlightColorBlue = findViewById(R.id.highlight_blue);
+        highlightColorOrange = findViewById(R.id.highlight_orange);
+
+        highlightColorYellow.setOnClickListener(this);
+        highlightColorGreen.setOnClickListener(this);
+        highlightColorPink.setOnClickListener(this);
+        highlightColorBlue.setOnClickListener(this);
+        highlightColorOrange.setOnClickListener(this);
 
         eventClickContent();
+
     }
+
+
 
     private void eventClickContent() {
         imgBtnContent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 startActivityForResult(new Intent(getApplicationContext(), AnnotationBookActivity.class), Constants.RESULT_CODE_CHAPTER);
             }
         });
@@ -169,9 +206,12 @@ public class ReaderBookActivity extends AppCompatActivity {
             public void accept(User userr) throws Exception {
                 user = userr;
                 loadBookMarkFromDb(userr);
+                loadHighLightsFromDb(userr);
             }
         });
         disp.dispose();
+
+
 
         topToolbar.setTitle(book.getTitle());
         topToolbar.setSubtitle(convertFromArray(book.getAuthors()));
@@ -223,7 +263,7 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         reflowableControl.setContentProvider(skyProvider);
 
-        reflowableControl.useDOMForHighlight(true);
+        reflowableControl.useDOMForHighlight(false);
 
         reflowableControl.setNavigationAreaWidthRatio(0.0f); // both left and right side.
 
@@ -238,11 +278,11 @@ public class ReaderBookActivity extends AppCompatActivity {
         selectionHandler = new SelectionHandler();
         reflowableControl.setSelectionListener(selectionHandler);
 //
-        pageMoveHandler = new PageMoveHandler();
+        pageMoveHandler = new PagerMoveHandler();
         reflowableControl.setPageMovedListener(pageMoveHandler);
 //
-//        highlightHandler = new HighlightHandler();
-//        reflowableControl.setHighlightListener(highlightHandler);
+        highLightHandler = new HighLightHandler();
+        reflowableControl.setHighlightListener(highLightHandler);
 //
         stateHandler = new StateHandler();
         reflowableControl.setStateListener(stateHandler);
@@ -268,6 +308,9 @@ public class ReaderBookActivity extends AppCompatActivity {
 
                     @Override
                     public  void onSuccess(BookState bookState) {
+
+                        RxBus.publishBookState(bookState);
+//                        RxBus.publishBookState(bookState);
                         initReflowableControlDisplay(bookState.getFontType(),bookState.getFontSize(),bookState.getPagePosition(),bookState.getPageTransition());
                     }
 
@@ -279,7 +322,7 @@ public class ReaderBookActivity extends AppCompatActivity {
                         fontSize = 15;
                         fontType = "TimesRoman";
                         pageTransition = PageTransition.Curl;
-                        BookState bookState = new BookState(pagePosition,0,date,fontType,fontSize,Color.BLACK,Color.WHITE,PageTransition.Curl,book.get_id());
+                        BookState bookState = new BookState(pagePosition,0,date,fontType,fontSize,Color.BLACK,Color.WHITE,PageTransition.Curl,true,book.get_id());
                         showLog("haide",bookState.toString());
                         insertBookState(bookState);
                     }
@@ -315,21 +358,84 @@ public class ReaderBookActivity extends AppCompatActivity {
         int y =0;
     }
 
+    private void loadHighLightsFromDb(User user) {
+        Single<List<licenta.books.androidmobile.classes.Highlight>> hiListSingle = highlightMethods.getAllHighlights(book.get_id(),user.getUserId());
+        hiListSingle.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<List<licenta.books.androidmobile.classes.Highlight>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(List<licenta.books.androidmobile.classes.Highlight> highlights) {
+                        loadHighlight(highlights);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        showLog("Eroare highlight ", e.getMessage());
+                    }
+                });
+    }
+
+    @Override
+    public void onClick(View v) {
+        int color;
+        switch (v.getId()){
+            case R.id.highlight_yellow:
+                color = Color.parseColor("#f4cc70");;
+                mark(color);
+                hideSelectionButtonsPopup();
+                break;
+            case R.id.highlight_green:
+                color = Color.parseColor("#89da59");
+                mark(color);
+                hideSelectionButtonsPopup();
+                break;
+            case R.id.highlight_blue:
+                color = Color.parseColor("#375e97");
+                mark(color);
+                hideSelectionButtonsPopup();
+                break;
+            case R.id.highlight_pink:
+                color = Color.parseColor("#f18d9e");
+                mark(color);
+                hideSelectionButtonsPopup();
+                break;
+            case R.id.highlight_orange:
+                color = Color.parseColor("#f98866");
+                mark(color);
+                hideSelectionButtonsPopup();
+                break;
+        }
+    }
+
+    private void mark(int color) {
+        reflowableControl.markSelection(color,"");
+    }
+
     private class SelectionHandler implements SelectionListener {
 
         @Override
         public void selectionStarted(Highlight highlight, Rect rect, Rect rect1) {
+            show=true;
             hideSelectionButtonsPopup();
         }
 
         @Override
         public void selectionChanged(Highlight highlight, Rect rect, Rect rect1) {
+            show=true;
+
             hideSelectionButtonsPopup();
         }
 
         @Override
         public void selectionEnded(Highlight highlight, Rect startRect, Rect endRect) {
             String selectedText = highlight.text;
+//            show = true;
+//            showOrHideToolbar();
 
             if(startRect.top < (reflowableControl.getHeight()/2) && endRect.bottom < (reflowableControl.getHeight()/2)){
                 if((reflowableControl.getWidth() - startRect.left) > selectionButtonsPopup.getWidth()){
@@ -357,8 +463,9 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         @Override
         public void selectionCancelled() {
+
+            showOrHideToolbar();
             hideSelectionButtonsPopup();
-//            showOrHideToolbar();
         }
     }
 
@@ -382,10 +489,15 @@ public class ReaderBookActivity extends AppCompatActivity {
         }
     }
 
-    private class PageMoveHandler implements PageMovedListener {
+
+
+    private class PagerMoveHandler implements PageMovedListener {
 
         @Override
         public void onPageMoved(PageInformation pageInformation) {
+            showLog("Page Index", String.valueOf(pageInformation.pageIndex));
+            show = true;
+            showOrHideToolbar();
             Integer bookmarkCode = getBookmarkCode(pageInformation.chapterIndex,pageInformation.pageIndex);
             Double pagePos = pageInformation.pagePositionInBook;
             Integer chapterIndex = pageInformation.chapterIndex;
@@ -403,12 +515,18 @@ public class ReaderBookActivity extends AppCompatActivity {
             show=true;
             showOrHideToolbar();
             pagePosition = pageInformation.pagePositionInBook;
-            RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,book.get_id()));
+            RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,true,book.get_id()));
+//            intent.putExtra("aoloc",new BookState(book.get_id()+"x",pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,true,book.get_id()));
+//            bookstateTransporetr(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,true,book.get_id()));
+            insertBookState(subscribeBookState());
             RxBus.publishBookMark(bookmark);
+
         }
+
 
         @Override
         public void onChapterLoaded(int i) {
+            showLog("Chapter Index", String.valueOf(i));
             NavPoints tocNavPoints = reflowableControl.getNavPoints();
             ArrayList<Chapter> chapterList = new ArrayList<>();
 
@@ -425,7 +543,7 @@ public class ReaderBookActivity extends AppCompatActivity {
 
         @Override
         public void onFailedToMove(boolean b) {
-
+            showLog("Fail?", String.valueOf(b));
         }
     }
 
@@ -475,6 +593,104 @@ public class ReaderBookActivity extends AppCompatActivity {
         }
     }
 
+    private licenta.books.androidmobile.classes.Highlight creatorHighlight(Highlight highlight){
+        licenta.books.androidmobile.classes.Highlight highlightDb = new licenta.books.androidmobile.classes.Highlight(highlight.code,highlight.chapterIndex,highlight.pagePositionInBook,highlight.pagePositionInChapter,
+                highlight.startIndex,highlight.endIndex,highlight.startOffset,highlight.endOffset,highlight.color,highlight.text,highlight.left,highlight.top,highlight.note,highlight.isNote,highlight.isOpen,
+                Calendar.getInstance().getTime(),highlight.forSearch,highlight.style,highlight.pageIndex,book.get_id(),user.getUserId());
+        return highlightDb;
+    }
+
+    private Highlights creatorHighlightSkyEpub(List<licenta.books.androidmobile.classes.Highlight> arrayList,int chapterIndex){
+        chapterHighlightsList = new Highlights();
+        for(int i = 0 ;i < arrayList.size();i++){
+            if(arrayList.get(i).getChapterIndex() == chapterIndex){
+                Highlight highlight = new Highlight();
+                highlight.bookCode = arrayList.get(i).getCode();
+                highlight.chapterIndex = arrayList.get(i).getChapterIndex();
+                highlight.pagePositionInBook = arrayList.get(i).getPagePosInBoo();
+                highlight.pagePositionInChapter = arrayList.get(i).getPagePosInChapter();
+                highlight.startIndex = arrayList.get(i).getStartIndex();
+                highlight.endIndex = arrayList.get(i).getEndIndex();
+                highlight.startOffset = arrayList.get(i).getStartOffset();
+                highlight.endOffset = arrayList.get(i).getEndOffset();
+                highlight.color = arrayList.get(i).getColor();
+                highlight.text = arrayList.get(i).getSelectedText();
+                highlight.left = arrayList.get(i).getLeft();
+                highlight.top = arrayList.get(i).getTop();
+                highlight.note = arrayList.get(i).getNoteContent();
+                highlight.isNote = arrayList.get(i).isNote();
+                highlight.isOpen = arrayList.get(i).isOpen();
+                highlight.datetime = TimestampConverter.fromDateToString(arrayList.get(i).getHighlightedDate());
+                highlight.forSearch = arrayList.get(i).isForSearch();
+                highlight.style = arrayList.get(i).getStyle();
+                highlight.pageIndex = arrayList.get(i).getPageIndex();
+
+                chapterHighlightsList.addHighlight(highlight);
+            }
+
+        }
+        return chapterHighlightsList;
+    }
+
+    private class HighLightHandler implements HighlightListener {
+
+        @Override
+        public void onHighlightDeleted(Highlight highlight) {
+
+        }
+
+        @Override
+        public void onHighlightInserted(Highlight highlight) {
+            licenta.books.androidmobile.classes.Highlight highlightDb = creatorHighlight(highlight);
+            highlightMethods.insertHighlight(highlightDb);
+//            loadHighLightsFromDb(user);
+        }
+
+
+
+        @Override
+        public void onHighlightUpdated(Highlight highlight) {
+
+        }
+
+        @Override
+        public void onHighlightHit(Highlight highlight, int i, int i1, Rect rect, Rect rect1) {
+            Toast.makeText(getApplicationContext(),highlight.text,Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public Highlights getHighlightsForChapter(int chapterIndex) {
+
+            return creatorHighlightSkyEpub(highlightsList,chapterIndex);
+
+        }
+
+        @Override
+        public Bitmap getNoteIconBitmapForColor(int i, int i1) {
+            return null;
+        }
+
+        @Override
+        public void onNoteIconHit(Highlight highlight) {
+
+        }
+
+        @Override
+        public Rect getNoteIconRect(int i, int i1) {
+            return null;
+        }
+
+        @Override
+        public void onDrawHighlightRect(Canvas canvas, Highlight highlight, Rect rect) {
+
+        }
+
+        @Override
+        public void onDrawCaret(Canvas canvas, Caret caret) {
+
+        }
+    }
+
     private Bitmap getNonBookmarkIcon() {
         Bitmap bitmap;
 
@@ -497,6 +713,10 @@ public class ReaderBookActivity extends AppCompatActivity {
 
     private void loadBookmarkList(List<Bookmark> arrayList){
         bookmarksList = arrayList;
+    }
+
+    private void loadHighlight(List<licenta.books.androidmobile.classes.Highlight> highlights){
+        highlightsList = highlights;
     }
 
     private boolean isBookmarkExists(Bookmark bookmark) {
@@ -539,6 +759,7 @@ public class ReaderBookActivity extends AppCompatActivity {
 
     private void showSelectionButtonsPopup(){
         selectionButtonsPopup.setVisibility(View.VISIBLE);
+
     }
 
     private void hideSelectionButtonsPopup(){
@@ -586,98 +807,7 @@ public class ReaderBookActivity extends AppCompatActivity {
         showSelectionButtonsPopup();
     }
 
-    private int getDensity() {
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        int density = metrics.densityDpi;
-        return density;
-    }
 
-    private float getFactor() {
-        return (float) getDensity() / 240.f;
-    }
-
-    private int getPX(float dp) {
-        return (int) (dp * getFactor());
-    }
-
-    public boolean isTablet() {
-        return (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
-    }
-
-    public boolean isPortrait() {
-        int orientation = getResources().getConfiguration().orientation;
-        if (orientation == Configuration.ORIENTATION_PORTRAIT)
-            return true;
-        else
-            return false;
-    }
-
-    public int getWidth() {
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        int width = metrics.widthPixels;
-        return width;
-    }
-
-    public int getPXFromRight(float dip) {
-        int ps = this.getPX(dip);
-        int ms = this.getWidth() - ps;
-        return ms;
-    }
-
-    public int getPYFromTop(float dip) {
-        int ps = this.getPX(dip);
-        return ps;
-    }
-
-    public int pxr(float dp) {
-        return this.getPXFromRight(dp);
-    }
-
-    public int pyt(float dp) {
-        return this.getPYFromTop(dp);
-    }
-
-
-    public void calculateFrames() {
-
-        if (!this.isTablet()) { // for phones
-            if (this.isPortrait()) {
-                int brx = 36 + (44) * 1;
-                int bry = 23;
-                bookmarkRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 40), pyt(bry + 40));
-                bookmarkedRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 38), pyt(bry + 70));
-            } else {
-
-                int brx = 40 + (48 + 12) * 1;
-                int bry = 14;
-                bookmarkRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 40), pyt(bry + 40));
-                bookmarkedRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 38), pyt(bry + 70));
-            }
-        } else { // for tables
-            if (this.isPortrait()) {
-                int ox = 50;
-                int rx = 100;
-                int oy = 30;
-
-                int brx = rx - 10 + (44) * 1;
-                int bry = oy + 10;
-                bookmarkRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 50), pyt(bry + 50));
-                bookmarkedRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 50), pyt(bry + 90));
-            } else {
-                int sd = getPX(40);
-                int ox = 40;
-                int rx = 130;
-                int oy = 20;
-
-
-                int brx = rx - 20 + (48 + 12) * 1;
-                int bry = oy + 10;
-                bookmarkRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 40), pyt(bry + 40));
-                bookmarkedRect = new Rect(pxr(brx), pyt(bry), pxr(brx - 38), pyt(bry + 70));
-            }
-        }
-
-    }
 
     private void showOrHideToolbar(){
         if(show){
@@ -752,8 +882,14 @@ public class ReaderBookActivity extends AppCompatActivity {
         bookStateMethods.insertBookState(bookState);
     }
 
-    private BookState subscribeBookState(){
+//    private void bookstateTransporetr(BookState bookState){
+//        disposableBookstate = bookState;
+////        RxBus.publishBookState(bookState);
+//    }
 
+
+
+    private BookState subscribeBookState(){
         Disposable disposable = RxBus.subscribeBookState(new Consumer<BookState>() {
             @Override
             public void accept(BookState bookState) throws Exception {
@@ -761,7 +897,6 @@ public class ReaderBookActivity extends AppCompatActivity {
             }
         });
         disposable.dispose();
-
         return disposableBookstate;
     }
 
@@ -781,6 +916,8 @@ public class ReaderBookActivity extends AppCompatActivity {
         bookStateMethods = BookStateMethods.getInstance(bookStateDao);
         bookmarkDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookmarkDao();
         bookmarkMethods = BookmarkMethods.getInstance(bookmarkDao);
+        highlightDao = AppRoomDatabase.getInstance(getApplicationContext()).getHighlightDao();
+        highlightMethods = HighlightMethods.getInstance(highlightDao);
     }
 
     @Override
@@ -825,19 +962,22 @@ public class ReaderBookActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         insertBookState(subscribeBookState());
+
+        super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         insertBookState(subscribeBookState());
+
+        super.onDestroy();
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         insertBookState(subscribeBookState());
+
+        super.onBackPressed();
     }
 }
