@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#673AB7</color>
+    <color name="colorPrimaryDark">#000</color>
+    <color name="colorAccent">#ffffff</color>
+
+    <color name="colorPrimaryTrans">#a0673AB7</color>
+    <color name="colorAccentTrans">#a0009688</color>
+    <color name="colorBlackTrans">#a0000000</color>
+    <color name="granite">#b7b8b6</color>
+    <!--<color name="granite">#dd4b39</color>-->
+    <color name="pine">#34675c</color>
+    <color name="blueSky">#4cb5f5</color>
+    <drawable name="dark_grey">#424242</drawable>
+    <drawable name="white">#ffffff</drawable>
+    <color name="book_title">#4c4c4c</color>
+    <color name="grey">#C3C3C3</color>
+
+</resources>

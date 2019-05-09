@@ -518,7 +518,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     customToast.show("User has been logged in",R.drawable.ic_error_outline_24dp,getApplicationContext());
                     verifyLoginFromDbGoogleAccount(account);
 
-                    startActivity(intent);
                 }
             @Override
             public void onFailure(Call<User> call, Throwable t) {

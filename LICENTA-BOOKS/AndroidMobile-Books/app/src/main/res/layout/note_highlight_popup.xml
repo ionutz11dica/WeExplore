@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/noteHighlightPopup_ll"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <RelativeLayout
+        android:id="@+id/relatve_layout_note"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="#f1f1f2"
+        android:layout_gravity="center"
+
+        android:padding="5dp"
+        android:elevation="10dp">
+        <TextView
+            android:id="@+id/tv_note_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:text="Note"
+            android:textStyle="bold"
+            android:gravity="center"/>
+        <EditText
+            android:id="@+id/et_note_text"
+            android:layout_margin="5dp"
+            android:layout_width="match_parent"
+            android:background="@drawable/white"
+            android:textAlignment="textStart"
+            android:layout_height="100dp"
+            android:layout_below="@+id/tv_note_title"
+            android:gravity="start" />
+
+        <LinearLayout
+            android:id="@+id/buttons_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="0dp"
+            android:orientation="horizontal"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/btn_note_delete"
+                android:background="@drawable/note_btns"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorAccentTrans"
+                android:text="DELETE"
+                android:textSize="16dp"
+                android:fontFamily="@font/print_bold_tt"
+
+                />
+            <Button
+                android:layout_marginLeft="-2dp"
+                android:layout_marginRight="-2dp"
+
+                android:id="@+id/btn_note_cancel"
+                android:background="@drawable/note_btns"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorAccentTrans"
+                android:text="Cancel"
+                android:textSize="16dp"
+                android:fontFamily="@font/print_bold_tt"
+                />
+            <Button
+                android:id="@+id/btn_note_save"
+                android:background="@drawable/note_btns"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorAccentTrans"
+                android:text="SAVE"
+                android:textSize="16dp"
+                android:fontFamily="@font/print_bold_tt"
+                />
+        </LinearLayout>
+    </RelativeLayout>
+
+</LinearLayout>

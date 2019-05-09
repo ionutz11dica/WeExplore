@@ -16,8 +16,8 @@ public interface BookmarkDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertBookmark(Bookmark... bookmark);
 
-    @Query("DELETE from bookmark_join WHERE pagePosition=:pagePos")
-    void deleteBookmark(Double pagePos);
+    @Query("DELETE from bookmark_join WHERE pagePosition=:pagePos and bookId=:bookId")
+    void deleteBookmark(Double pagePos,String bookId);
 
     @Query("SELECT * FROM bookmark_join WHERE bookId =:bookId AND userId =:userId")
     Single<List<Bookmark>> getAllBookmark(String bookId, Integer userId);

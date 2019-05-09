@@ -3,7 +3,7 @@ public interface Constants {
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;
 
-      String BASE_URL = "http://192.168.1.6:4000/";
+      String BASE_URL = "http://192.168.1.7:4000/";
 
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
@@ -28,7 +28,10 @@ public interface Constants {
       String KEY_STATUS = "keyStatus";
 
 
-    int RESULT_CODE_CHAPTER = 101;
-    int RESULT_CODE_BOOKMARK = 102;
+      int RESULT_CODE_CHAPTER = 101;
+      int RESULT_CODE_BOOKMARK = 102;
       String KEY_CHAPTER = "keyChapter";
+      String KEY_NOTE_CONTENT = "keyNoteContent";
+      int REQUEST_CODE_NOTE = 103;
+      String KEY_HIGHLIGHT_EXISTS = "keyHighlightExists";
 }

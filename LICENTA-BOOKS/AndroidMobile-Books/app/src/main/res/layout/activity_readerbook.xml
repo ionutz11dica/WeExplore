@@ -19,12 +19,16 @@
 
     <include
         android:id="@+id/toolbar_bottom"
-        layout="@layout/toolbar_layout_bottom"
-        />
+        layout="@layout/toolbar_layout_bottom" />
     <include
         android:id="@+id/selectionButtonsPopup"
         layout="@layout/selection_buttons_popup"
         android:visibility="invisible"
         />
+
+    <!--<include-->
+        <!--android:id="@+id/noteHighlightPopup"-->
+        <!--layout="@layout/note_highlight_popup"-->
+        <!--/>-->
 
 </RelativeLayout>
