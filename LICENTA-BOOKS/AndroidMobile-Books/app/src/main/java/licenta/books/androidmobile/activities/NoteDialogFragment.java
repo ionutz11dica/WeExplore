@@ -54,7 +54,8 @@ public class NoteDialogFragment extends DialogFragment {
             boolean isHighlighted = bundle.getBoolean(Constants.KEY_HIGHLIGHT_EXISTS);
             if(isHighlighted){
                 noteContent.setText(null);
-            }else {
+            }
+            if(isHighlighted && noteC!=null){
                 noteContent.setText(noteC);
             }
             isUpdate=true;

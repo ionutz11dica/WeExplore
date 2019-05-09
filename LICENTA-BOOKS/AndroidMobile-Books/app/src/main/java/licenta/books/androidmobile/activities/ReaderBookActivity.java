@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -15,7 +14,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
@@ -36,7 +34,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.skytree.epub.BookmarkListener;
 import com.skytree.epub.Caret;
 import com.skytree.epub.Highlight;
 import com.skytree.epub.HighlightListener;
@@ -477,7 +474,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                         reflowableControl.deleteHighlight(highlightTrue);
                     }else{
                         changeColorHighlight(currentColor);
-
                     }
                 }else{
                     mark(currentColor);
@@ -681,6 +677,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
             for(int index = 0 ;index < tocNavPoints.getSize();index++){
                 chapterList.add(new Chapter(tocNavPoints.getNavPoint(index).text,tocNavPoints.getNavPoint(index).chapterIndex));
+                showLog("Index",String.valueOf(index)+" " + reflowableControl.getNumberOfPagesInChapter());
             }
 
             RxBus.publishsChapterList(chapterList);
@@ -693,7 +690,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 RxBus.publishsChapter(reflowableControl.getChapterIndex());
             }
         }
-
         @Override
         public void onFailedToMove(boolean b) {
             showLog("Fail?", String.valueOf(b));
@@ -831,6 +827,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             forDelete=false;
             bundleG = new Bundle();
             bundleG.putBoolean(Constants.KEY_HIGHLIGHT_EXISTS,true);
+            bundleG.putString(Constants.KEY_NOTE_CONTENT,highlight.note);
             if(highlight.color == Color.parseColor("#80f4cc70")){
                 modifyButtonView(highlightColorYellow);
             }else if(highlight.color == Color.parseColor("#80f18d9e")){
@@ -883,6 +880,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 Log.d("intra?","nu");
                 dialogFragment = new NoteDialogFragment();
                 Bundle bundle = new Bundle();
+                bundle.putBoolean(Constants.KEY_HIGHLIGHT_EXISTS,true);
                 bundle.putString(Constants.KEY_NOTE_CONTENT,highlight.note);
                 dialogFragment.setArguments(bundle);
                 dialogFragment.show(getSupportFragmentManager(),"fragmentD");
@@ -1056,406 +1054,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    ////
-    ////
-    ////
-    ////
-    ////
-    ////
 
-//    @SuppressLint("NewApi")
-//    public int getRawWidth() {
-//        int width = 0, height = 0;
-//        final DisplayMetrics metrics = new DisplayMetrics();
-//        Display display = getWindowManager().getDefaultDisplay();
-//        Method mGetRawH = null, mGetRawW = null;
-//
-//        try {
-//            // For JellyBeans and onward
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
-//                display.getRealMetrics(metrics);
-//
-//                width = metrics.widthPixels;
-//                height = metrics.heightPixels;
-//            } else {
-//                mGetRawH = Display.class.getMethod("getRawHeight");
-//                mGetRawW = Display.class.getMethod("getRawWidth");
-//
-//                try {
-//                    width = (Integer) mGetRawW.invoke(display);
-//                    height = (Integer) mGetRawH.invoke(display);
-//                } catch (IllegalArgumentException e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                    return 0;
-//                } catch (IllegalAccessException e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                    return 0;
-//                } catch (InvocationTargetException e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                    return 0;
-//                }
-//            }
-//            return width;
-//        } catch (NoSuchMethodException e3) {
-//            e3.printStackTrace();
-//            return 0;
-//        }
-//    }
-//
-//    public  String getModelName() {
-//        return Build.MODEL;
-//    }
-//
-//    public  String getDeviceName() {
-//        return Build.DEVICE;
-//    }
-//    public  boolean isNexus() {
-//        String models[]={"mako","flo","grouper","maguro","crespo","hammerhead"};
-//        String model = getModelName();
-//        String device = getDeviceName();
-//        for (int i=0; i<models.length; i++) {
-//            String name = models[i];
-//            if (name.equalsIgnoreCase(model) || name.equalsIgnoreCase(device)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//
-//    public int getWidth() {
-//        DisplayMetrics metrics = getResources().getDisplayMetrics();
-//        int width = metrics.widthPixels;
-//        if (isNexus() && isFullScreenForNexus) {
-//            if (!this.isPortrait() && Build.VERSION.SDK_INT>=19) {
-//                width = this.getRawWidth();
-//            }
-//        }
-//        return width;
-//    }
-//
-//    // modify for fullscreen
-//    public int getHeight() {
-//        if (Build.VERSION.SDK_INT>=19) {
-//            DisplayMetrics metrics = getResources().getDisplayMetrics();
-//            int height = this.getRawHeight();
-//            height+=ps(50);
-//            if (Build.DEVICE.contains("maguro") && this.isPortrait()) {
-//                height-=ps(65);
-//            }
-//
-//            return height;
-//        }else {
-//            DisplayMetrics metrics = getResources().getDisplayMetrics();
-//            int height = metrics.heightPixels;
-//            height+=ps(50);
-//            return height;
-//        }
-//    }
-//
-//    @SuppressLint("NewApi")
-//    public int getRawHeight() {
-//        int width = 0, height = 0;
-//        final DisplayMetrics metrics = new DisplayMetrics();
-//        Display display = getWindowManager().getDefaultDisplay();
-//        Method mGetRawH = null, mGetRawW = null;
-//
-//        try {
-//            // For JellyBeans and onward
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
-//                display.getRealMetrics(metrics);
-//                width = metrics.widthPixels;
-//                height = metrics.heightPixels;
-//            } else {
-//                mGetRawH = Display.class.getMethod("getRawHeight");
-//                mGetRawW = Display.class.getMethod("getRawWidth");
-//                try {
-//                    width = (Integer) mGetRawW.invoke(display);
-//                    height = (Integer) mGetRawH.invoke(display);
-//                } catch (IllegalArgumentException e) {
-//                    e.printStackTrace();
-//                    return 0;
-//                } catch (IllegalAccessException e) {
-//                    e.printStackTrace();
-//                    return 0;
-//                } catch (InvocationTargetException e) {
-//                    e.printStackTrace();
-//                    return 0;
-//                }
-//            }
-//            return height;
-//        } catch (NoSuchMethodException e3) {
-//            e3.printStackTrace();
-//            return 0;
-//        }
-//    }
-//
-//
-//
-//    public void setFrame(View view,int dx, int dy, int width, int height) {
-//        RelativeLayout.LayoutParams param = new RelativeLayout.LayoutParams(
-//                RelativeLayout.LayoutParams.WRAP_CONTENT,
-//                RelativeLayout.LayoutParams.WRAP_CONTENT); // width,height
-//        param.leftMargin = dx;
-//        param.topMargin =  dy;
-//        param.width = width;
-//        param.height = height;
-//        view.setLayoutParams(param);
-//    }
-//
-//    public boolean isPortrait() {
-//        int orientation = getResources().getConfiguration().orientation;
-//        if (orientation== Configuration.ORIENTATION_PORTRAIT) return true;
-//        else return false;
-//    }
-//
-//    // this is not 100% accurate function.
-//    public boolean isTablet() {
-//        return (getResources().getConfiguration().screenLayout
-//                & Configuration.SCREENLAYOUT_SIZE_MASK)
-//                >= Configuration.SCREENLAYOUT_SIZE_LARGE;
-//    }
-//
-//    public void makeFullscreen(Activity activity) {
-//
-//        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        if (Build.VERSION.SDK_INT>=19) {
-//            activity.getWindow().getDecorView().setSystemUiVisibility(
-//                    View.SYSTEM_UI_FLAG_IMMERSIVE
-//                            |	View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-//                            |	View.SYSTEM_UI_FLAG_FULLSCREEN
-//                            |	View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-//                            |	View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                            |	View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//                            |	View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-//            );
-//        }else if (Build.VERSION.SDK_INT>=11) {
-//            activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-//        }
-//    }
-//
-//    void dismissKeyboard(){
-//        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-//        imm.hideSoftInputFromWindow(noteEditor.getWindowToken(),0);
-//        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-//        makeFullscreen(this);
-//    }
-//
-//    public void showKeyboard() {
-//        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-//        imm.showSoftInput(noteEditor, 0);
-//        noteEditor.requestFocus();
-//    }
-//
-//    int oldNoteTop;
-//    int oldNoteLeft;
-//    boolean isNoteMoved = false;
-//
-//    void moveNoteBoxPositionForKeyboard() {
-//        RelativeLayout.LayoutParams params =
-//                (RelativeLayout.LayoutParams)noteBox.getLayoutParams();
-//        int keyboardTop = (int)(this.getHeight()*0.6f);
-//        int noteHeight = ps(300);
-//        oldNoteTop = params.topMargin;
-//        oldNoteLeft = params.leftMargin;
-//        isNoteMoved = true;
-//        int noteTop = keyboardTop - noteHeight - ps(80);
-//        this.setFrame(noteBox, params.leftMargin, noteTop, noteBoxWidth,  noteHeight);
-//    }
-//
-//    boolean keyboardHidesNote() {
-//        if(!this.isPortrait() && !this.isTablet()) return false;
-//        if(this.noteBox.getVisibility() != View.VISIBLE) return false;
-//        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)noteBox.getLayoutParams();
-//        int bottomY = params.topMargin + params.height;
-//        int keyBoardTop = (int) (Resources.getSystem().getDisplayMetrics().heightPixels * 0.6f);
-//
-//        return bottomY >= keyBoardTop;
-//    }
-//
-//    View.OnFocusChangeListener focusListener = new View.OnFocusChangeListener() {
-//        @Override
-//        public void onFocusChange(View v, boolean hasFocus) {
-//            if(hasFocus){
-//                processForKeyboard(true);
-//            }else {
-//                processForKeyboard(false);
-//            }
-//        }
-//    };
-//
-//    private void processForKeyboard(boolean isShown) {
-//        if(isShown){
-//            if(this.keyboardHidesNote()){
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        dismissKeyboard();
-//                        moveNoteBoxPositionForKeyboard();
-//                        showKeyboard();
-//                    }
-//                },100);
-//            }
-//        }else {
-//            if(isNoteMoved){
-//                this.restoreNoteBoxPosition();
-//            }
-//        }
-//    }
-//
-//    public int getDensityDPI(){
-//        DisplayMetrics metrics = getResources().getDisplayMetrics();
-//        return metrics.densityDpi;
-//    }
-//
-//    public int getPs(float dip) {
-//         float density = this.getDensityDPI();
-//         float factor = density/240.f;
-//         return (int) (dip*factor);
-//    }
-//
-//    public int ps(float dip){
-//        return this.getPs(dip);
-//    }
-//
-//    void restoreNoteBoxPosition() {
-//        int noteHeight = ps(300);
-//        isNoteMoved = false;
-//        this.setFrame(noteBox, oldNoteLeft, oldNoteTop, noteBoxWidth,  noteHeight);
-//    }
-//
-//    public void hideNoteBox() {
-//        if (currentHighlight!=null && noteEditor!=null && noteBox.getVisibility()==View.VISIBLE) saveNoteBox();
-//        this.noteBox.setVisibility(View.INVISIBLE);
-//        this.noteBox.setVisibility(View.GONE);
-//        this.dismissKeyboard();
-//        this.noteEditor.clearFocus();
-//        isBoxesShonw = false;
-//    }
-//
-//    public void moveSkyBox(CustomBox box,int boxWidth,int boxHeight, Rect startRect, Rect endRect) {
-//        RelativeLayout.LayoutParams params =
-//                (RelativeLayout.LayoutParams)box.getLayoutParams();
-//        int topMargin = ps(80);
-//        int bottomMargin = ps(80);
-//        int boxTop=0;
-//        int boxLeft=0;
-//        int arrowX;
-//        boolean isArrowDown;
-//
-//        if (startRect.top - topMargin > boxHeight) {
-//            boxTop = startRect.top - boxHeight-ps(10);
-//            boxLeft = (startRect.left+startRect.width()/2-boxWidth/2);
-//            arrowX = (startRect.left+startRect.width()/2);
-//            isArrowDown = true;
-//        }else if ((this.getHeight()-endRect.bottom)-bottomMargin >boxHeight) { // ????????? ????????? ????????? ?????????.
-//            boxTop = endRect.bottom+ps(10);
-//            boxLeft = (endRect.left+endRect.width()/2-boxWidth/2);
-//            arrowX = (endRect.left+endRect.width()/2);
-//            isArrowDown = false;
-//        }else {
-//            boxTop = ps(100);
-//            boxLeft = (startRect.left+startRect.width()/2-boxWidth/2);
-//            arrowX = (startRect.left+startRect.width()/2);
-//            isArrowDown = true;
-//        }
-//
-//        if (boxLeft+boxWidth > this.getWidth()*.9) {
-//            boxLeft = (int)(this.getWidth()*.9) - boxWidth;
-//        }else if (boxLeft<this.getWidth()*.1) {
-//            boxLeft = (int)(this.getWidth()*.1);
-//        }
-//
-//        box.setArrowPosition(arrowX, boxLeft, boxWidth);
-//        box.setArrowDirection(isArrowDown);
-//        params.leftMargin = boxLeft;
-//        params.topMargin = boxTop;
-//        params.width = boxWidth;
-//        params.height = boxHeight;
-//        box.setLayoutParams(params);
-//        box.invalidate();
-//
-//        boxFrame = new Rect();
-//        boxFrame.left = boxLeft;
-//        boxFrame.top = boxTop;
-//        boxFrame.right = boxLeft+boxWidth;
-//        boxFrame.bottom = boxTop+boxHeight;
-//    }
-//
-//    public void showNoteBox() {
-//        if (highlightTrue==null) return;
-//        isBoxesShonw = true;
-//        Rect startRect = highlightStartRect;//(222,1196-342,1230)
-//        Rect endRect   = highlightEndRect;
-//        int minWidth = Math.min(this.getWidth(),this.getHeight());
-//        noteBoxWidth = 	   (int)(minWidth * 0.7);
-//        noteBoxHeight = 	ps(300);
-//        noteEditor.setText(highlightTrue.note);
-//        noteBox.setBoxColor(Color.YELLOW);
-//        this.moveSkyBox(noteBox,noteBoxWidth,noteBoxHeight,startRect,endRect);
-//        noteBox.setVisibility(View.VISIBLE);
-//
-//    }
-//
-//    public void saveNoteBox() {
-//        if (highlightTrue==null || noteEditor==null) return;
-//        if (noteBox.getVisibility()!=View.VISIBLE) return;
-//        boolean isNote;
-//        String note = noteEditor.getText().toString();
-//        if (note==null || note.length()==0) isNote = false;
-//        else isNote = true;
-//        highlightTrue.isNote = isNote;
-//        highlightTrue.note = note;
-//        highlightTrue.style=27;
-//        if (highlightTrue.color==0) highlightTrue.color =currentColor;
-//        reflowableControl.changeHighlightNote(highlightTrue, note);
-//    }
-//
-//    @SuppressLint("RtlHardcoded")
-//    public void makeNoteBox() {
-//        RelativeLayout.LayoutParams param = new RelativeLayout.LayoutParams(
-//                RelativeLayout.LayoutParams.WRAP_CONTENT,
-//                RelativeLayout.LayoutParams.WRAP_CONTENT); // width,height
-//        noteBox = new CustomBox(this);
-//        noteBox.setBoxColor(currentColor);
-//        noteBox.setArrowHeight(ps(25));
-//        noteBox.setArrowDirection(false);
-//        param.leftMargin = ps(50);
-//        param.topMargin =  ps(400);
-//        int minWidth = Math.min(this.getWidth(),this.getHeight());
-//        noteBoxWidth = 	   (int)(minWidth * 0.8);
-//        param.width = noteBoxWidth;
-//        param.height =     ps(300);
-//        noteBox.setLayoutParams(param);
-//        noteBox.setArrowDirection(false);
-//
-//        noteEditor = new EditText(this);
-//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT); // width,height
-//        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT); // width,height
-//        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
-//        params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-//        params.width =  RelativeLayout.LayoutParams.FILL_PARENT;
-//        params.height = RelativeLayout.LayoutParams.FILL_PARENT;
-//        noteEditor.setLayoutParams(params);
-//        noteEditor.setBackgroundColor(Color.TRANSPARENT);
-//        noteEditor.setMaxLines(1000);
-//        noteEditor.setGravity(Gravity.TOP|Gravity.LEFT);
-//        noteEditor.setOnFocusChangeListener(focusListener);
-//        noteBox.contentView.addView(noteEditor);
-//
-//        renderRelative.addView(noteBox);
-//        this.hideNoteBox();
-//    }
-
-    ////
-    ////
-    ////
-    ////
-    ////
-    ////
 
     private void showProgressDialog(String title, String message, boolean cancelable) {
         progressDialog.setTitle(title);
