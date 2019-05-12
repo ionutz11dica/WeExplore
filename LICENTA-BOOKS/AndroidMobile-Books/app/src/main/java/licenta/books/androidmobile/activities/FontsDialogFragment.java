@@ -12,6 +12,8 @@ import android.view.Window;
 import android.widget.ListView;
 
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.adapters.TypefaceAdapter;
+import licenta.books.androidmobile.interfaces.Constants;
 
 public class FontsDialogFragment extends DialogFragment {
     ListView fontsList;
@@ -21,8 +23,12 @@ public class FontsDialogFragment extends DialogFragment {
          super.onCreateView(inflater, container, savedInstanceState);
          View view = inflater.inflate(R.layout.activity_fonts_dialog_fragment,container,false);
          fontsList = view.findViewById(R.id.lv_typeface_fonts);
-        Window window = getDialog().getWindow();
-        window.setGravity(Gravity.CENTER|Gravity.BOTTOM);
+
+         TypefaceAdapter adapter = new TypefaceAdapter(getActivity(), Constants.TYPEFACE_NAMES);
+         fontsList.setAdapter(adapter);
+
+         Window window = getDialog().getWindow();
+         window.setGravity(Gravity.CENTER|Gravity.BOTTOM);
 
          return view;
     }

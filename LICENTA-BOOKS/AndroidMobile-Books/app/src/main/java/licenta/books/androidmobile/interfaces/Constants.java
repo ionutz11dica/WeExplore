@@ -34,4 +34,7 @@ public interface Constants {
       String KEY_NOTE_CONTENT = "keyNoteContent";
       int REQUEST_CODE_NOTE = 103;
       String KEY_HIGHLIGHT_EXISTS = "keyHighlightExists";
+
+
+      String[] TYPEFACE_NAMES =  {"BradleyHand","Cantarell","CrimsonText","Inconsolata","JosefinSans", "Molengo","Simplicity","ReenieBeanie"};
 }

@@ -169,6 +169,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
     //style layout
     SeekBar brightnessControl;
+    Button fontMinus,fontPlus;
+    Button marginMinus,marginPlus;
 
 
     @Override
@@ -221,7 +223,13 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         styleLayout.setVisibility(View.GONE);
         styleLayout.setClickable(true);
         typeface = findViewById(R.id.typeface_btn);
+
         brightnessControl = findViewById(R.id.brightness_seeker);
+        fontMinus = findViewById(R.id.font_minus);
+        fontPlus = findViewById(R.id.font_plus);
+        marginMinus = findViewById(R.id.margin_minus);
+        marginPlus = findViewById(R.id.margin_plus);
+
 
         noteBtn = findViewById(R.id.btn_note);
         noteBtn.setOnClickListener(new View.OnClickListener() {
@@ -260,10 +268,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                     reflowableControl.changeForegroundColor(Color.WHITE);
                     theme = true;
                 }
-
-//                reflowableControl.setBackgroundColor(Color.BLACK);
-
-
             }
         });
 
@@ -277,11 +281,40 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         });
 
 
-
+        setFontSizeBookMinus();
+        setFontSizeBookPlus();
         setBrightnessControl();
         eventClickContent();
 
 
+    }
+
+    private void setFontSizeBookMinus() {
+        fontMinus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(fontSize < 10) {
+                    fontMinus.setTextColor(Color.GRAY);
+                }else{
+                    fontSize--;
+                    reflowableControl.changeFontSize(fontSize);
+                }
+            }
+        });
+    }
+
+    private void setFontSizeBookPlus() {
+        fontPlus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(fontSize > 20) {
+                    fontPlus.setTextColor(Color.GRAY);
+                }else{
+                    fontSize++;
+                    reflowableControl.changeFontSize(fontSize);
+                }
+            }
+        });
     }
 
     private void setBrightnessControl() {
@@ -448,6 +481,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         String fileName = book.getTitle()+".epub";
         renderRelative.addView(setUpReflowableController(fileName,"/sdcard/Android/data/licenta.books.androidmobile/files"));
+
+
+
 
     }
 
