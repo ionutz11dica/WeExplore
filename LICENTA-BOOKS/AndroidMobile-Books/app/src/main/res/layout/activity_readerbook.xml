@@ -26,9 +26,14 @@
         android:visibility="invisible"
         />
 
-    <!--<include-->
-        <!--android:id="@+id/noteHighlightPopup"-->
-        <!--layout="@layout/note_highlight_popup"-->
-        <!--/>-->
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+        <include
+            android:id="@+id/relative_test"
+            layout="@layout/style_layout"/>
+    </RelativeLayout>
+
 
 </RelativeLayout>

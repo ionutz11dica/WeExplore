@@ -3,6 +3,7 @@ package licenta.books.androidmobile.activities;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,9 +11,11 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,7 +26,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -81,17 +87,12 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     ReflowableControl reflowableControl;
     RelativeLayout renderRelative;
 
-    LinearLayout toolbarTop;
-    LinearLayout toolbarBottom;
-    EditText noteEditor;
     boolean isHighlighted=false;
     boolean forDelete = false;
+    boolean isShow = true;
 
-    int noteBoxWidth;
-    int noteBoxHeight;
     NoteDialogFragment dialogFragment;
     Bundle bundleG;
-//    LinearLayout notePopup;
 
 
     RelativeLayout selectionButtonsPopup;
@@ -107,8 +108,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     HighlightDao highlightDao;
     HighlightMethods highlightMethods;
 
-    boolean isFullScreenForNexus=true;
-    boolean isBoxesShonw = true;
     licenta.books.androidmobile.classes.Highlight currentHighlight;
     Highlight highlightTrue;
 
@@ -118,14 +117,16 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     Menu menuItems;
 
      Rect highlightStartRect, highlightEndRect;
-    Rect boxFrame;
 
-    FragmentManager fragmentManager;
 
     //book information
     static double pagePosition;
     static Integer fontSize;
     static String fontType;
+    static Integer backgroundColor;
+    static Integer foregroundColor;
+    static Boolean theme;
+
     PageTransition pageTransition;
     BookState disposableBookstate;
     Bookmark disposableBookmark;
@@ -150,17 +151,25 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     //Buttons
     Button noteBtn;
 
+    LinearLayout styleLayout;
+    Button typeface;
+
 
     //toolbar controllers
     TextView tvPage;
     SeekBar seekBarPager;
     ImageButton imgBtnContent;
     ImageButton imgBtnDayNightMode;
+    ImageButton imgBtnStyleContent;
 
     //lists
     List<Bookmark> bookmarksList;
     List<licenta.books.androidmobile.classes.Highlight> highlightsList;
     Highlights chapterHighlightsList;
+
+    //style layout
+    SeekBar brightnessControl;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,6 +199,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         //bottom toolbar components
         imgBtnContent = findViewById(R.id.image_button_content);
+        imgBtnStyleContent = findViewById(R.id.image_button_style);
+        imgBtnDayNightMode = findViewById(R.id.image_button_dayNight);
 
         //highlight buttons
         highlightColorYellow = findViewById(R.id.highlight_yellow);
@@ -205,8 +216,12 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         highlightColorOrange.setOnClickListener(this);
 
 
-
-
+        //style layout
+        styleLayout = findViewById(R.id.relative_test);
+        styleLayout.setVisibility(View.GONE);
+        styleLayout.setClickable(true);
+        typeface = findViewById(R.id.typeface_btn);
+        brightnessControl = findViewById(R.id.brightness_seeker);
 
         noteBtn = findViewById(R.id.btn_note);
         noteBtn.setOnClickListener(new View.OnClickListener() {
@@ -216,18 +231,91 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 hideSelectionButtonsPopup();
                 dialogFragment = new NoteDialogFragment();
                 dialogFragment.setArguments(bundleG);
-//                fragmentManager = getSupportFragmentManager();
-//                dialogFragment.setTargetFragment(this,Constants.REQUEST_CODE_NOTE);
+
                 dialogFragment.show(getSupportFragmentManager(),"myFragment");
                 dialogFragment.setCancelable(false);
 
             }
         });
+
+        imgBtnStyleContent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(styleLayout.getVisibility() == View.GONE){
+                    slideUp(styleLayout);
+                }
+            }
+        });
+
+        imgBtnDayNightMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Toast.makeText(getApplicationContext(),String.valueOf(theme),Toast.LENGTH_LONG).show();
+                if(theme){
+                    reflowableControl.changeBackgroundColor(backgroundColor);
+                    reflowableControl.changeForegroundColor(foregroundColor);
+                    theme = false;
+                }else{
+                    reflowableControl.changeBackgroundColor(Color.BLACK);
+                    reflowableControl.changeForegroundColor(Color.WHITE);
+                    theme = true;
+                }
+
+//                reflowableControl.setBackgroundColor(Color.BLACK);
+
+
+            }
+        });
+
+
+        typeface.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FontsDialogFragment dialogFragment = new FontsDialogFragment();
+                dialogFragment.show(getSupportFragmentManager(),"test");
+            }
+        });
+
+
+
+        setBrightnessControl();
         eventClickContent();
 
 
     }
 
+    private void setBrightnessControl() {
+        int cBrightness = Settings.System.getInt(getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,0);
+        brightnessControl.setMax(255);
+        brightnessControl.setProgress(cBrightness);
+
+
+        brightnessControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Context context = getApplicationContext();
+                boolean canWrite = Settings.System.canWrite(context);
+                if(canWrite){
+                    int sBrightness = progress*255/255;
+                    Settings.System.putInt(context.getContentResolver(),Settings.System.SCREEN_BRIGHTNESS_MODE,Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+                    Settings.System.putInt(context.getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,sBrightness);
+                }else {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                    context.startActivity(intent);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+    }
 
 
     private void eventClickContent() {
@@ -249,6 +337,64 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                     activity.getCurrentFocus().getWindowToken(), 0);
         }
     }
+
+    public void slideUp(View view){
+        TranslateAnimation animate = new TranslateAnimation(
+                0,                 // fromXDelta
+                0,                 // toXDelta
+                view.getHeight(),  // fromYDelta
+                0);                // toYDelta
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
+        view.setVisibility(View.VISIBLE);
+
+    }
+
+    public void slideDown(View view){
+        TranslateAnimation animate = new TranslateAnimation(
+                0,                 // fromXDelta
+                0,                 // toXDelta
+                0,                 // fromYDelta
+                view.getHeight()); // toYDelta
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
+        view.setVisibility(View.GONE);
+
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        Rect viewRect = new Rect();
+        Animation slideD = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_down_animation);
+        styleLayout.getGlobalVisibleRect(viewRect);
+        if (isWithinLayoutBounds((int)ev.getRawX(),(int)ev.getRawY())) {
+        }else{
+            if(styleLayout.getVisibility()==View.VISIBLE){
+                isShow = false;
+                slideDown(styleLayout);
+            }else{
+                isShow=true;
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    boolean isWithinLayoutBounds(int xPoint, int yPoint) {
+        int[] l = new int[2];
+        styleLayout.getLocationOnScreen(l);
+        int x = l[0];
+        int y = l[1];
+        int w = styleLayout.getWidth();
+        int h = styleLayout.getHeight();
+
+        if (xPoint< x || xPoint> x + w || yPoint< y || yPoint> y + h) {
+            return false;
+        }
+        return true;
+    }
+
 
     public void setupUI(View view) {
 
@@ -333,6 +479,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
 
 
+
+
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -352,7 +500,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
 
 
-//        reflowableControl.setMediaOverlayListener(new MediaOverlayHandler()); //For Audio Book
+//      reflowableControl.setMediaOverlayListener(new MediaOverlayHandler()); //For Audio Book
 
         showLog("Media Overlay Available : ", String.valueOf(reflowableControl.isMediaOverlayAvailable()));
 
@@ -393,7 +541,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
                         RxBus.publishBookState(bookState);
 //                        RxBus.publishBookState(bookState);
-                        initReflowableControlDisplay(bookState.getFontType(),bookState.getFontSize(),bookState.getPagePosition(),bookState.getPageTransition());
+                        initReflowableControlDisplay(bookState.getFontType(),bookState.getFontSize(),bookState.getPagePosition(),bookState.getPageTransition(),
+                                bookState.getThemeState(),bookState.getBackgroundColor(),bookState.getColorText());
                     }
 
                     @Override
@@ -404,15 +553,15 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                         fontSize = 15;
                         fontType = "TimesRoman";
                         pageTransition = PageTransition.Curl;
-                        BookState bookState = new BookState(pagePosition,0,date,fontType,fontSize,Color.BLACK,Color.WHITE,PageTransition.Curl,true,book.get_id());
+                        theme = false; // false => nu e night mode // true => night mode
+                        backgroundColor = Color.WHITE;
+                        foregroundColor = Color.BLACK;
+
+                        BookState bookState = new BookState(pagePosition,reflowableControl.getChapterIndex(),date,fontType,fontSize,backgroundColor,foregroundColor,PageTransition.Curl,theme,book.get_id());
                         showLog("haide",bookState.toString());
                         insertBookState(bookState);
                     }
                 });
-
-
-
-
     }
 
     @SuppressLint("CheckResult")
@@ -556,9 +705,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 moveSelectionButtonPopupToUpper(startRect.top - selectionButtonsPopup.getHeight() - 30, reflowableControl.getWidth() - selectionButtonsPopup.getWidth());
             }
         } else {
-            //This vertical center is center of selection not reflowable contrller layout center
-            int verticalCenter = startRect.top + (int) ((endRect.bottom - startRect.top) / 2);
-            //Now we have to check whether left of starRect is > than multiple button width
+
+            int verticalCenter = startRect.top +  ((endRect.bottom - startRect.top) / 2);
+
             if ((reflowableControl.getWidth() - startRect.left) > selectionButtonsPopup.getWidth()) {
                 moveSelectionButtonPopupToMiddle(verticalCenter, startRect.left);
             } else {
@@ -577,6 +726,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             }
         }
     }
+
+
 
     private class SelectionHandler implements SelectionListener {
 
@@ -606,8 +757,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void selectionCancelled() {
-
-            showOrHideToolbar();
+            if(isShow){
+                showOrHideToolbar();
+            }
             hideSelectionButtonsPopup();
         }
     }
@@ -660,10 +812,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             show=true;
             showOrHideToolbar();
             pagePosition = pageInformation.pagePositionInBook;
-            RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,true,book.get_id()));
-//            intent.putExtra("aoloc",new BookState(book.get_id()+"x",pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,true,book.get_id()));
-//            bookstateTransporetr(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,Color.BLACK,Color.WHITE,pageTransition,true,book.get_id()));
-            insertBookState(subscribeBookState());
+            RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,backgroundColor,foregroundColor,pageTransition,theme,book.get_id()));
+
             RxBus.publishBookMark(bookmark);
 
         }
@@ -731,6 +881,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
     private Highlights creatorHighlightSkyEpub(List<licenta.books.androidmobile.classes.Highlight> arrayList,int chapterIndex){
         chapterHighlightsList = new Highlights();
+        if(arrayList==null){
+            return chapterHighlightsList;
+        }
         for(int i = 0 ;i < arrayList.size();i++){
             if(arrayList.get(i).getChapterIndex() == chapterIndex){
                 Highlight highlight = new Highlight();
@@ -866,17 +1019,12 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onNoteIconHit(Highlight highlight) {
-//            Log.d("intra?","danu");
-//            if(isBoxesShonw){
-//                show=true;
-//                showOrHideToolbar();
-//                return;
-//            }
 
             highlightTrue = highlight;
             currentHighlight = creatorHighlight(highlight) ;
             currentColor = highlight.color;
             if(!reflowableControl.isPaging()){
+
                 Log.d("intra?","nu");
                 dialogFragment = new NoteDialogFragment();
                 Bundle bundle = new Bundle();
@@ -1034,12 +1182,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
             bottomToolbar.animate().translationY(-bottomToolbar.getBottom()).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
             bottomToolbar.setVisibility(View.GONE);
-
-//            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-
-//                    hideSystemUI();
-
             show = false;
         }else {
             topToolbar.animate().translationY(0).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
@@ -1048,8 +1190,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             bottomToolbar.animate().translationY(0).setDuration(600).setInterpolator(new DecelerateInterpolator()).start();
             bottomToolbar.setVisibility(View.VISIBLE);
 
-//            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//                    showStatusBar(toolbar);
             show = true;
         }
     }
@@ -1074,13 +1214,25 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         Log.d(tag, value);
     }
 
-    private void initReflowableControlDisplay(String fontT,Integer fontS,Double pageP,PageTransition pageTran){
+    private void initReflowableControlDisplay(String fontT,Integer fontS,Double pageP,PageTransition pageTran,Boolean tema,Integer backgroundC,Integer foregroundC){
         fontType = fontT;
         fontSize = fontS;
         pagePosition = pageP;
         pageTransition = pageTran;
+        theme = tema;
+        backgroundColor = backgroundC;
+        foregroundColor = foregroundC;
+
         reflowableControl.setFontSize(fontS);
         reflowableControl.setFontName(fontT);
+        if(theme){
+            reflowableControl.changeBackgroundColor(Color.BLACK);
+            reflowableControl.changeForegroundColor(Color.WHITE);
+        }else{
+            reflowableControl.changeBackgroundColor(backgroundC);
+            reflowableControl.changeForegroundColor(foregroundC);
+        }
+
         reflowableControl.setStartPositionInBook(pageP);
         reflowableControl.setPageTransition(pageTransition);
     }

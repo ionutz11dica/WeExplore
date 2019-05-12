@@ -510,11 +510,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
         call.enqueue(new Callback<User>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
+            public void onResponse(Call<User> call, @NonNull Response<User> response) {
                 if(!response.isSuccessful()){
                     return;
                 }
-
                     customToast.show("User has been logged in",R.drawable.ic_error_outline_24dp,getApplicationContext());
                     verifyLoginFromDbGoogleAccount(account);
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:context=".activities.FontsDialogFragment"
+    android:layout_gravity="bottom|center"
+    android:orientation="horizontal">
+
+    <ListView
+        android:id="@+id/lv_typeface_fonts"
+        android:layout_width="350dp"
+        android:layout_height="400dp"
+        android:layout_gravity="center"/>
+
+</LinearLayout>
