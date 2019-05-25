@@ -30,10 +30,9 @@ public class BookE implements Parcelable {
     private String publisher;
     private String publishedDate;
 
-    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
+    @Ignore
     private  byte[] image;
     @ColumnInfo(name = "path_file")
-    @NonNull
     private String pathBook;
     private String isbn;
     private String imageLink;
@@ -57,7 +56,7 @@ public class BookE implements Parcelable {
 
     //Database constructor
     public BookE(@NonNull String _id, String title, ArrayList<String> authors, ArrayList<String> categories, Integer pageCount, String description, String publisher,
-                 String publishedDate, byte[] image, @NonNull String pathBook, String isbn, String imageLink) {
+                 String publishedDate, @NonNull String pathBook, String isbn, String imageLink) {
         this._id = _id;
         this.title = title;
         this.authors = authors;
@@ -67,7 +66,7 @@ public class BookE implements Parcelable {
         this.publisher = publisher;
         this.publishedDate = publishedDate;
         this.imageLink = imageLink;
-        this.image = image;
+
         this.pathBook = pathBook;
         this.isbn = isbn;
 

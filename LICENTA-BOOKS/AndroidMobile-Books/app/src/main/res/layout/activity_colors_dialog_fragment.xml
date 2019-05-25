@@ -2,17 +2,24 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     tools:context=".activities.ColorsDialogFragment"
+    android:layout_gravity="bottom|center"
+    android:orientation="horizontal"
     >
 
     <GridView
+android:padding="10dp"
+        android:background="#E0E0E0"
         android:id="@+id/grid_view_colors"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="350dp"
+        android:layout_height="400dp"
         android:columnWidth="75dp"
+        android:verticalSpacing="10dp"
+        android:horizontalSpacing="10dp"
         android:gravity="center"
-        android:numColumns="auto_fit"/>
+        android:numColumns="auto_fit"
+      />
 
 </LinearLayout>

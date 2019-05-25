@@ -40,44 +40,33 @@
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="0dp"
             android:orientation="horizontal"
-            android:weightSum="3">
+            android:gravity="center"
+            android:weightSum="2">
+
 
             <Button
-                android:id="@+id/btn_note_delete"
-                android:background="@drawable/note_btns"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@color/colorAccentTrans"
-                android:text="DELETE"
-                android:textSize="16dp"
-                android:fontFamily="@font/print_bold_tt"
 
-                />
-            <Button
-                android:layout_marginLeft="-2dp"
-                android:layout_marginRight="-2dp"
 
                 android:id="@+id/btn_note_cancel"
                 android:background="@drawable/note_btns"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="0.7"
                 android:textColor="@color/colorAccentTrans"
                 android:text="Cancel"
                 android:textSize="16dp"
-                android:fontFamily="@font/print_bold_tt"
+                android:fontFamily="@font/cantarell"
                 />
             <Button
                 android:id="@+id/btn_note_save"
                 android:background="@drawable/note_btns"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="0.7"
                 android:textColor="@color/colorAccentTrans"
                 android:text="SAVE"
                 android:textSize="16dp"
-                android:fontFamily="@font/print_bold_tt"
+                android:fontFamily="@font/cantarell"
                 />
         </LinearLayout>
     </RelativeLayout>

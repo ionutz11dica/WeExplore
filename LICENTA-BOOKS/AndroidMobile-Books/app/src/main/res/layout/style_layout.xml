@@ -142,6 +142,7 @@
                 android:layout_height="35dp"
                 android:layout_gravity="center"
                 android:text="typeface"
+                android:textSize="12dp"
                 android:layout_weight="0.85"
                 android:padding="10dp"
                 android:background="@drawable/fonts_btn"/>
@@ -174,7 +175,7 @@
                 android:layout_weight="0.85"
                 android:background="@drawable/fonts_btn"
                 android:padding="10dp"
-                android:text="color" />
+               />
 
         </LinearLayout>
 
@@ -199,7 +200,7 @@
                 android:layout_width="0dp"
                 android:layout_height="35dp"
                 android:layout_gravity="center"
-                android:text="color"
+
                 android:layout_weight="0.85"
                 android:padding="10dp"
                 android:background="@drawable/fonts_btn"/>

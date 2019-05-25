@@ -2,7 +2,6 @@ package licenta.books.androidmobile.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.arch.persistence.room.Index;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -37,7 +36,6 @@ import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.BlurBuilder;
@@ -205,11 +203,13 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                 @Override
                 public void onSubscribe(Disposable d) {
                     btnDownload.setText("Wait...");
+                    bookMethods.insertBook(book);
+
                 }
 
                 @Override
                 public void onNext(InputStream object) {
-
+                    userBookMethods.insertUserBook(userBookJoin[0]);
                 }
 
                 @Override
@@ -218,10 +218,11 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                 }
 
                 @Override
-                public void onComplete() {
+                public synchronized void onComplete() {
+
                     btnDownload.setText("READ");
-                    bookMethods.insertBook(book);
-                    userBookMethods.insertUserBook(userBookJoin[0]);
+
+
 
 
                 }
@@ -241,6 +242,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         if (status.equals("with")) {
             final String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
             final Call<ResponseBody> call = apiService.syncUserBooksAddEmail(book.get_id(),email);
+
 
             Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
             userSingle.subscribeOn(Schedulers.io())
@@ -287,7 +289,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                         }
 
                         @Override
-                        public void onSuccess(User user) {
+                        public synchronized void onSuccess(User user) {
                             Log.d("User id: ", user.getUserId().toString());
                             if(userBookJoin==null){
                                 verifyExistanceBook(book.get_id(),user.getUserId());
@@ -344,6 +346,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         blurBackground.setOnClickListener(this);
 
 
+
         Glide.with(this)
                 .asBitmap()
                 .load(url)
@@ -365,6 +368,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         RxBus.publishBook(bookE);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void openDao() {
         bookEDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookEDao();
         userBookJoinDao = AppRoomDatabase.getInstance(getApplicationContext()).getUserBookDao();

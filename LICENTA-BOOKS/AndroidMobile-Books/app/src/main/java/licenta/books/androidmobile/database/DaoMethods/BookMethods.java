@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.database.DAO.BookEDao;
@@ -36,6 +37,7 @@ public class BookMethods implements BookEDao {
                     bookEDao.insertBook(book);
                 }
             }).subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe();
     }
 

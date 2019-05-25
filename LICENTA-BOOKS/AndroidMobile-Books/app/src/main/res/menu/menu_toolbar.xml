@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
     <item
         android:title="Bookmark"
         app:showAsAction="always"
         android:icon="@drawable/ic_bookmark_border_black_24dp"
-        android:id="@+id/bookmark_id"></item>
+        android:id="@+id/bookmark_id" />
+
+    <item
+        android:title="TextToSpeech"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_play_circle_outline_black_32dp"
+        android:id="@+id/text_to_speech" />
 
 </menu>

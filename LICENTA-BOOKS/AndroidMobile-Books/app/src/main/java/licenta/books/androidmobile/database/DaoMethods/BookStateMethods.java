@@ -33,7 +33,7 @@ public class BookStateMethods implements BookStateDao {
                 bookStateDao.insertBookState(bookState);
             }
         }).subscribeOn(Schedulers.io())
-                .subscribe();
+                .subscribe().dispose();
     }
 
     @Override

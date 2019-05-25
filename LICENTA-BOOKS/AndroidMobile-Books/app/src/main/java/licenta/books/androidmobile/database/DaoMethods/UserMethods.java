@@ -4,6 +4,7 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.classes.User;
+import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.UserDao;
 
 public class UserMethods implements UserDao {
@@ -34,7 +35,7 @@ public class UserMethods implements UserDao {
                 userDao.insertUser(user);
             }
         }).subscribeOn(Schedulers.io())
-                .subscribe();
+                .subscribe().dispose();
     }
 
     @Override
@@ -46,4 +47,6 @@ public class UserMethods implements UserDao {
     public Single<User>  verifyExistenceGoogleAcount(String emailReq) {
         return userDao.verifyExistenceGoogleAcount(emailReq);
     }
+
+
 }

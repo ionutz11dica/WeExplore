@@ -30,8 +30,8 @@ public class Review  implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private Integer reviewId;
     private Integer rating;
-    private  Integer bookId;
-    private  Integer userId;
+    private Integer bookId;
+    private Integer userId;
     @Ignore
     private String bookIdS;
     @Ignore

@@ -11,21 +11,15 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
-
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,7 +32,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
-//import licenta.books.androidmobile.activities.PopupWindow.NotifyingSelectionWebView;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Chapter;
@@ -49,11 +42,7 @@ import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
 import licenta.books.androidmobile.database.DaoMethods.BookStateMethods;
 import licenta.books.androidmobile.database.DaoMethods.UserBookMethods;
 import licenta.books.androidmobile.interfaces.Constants;
-import nl.siegmann.epublib.domain.Book;
-//import nl.siegmann.epublib.domain.Book;
-//import nl.siegmann.epublib.domain.Resource;
-//import nl.siegmann.epublib.domain.Spine;
-//import nl.siegmann.epublib.domain.TOCReference;
+
 
 public class ReaderActivity extends AppCompatActivity  {
     EpubReaderView epubReaderView;

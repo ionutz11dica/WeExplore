@@ -20,6 +20,8 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -30,6 +32,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.DetailsActivity;
+import licenta.books.androidmobile.activities.others.CheckForNetwork;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
@@ -77,10 +80,12 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.ShelfViewHol
 
     @Override
     public void onBindViewHolder(@NonNull final ShelfViewHolder shelfViewHolder, final int i) {
-        Bitmap bitmap = BitmapFactory.decodeByteArray(list.get(i).getImage(),0,list.get(i).getImage().length);
-
-
-        shelfViewHolder.imageView.setImageBitmap(bitmap);
+       // if(CheckForNetwork.isConnectedToNetwork(context)){
+            Glide.with(context)
+                    .load(list.get(i).getImageLink())
+                    .placeholder(R.drawable.ic_error_outline_24dp)
+                    .into(shelfViewHolder.imageView);
+       // }
         shelfViewHolder.title.setText(list.get(i).getTitle());
         shelfViewHolder.authors.setText(ArrayStringConverter.fromArrayList(list.get(i).getAuthors()));
 

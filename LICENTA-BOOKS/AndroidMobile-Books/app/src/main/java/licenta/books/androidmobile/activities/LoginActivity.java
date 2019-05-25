@@ -3,8 +3,10 @@ package licenta.books.androidmobile.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -71,6 +73,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     UserDao userDao;
     UserMethods userMethods;
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +98,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @SuppressLint("CommitPrefEdits")
     void initComp(){
         if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
@@ -252,7 +256,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         editor.putString(Constants.KEY_USER_EMAIL, userr.getEmail());
         editor.apply();
 
-        Single<User> userDb  = userDao.verifyExistenceGoogleAcount(userr.getEmail());
+        Single<User> userDb  = userMethods.verifyExistenceGoogleAcount(userr.getEmail());
         userDb.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SingleObserver<User>() {
@@ -265,11 +269,13 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     public void onSuccess(User user) {
                         RxBus.publishUser(user);
                         startActivity(intent);
+
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         userMethods.insertUser(userr);
+                        startActivity(intent);
                     }
                 });
 
@@ -381,11 +387,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 }
             case R.id.btnSignin:
                 if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
-
+                    verifySignin();
                 }
             case R.id.btnSignup:
                 if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
-
+                    verifySignup();
                 }else{
                     Toast.makeText(getApplicationContext(),"Connection problem",Toast.LENGTH_LONG).show();
                     break;
@@ -426,7 +432,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
                     startActivity(new Intent(getApplicationContext(),MainActivity.class));
                  }else if(response.code() == 200){
-                    customToast.show("That email is already used", getApplicationContext());
+                    customToast.show("That email is already used "+ response.message(), getApplicationContext());
                 }
 
             }
@@ -547,5 +553,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         return true;
     }
 
-
+    @Override
+    protected void onPause() {
+        super.onPause();
+//        userMethods.closeDb();
+    }
 }

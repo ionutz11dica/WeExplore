@@ -17,15 +17,15 @@ import licenta.books.androidmobile.classes.UserBookJoin;
 @Dao
 public interface UserBookJoinDao  {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.FAIL)
     void insertUserBook(UserBookJoin... userBookJoin);
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT * FROM book INNER JOIN user_book_join ON book.bookId = user_book_join.bookId WHERE user_book_join.userId = :userId")
+    @Query("SELECT * FROM book INNER JOIN userBook ON book.bookId = userBook.bookId WHERE userBook.userId = :userId")
     Flowable<List<BookE>> getAllUserBooksFromDatabase(Integer userId);
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT * FROM book INNER JOIN user_book_join ON book.bookId = user_book_join.bookId where user_book_join.userId = :userId AND user_book_join.bookId = :bookId")
+    @Query("SELECT * FROM book INNER JOIN userBook ON book.bookId = userBook.bookId where userBook.userId = :userId AND userBook.bookId = :bookId")
     Single<BookE> getBookFromDatabase(Integer userId, String bookId);
 
     @Query("SELECT path_file FROM book WHERE  bookId = :bookId")

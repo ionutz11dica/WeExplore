@@ -30,7 +30,6 @@ public class ChapterAdapter extends ArrayAdapter<Chapter> {
 
     public ChapterAdapter(Activity context, ArrayList<Chapter> content) {
         super(context, R.layout.row_chapter_lv, content);
-        // TODO Auto-generated constructor stub
 
         this.context = context;
         this.content = content;

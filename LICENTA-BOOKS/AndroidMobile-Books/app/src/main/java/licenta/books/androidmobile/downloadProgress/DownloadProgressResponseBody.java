@@ -49,29 +49,21 @@ public class DownloadProgressResponseBody extends ResponseBody{
     }
 
     private Source source(Source source) {
-
-
         return new ForwardingSource(source) {
             long totalBytesRead = 0L;
 
             @Override
-            public long read(Buffer sink, long byteCount) throws IOException {
+            public long read(@NonNull Buffer sink, long byteCount) throws IOException {
                 long bytesRead = super.read(sink,byteCount);
                 totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
-//                BufferedInputStream bufferedInputStream = new BufferedInputStream(responseBody.byteStream());
-//                ByteBuffer baf = new ByteBuffer(bufferedInputStream);
-
                 float percent = bytesRead == -1 ? 100f : (((float)totalBytesRead / (float) responseBody.contentLength()) * 100);
                 Log.d("Percent ->",String.valueOf(percent));
-
                 if (null != progressListener) {
                     progressListener.update(totalBytesRead, responseBody.contentLength(), bytesRead == -1);
-//                    RxBus.publishsDownloadProgress(percent);
                 }
                 return bytesRead;
             }
         };
-
     }
 }

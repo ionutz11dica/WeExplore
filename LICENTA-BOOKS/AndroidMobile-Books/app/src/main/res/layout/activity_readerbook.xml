@@ -35,5 +35,9 @@
             layout="@layout/style_layout"/>
     </RelativeLayout>
 
+    <include
+        android:id="@+id/search_layout"
+        layout="@layout/layout_search"
+        android:visibility="invisible"/>
 
 </RelativeLayout>

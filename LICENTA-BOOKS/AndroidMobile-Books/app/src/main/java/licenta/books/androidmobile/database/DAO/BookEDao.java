@@ -13,7 +13,7 @@ import licenta.books.androidmobile.classes.BookE;
 
 @Dao
 public interface BookEDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertBook(BookE... book);
 
 }

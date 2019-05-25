@@ -38,7 +38,7 @@ public class BookmarkMethods implements BookmarkDao {
                 bookmarkDao.insertBookmark(bookmark);
             }
         }).subscribeOn(Schedulers.io())
-                .subscribe();
+                .subscribe().dispose();
     }
 
     @Override

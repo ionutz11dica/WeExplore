@@ -8,14 +8,20 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.constraint.solver.widgets.Helper;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -49,6 +55,8 @@ import com.skytree.epub.PageInformation;
 import com.skytree.epub.PageMovedListener;
 import com.skytree.epub.PageTransition;
 import com.skytree.epub.ReflowableControl;
+import com.skytree.epub.SearchListener;
+import com.skytree.epub.SearchResult;
 import com.skytree.epub.SelectionListener;
 import com.skytree.epub.SkyProvider;
 import com.skytree.epub.State;
@@ -58,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -66,6 +75,9 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.others.CustomFont;
+import licenta.books.androidmobile.activities.others.HelperApp;
+import licenta.books.androidmobile.activities.others.HelperSettings;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
@@ -83,7 +95,8 @@ import licenta.books.androidmobile.database.DaoMethods.HighlightMethods;
 import licenta.books.androidmobile.interfaces.Constants;
 
 
-public class ReaderBookActivity extends AppCompatActivity implements View.OnClickListener, NoteDialogFragment.OnCompleteListener {
+public class ReaderBookActivity extends AppCompatActivity implements View.OnClickListener, NoteDialogFragment.OnCompleteListener,
+        FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor {
     ReflowableControl reflowableControl;
     RelativeLayout renderRelative;
 
@@ -139,6 +152,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     StateHandler stateHandler;
     PagerMoveHandler pageMoveHandler;
     HighLightHandler highLightHandler;
+    SearchHandler searchHandler;
 
     //Highlight colors
     Button highlightColorYellow;
@@ -147,6 +161,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     Button highlightColorBlue;
     Button highlightColorOrange;
     int currentColor;
+    Button audioHighlightBtn;
 
     //Buttons
     Button noteBtn;
@@ -171,19 +186,48 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     SeekBar brightnessControl;
     Button fontMinus,fontPlus;
     Button marginMinus,marginPlus;
+    Button colorsBackground;
+    Button colorsForeground;
 
 
+    ArrayList<CustomFont> fonts = new ArrayList<>();
+    HelperApp app;
+    HelperSettings settings;
+
+
+
+
+    //audio player TTS ------------
+    private int RINGER_MODE;
+    private TextToSpeech textToSpeechInPage;
+    private TextToSpeech textToSpeechInSelection;
+
+    private String utteranceIdForPage = "my_page_pronounce";
+    private String utteranceIdForTextInHighlight = "my_pronounce";
+
+    private String textInPage;
+    private String textInHighlight;
+
+    private boolean pageAutoFlip = false;
+    private boolean bookLoadTask = false;
+
+    private MenuItem playPauseItem;
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_readerbook);
+        app = (HelperApp)getApplication();
         openDb();
+        makeFonts();
         initComp();
         initPathBook();
 
     }
 
     private void initComp(){
+        settings = new HelperSettings(getApplicationContext());
         progressDialog = new ProgressDialog(this);
 
         topToolbar=findViewById(R.id.reader_toolbar_top);
@@ -210,12 +254,14 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         highlightColorPink = findViewById(R.id.highlight_pink);
         highlightColorBlue = findViewById(R.id.highlight_blue);
         highlightColorOrange = findViewById(R.id.highlight_orange);
+        audioHighlightBtn = findViewById(R.id.btn_audio);
 
         highlightColorYellow.setOnClickListener(this);
         highlightColorGreen.setOnClickListener(this);
         highlightColorPink.setOnClickListener(this);
         highlightColorBlue.setOnClickListener(this);
         highlightColorOrange.setOnClickListener(this);
+        audioHighlightBtn.setOnClickListener(this);
 
 
         //style layout
@@ -229,6 +275,17 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         fontPlus = findViewById(R.id.font_plus);
         marginMinus = findViewById(R.id.margin_minus);
         marginPlus = findViewById(R.id.margin_plus);
+        colorsBackground = findViewById(R.id.background_btn);
+        colorsForeground = findViewById(R.id.textcolor_btn);
+
+
+
+        //TTS AUDIO PLAYER ;
+        textInPage ="";
+        prepareAndroidTTSinPage(textInPage);
+
+        textInHighlight ="";
+        prepareAndroidTTSinHighlight(textInHighlight);
 
 
         noteBtn = findViewById(R.id.btn_note);
@@ -280,6 +337,29 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             }
         });
 
+        colorsBackground.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                bundle.putInt(Constants.KEY_CURRENT_COLOR,backgroundColor);
+                bundle.putBoolean(Constants.KEY_STATUS_COLOR,true);
+                ColorsDialogFragment dialogFragment = new ColorsDialogFragment();
+                dialogFragment.setArguments(bundle);
+                dialogFragment.show(getSupportFragmentManager(),"colors");
+            }
+        });
+
+        colorsForeground.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                bundle.putInt(Constants.KEY_CURRENT_COLOR,foregroundColor);
+                bundle.putBoolean(Constants.KEY_STATUS_COLOR,false);
+                ColorsDialogFragment dialogFragment = new ColorsDialogFragment();
+                dialogFragment.setArguments(bundle);
+                dialogFragment.show(getSupportFragmentManager(),"colors");
+            }
+        });
 
         setFontSizeBookMinus();
         setFontSizeBookPlus();
@@ -533,8 +613,10 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         //To get text of page in pageMovedListener in pageDescription
         reflowableControl.setExtractText(true);
-
-
+        reflowableControl.setSigilStyleEnabled(false);
+        reflowableControl.setBookStyleEnabled(true);
+        reflowableControl.setBookFontEnabled(false);
+        reflowableControl.setFontUnit("px");
 
 //      reflowableControl.setMediaOverlayListener(new MediaOverlayHandler()); //For Audio Book
 
@@ -655,7 +737,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 currentColor = Color.parseColor("#80f4cc70");
                 if(isHighlighted){
                     if(highlightTrue.color == currentColor){
-                        Toast.makeText(getApplicationContext(),String.valueOf(forDelete),Toast.LENGTH_LONG).show();
+//                        Toast.makeText(getApplicationContext(),String.valueOf(forDelete),Toast.LENGTH_LONG).show();
                         reflowableControl.deleteHighlight(highlightTrue);
                     }else{
                         changeColorHighlight(currentColor);
@@ -717,6 +799,21 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 }
                 hideSelectionButtonsPopup();
                 break;
+            case R.id.btn_audio:
+                RINGER_MODE = statusRingerMode();
+                if(RINGER_MODE == AudioManager.RINGER_MODE_NORMAL){
+                    if(textToSpeechInSelection.isSpeaking()){
+                        textToSpeechInSelection.stop();
+                        setPlayButtonHighlight();
+                    }else{
+                        speakingInHighlight(textInHighlight);
+
+                    }
+                }else{
+                    Toast.makeText(getApplicationContext(),"Please switch from Silent/Vibrate Mode to Normal",Toast.LENGTH_LONG).show();
+                }
+                break;
+
         }
     }
 
@@ -763,6 +860,31 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
+    @Override
+    public void onCompleteFonts(Typeface type, String name,int index) {
+//        reflowableControl.changeFont(name,fontSize);
+        CustomFont customFont = this.getCustomFont(index);
+        String namee = customFont.getFullName();
+        reflowableControl.changeFont("reeniebeanie.ttf",15);
+        typeface.setTypeface(type);
+        typeface.setText(name);
+        //update in database
+    }
+
+    @Override
+    public void onCompleteColors(Integer color, boolean status) {
+        if(status){
+            backgroundColor = color;
+            reflowableControl.changeBackgroundColor(color);
+            colorsBackground.setBackgroundColor(color);
+
+        }else{
+            foregroundColor = color;
+            reflowableControl.changeForegroundColor(color);
+            colorsForeground.setBackgroundColor(color);
+
+        }
+    }
 
 
     private class SelectionHandler implements SelectionListener {
@@ -771,13 +893,19 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         public void selectionStarted(Highlight highlight, Rect rect, Rect rect1) {
             show=true;
             hideSelectionButtonsPopup();
+            pageAutoFlip = false;
+            textInHighlight = "";
+
+            if(textToSpeechInSelection.isSpeaking()) textToSpeechInSelection.stop();
+            if(textToSpeechInPage.isSpeaking()) textToSpeechInPage.stop();
         }
 
         @Override
         public void selectionChanged(Highlight highlight, Rect rect, Rect rect1) {
             show=true;
-
             hideSelectionButtonsPopup();
+
+            textInHighlight = "";
         }
 
         @Override
@@ -787,6 +915,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             highlightStartRect = startRect;
             highlightEndRect = endRect;
             isHighlighted=false;
+
+            textInHighlight = highlight.text;
+
             refreshButtons();
             selectionHighlightButtonsDisplay(startRect, endRect);
         }
@@ -797,9 +928,19 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 showOrHideToolbar();
             }
             hideSelectionButtonsPopup();
+            pageAutoFlip=false;
+
+            shutTextToSpeechInPage();
+            shutTextToSpeechInSelection();
         }
     }
 
+    private void shutTextToSpeechInPage() {
+        if(textToSpeechInPage.isSpeaking()) {
+            textToSpeechInPage.stop();
+            setPauseButtonTextToSpeech();
+        }
+    }
 
 
     private class StateHandler implements StateListener {
@@ -809,6 +950,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             if(state.equals(State.NORMAL)){
                 showLog("State =>", "NORMAL");
                 hideProgressDialog();
+                if(!bookLoadTask) bookLoadTask=true;
             } else if(state.equals(State.LOADING)) {
                 showLog("State =>", "LOADING");
                 showProgressDialog("Loading","Please wait..",false);
@@ -828,9 +970,11 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onPageMoved(PageInformation pageInformation) {
-            showLog("Page Index", String.valueOf(pageInformation.pageIndex));
             show = true;
+            textInPage = pageInformation.pageDescription;
             showOrHideToolbar();
+
+
             Integer bookmarkCode = getBookmarkCode(pageInformation.chapterIndex,pageInformation.pageIndex);
             Double pagePos = pageInformation.pagePositionInBook;
             Integer chapterIndex = pageInformation.chapterIndex;
@@ -840,17 +984,30 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             Integer userId = user.getUserId();
             Bookmark bookmark = new Bookmark(bookmarkCode,pagePos,chapterIndex,pageIndex,bookmarkPageInfo,bookId,userId);
             boolean isBookmark = isBookmarkExists(bookmark);
+
+
             if(isBookmark){
                 menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_black_24dp));
+                //aici
+
             }else{
                 menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_border_black_24dp));
             }
-            show=true;
-            showOrHideToolbar();
+
+            if(textToSpeechInPage.isSpeaking())  textToSpeechInPage.stop();
+            if(pageAutoFlip){
+                speakingInPage(textInPage);
+            }
+
+//            show=true;
+//            showOrHideToolbar();
             pagePosition = pageInformation.pagePositionInBook;
             RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,backgroundColor,foregroundColor,pageTransition,theme,book.get_id()));
 
             RxBus.publishBookMark(bookmark);
+            Log.d("Text",pageInformation.pageDescription);
+
+
 
         }
 
@@ -988,6 +1145,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onHighlightDeleted(Highlight highlight) {
+            shutTextToSpeechInSelection();
             licenta.books.androidmobile.classes.Highlight highlightDb = creatorHighlight(highlight);
             highlightMethods.deleteHighlight(highlight.pagePositionInBook,highlight.text,book.get_id());
             loadHighLightsFromDb(user);
@@ -995,6 +1153,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onHighlightInserted(Highlight highlight) {
+            shutTextToSpeechInSelection();
             licenta.books.androidmobile.classes.Highlight highlightDb = creatorHighlight(highlight);
             highlightMethods.insertHighlight(highlightDb);
             loadHighLightsFromDb(user);
@@ -1004,6 +1163,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onHighlightUpdated(Highlight highlight) {
+            shutTextToSpeechInSelection();
             Log.d("UpdateH",String.valueOf(highlight.color));
             highlightMethods.updateHighlight(highlightTrue.startIndex,highlightTrue.startOffset,highlightTrue.endIndex,highlightTrue.endOffset,highlightTrue.color,
                     highlightTrue.text,highlightTrue.note,highlightTrue.isNote,highlightTrue.style,
@@ -1013,6 +1173,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         @Override
         public void onHighlightHit(Highlight highlight, int i, int i1, Rect startRect, Rect endRect) {
             refreshButtons();
+            textInHighlight = highlight.text;
             forDelete=false;
             bundleG = new Bundle();
             bundleG.putBoolean(Constants.KEY_HIGHLIGHT_EXISTS,true);
@@ -1034,14 +1195,12 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             highlightTrue = highlight;
             selectionHighlightButtonsDisplay(startRect,endRect);
 
-//            Toast.makeText(getApplicationContext(),highlight.text,Toast.LENGTH_LONG).show();
+
         }
 
         @Override
         public Highlights getHighlightsForChapter(int chapterIndex) {
-
             return creatorHighlightSkyEpub(highlightsList,chapterIndex);
-
         }
 
         @Override
@@ -1059,6 +1218,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             highlightTrue = highlight;
             currentHighlight = creatorHighlight(highlight) ;
             currentColor = highlight.color;
+
+
             if(!reflowableControl.isPaging()){
 
                 Log.d("intra?","nu");
@@ -1084,6 +1245,43 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         @Override
         public void onDrawCaret(Canvas canvas, Caret caret) {
 
+        }
+    }
+
+    int numberOfSearched = 0;
+    private class SearchHandler implements SearchListener {
+
+        @Override
+        public void onKeySearched(SearchResult searchResult) {
+
+        }
+
+        @Override
+        public void onSearchFinishedForChapter(SearchResult searchResult) {
+
+        }
+
+        @Override
+        public void onSearchFinished(SearchResult searchResult) {
+
+        }
+    }
+
+
+
+
+    // SEARCH --------------
+    public void addSearchResult(SearchResult searchResult, int mode){
+
+    }
+
+
+
+
+    private void shutTextToSpeechInSelection() {
+        if (textToSpeechInSelection.isSpeaking()) {
+            textToSpeechInSelection.stop();
+            setPlayButtonHighlight();
         }
     }
 
@@ -1253,14 +1451,25 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     private void initReflowableControlDisplay(String fontT,Integer fontS,Double pageP,PageTransition pageTran,Boolean tema,Integer backgroundC,Integer foregroundC){
         fontType = fontT;
         fontSize = fontS;
+        if(fontType != null){
+            typeface.setText(fontType);
+            if(!fontType.equals("TimesRoman")){
+                typeface.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(),"font/"+fontType.toLowerCase()+".ttf"));
+            }
+            reflowableControl.setFont(fontType,fontSize);
+        }
         pagePosition = pageP;
         pageTransition = pageTran;
         theme = tema;
         backgroundColor = backgroundC;
         foregroundColor = foregroundC;
+        //change btn color
+        colorsBackground.setBackgroundColor(backgroundC);
+        colorsForeground.setBackgroundColor(foregroundC);
 
-        reflowableControl.setFontSize(fontS);
-        reflowableControl.setFontName(fontT);
+
+//        reflowableControl.changeFontSize(fontS);
+        reflowableControl.setFont(fontT,fontS);
         if(theme){
             reflowableControl.changeBackgroundColor(Color.BLACK);
             reflowableControl.changeForegroundColor(Color.WHITE);
@@ -1312,6 +1521,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         return disposableBookmark;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void openDb(){
         bookStateDao = AppRoomDatabase.getInstance(getApplicationContext()).getBookStateDao();
         bookStateMethods = BookStateMethods.getInstance(bookStateDao);
@@ -1337,6 +1547,211 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
+    public void makeFonts() {
+        fonts.clear();
+        for (int i = 0 ;i< Constants.TYPEFACE_NAMES.length;i++){
+            fonts.add(0,new CustomFont(Constants.TYPEFACE_NAMES[i],""));
+        }
+        this.fonts.addAll(app.customFonts);
+    }
+
+    // CustomFont
+    public CustomFont getCustomFont(int fontIndex) {
+        if (fontIndex<0) fontIndex = 0;
+        if (fontIndex>(fonts.size()-1)) fontIndex = fonts.size()-1;
+        return fonts.get(fontIndex);
+    }
+
+
+    public void fontSelected(int index) {
+        CustomFont customFont = this.getCustomFont(index);
+        String name = customFont.getFullName();
+        if (!settings.fontName.equalsIgnoreCase(name)) {
+            settings.fontName = name;
+//            checkSettings();
+            Log.d("font name ",settings.fontName);
+            reflowableControl.changeFont(settings.fontName,fontSize);
+        }
+    }
+
+
+
+
+
+
+        //AUDIO MEDIA PLAYER ->>>>>>>>>>>>>>>>>>>>>
+        private  void shutDownTTS() {
+            if( textToSpeechInSelection !=null) {
+
+                textToSpeechInSelection.stop();
+                textToSpeechInSelection.shutdown();
+            }
+            if(textToSpeechInPage !=null){
+                textToSpeechInPage.stop();
+                textToSpeechInPage.shutdown();
+            }
+        }
+
+
+
+    private void prepareAndroidTTSinPage(final String textInPage){
+        textToSpeechInPage = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR){
+                    speakingInPage(textInPage);
+                }else{
+                    showLog("Error TTS", "Error ");
+                }
+            }
+        });
+
+        textToSpeechInPage.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+            @Override
+            public void onStart(String utteranceId) {
+                pageAutoFlip=true;
+                setPlayButtonTextToSpeech();
+            }
+
+            @Override
+            public void onDone(String utteranceId) {
+                if(pageAutoFlip){
+                    goToNextPageInChapter();
+                }
+            }
+
+            @Override
+            public void onError(String utteranceId) {
+
+            }
+        });
+    }
+
+    private void prepareAndroidTTSinHighlight(final String textInHighlight){
+        textToSpeechInSelection = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR){
+                    speakingInHighlight(textInHighlight);
+                }else{
+                    showLog("Error TTS", "Error ");
+                }
+            }
+        });
+
+        textToSpeechInSelection.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+            @Override
+            public void onStart(String utteranceId) {
+                setPauseButtonHighlight();
+            }
+
+            @Override
+            public void onDone(String utteranceId) {
+                setPlayButtonHighlight();
+            }
+
+            @Override
+            public void onError(String utteranceId) {
+                setPlayButtonHighlight();
+            }
+        });
+    }
+
+
+    private void setPlayButtonHighlight(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                audioHighlightBtn.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_play_arrow_black_10dp));
+            }
+        });
+    }
+
+    private void setPauseButtonHighlight(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                audioHighlightBtn.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_pause_black_24dp));
+            }
+        });
+    }
+
+
+    private void setPlayButtonTextToSpeech(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (playPauseItem != null) {
+                    playPauseItem.setIcon(R.drawable.ic_pause_circle_outline_black_32dp);
+                }
+            }
+        });
+    }
+
+    private void setPauseButtonTextToSpeech(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (playPauseItem != null) {
+                    playPauseItem.setIcon(R.drawable.ic_play_circle_outline_black_32dp);
+                }
+            }
+        });
+    }
+
+    private void goToNextPageInChapter(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                reflowableControl.gotoNextPageInChapter();
+            }
+        });
+    }
+
+    private int statusRingerMode(){
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        if(audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT){
+            return AudioManager.RINGER_MODE_SILENT;
+        }else if(audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE){
+            return AudioManager.RINGER_MODE_VIBRATE;
+        }
+        return AudioManager.RINGER_MODE_NORMAL;
+    }
+
+    private void speakingInPage(String textInPage){
+        if(bookLoadTask){
+            if(textToSpeechInPage.isSpeaking()){
+                textToSpeechInPage.stop();
+                setPauseButtonTextToSpeech();
+                pageAutoFlip=false;
+            }else{
+                textToSpeechInPage.setLanguage(Locale.US);
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                    textToSpeechInPage.speak(textInPage,TextToSpeech.QUEUE_ADD,null,utteranceIdForPage);
+                }else{
+                    textToSpeechInPage.speak(textInPage,TextToSpeech.QUEUE_ADD,null);
+                }
+            }
+        }
+    }
+
+    private void speakingInHighlight(String textInHighlight){
+        if(textToSpeechInSelection.isSpeaking()){
+            textToSpeechInSelection.stop();
+            setPlayButtonHighlight();
+        } else {
+            textToSpeechInSelection.setLanguage(Locale.ENGLISH);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                textToSpeechInSelection.speak(textInHighlight,TextToSpeech.QUEUE_ADD,null,utteranceIdForTextInHighlight);
+            }else {
+                textToSpeechInSelection.speak(textInHighlight,TextToSpeech.QUEUE_ADD,null);
+            }
+        }
+    }
+
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         menuItems = menu;
@@ -1355,7 +1770,20 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             case R.id.bookmark_id:
                 verifyBookMark(subscribeBookmark());
                 return true;
+            case R.id.text_to_speech:
+                playPauseItem = item;
+                RINGER_MODE = statusRingerMode();
+                if(RINGER_MODE == AudioManager.RINGER_MODE_NORMAL){
+                    if(textToSpeechInPage.isSpeaking()){
+                        textToSpeechInPage.stop();
+                        setPauseButtonTextToSpeech();
+                    }else{
+                        speakingInPage(textInPage);
+                    }
 
+                }else{
+                    Toast.makeText(getApplicationContext(),"Please switch from Silent/Vibrate Mode to Normal",Toast.LENGTH_LONG).show();
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -1378,7 +1806,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     @Override
     public void onBackPressed() {
         insertBookState(subscribeBookState());
-
+        shutDownTTS();
         super.onBackPressed();
     }
 

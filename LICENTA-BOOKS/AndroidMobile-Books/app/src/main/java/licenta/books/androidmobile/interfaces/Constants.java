@@ -1,9 +1,12 @@
 package licenta.books.androidmobile.interfaces;
 public interface Constants {
+
+      String DATABASE_NAME = "AppDatabase.db";
+
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;
 
-      String BASE_URL = "http://192.168.1.11:4000/";
+      String BASE_URL = "http://192.168.1.13:4000/";
 
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
@@ -37,4 +40,6 @@ public interface Constants {
 
 
       String[] TYPEFACE_NAMES =  {"BradleyHand","Cantarell","CrimsonText","Inconsolata","JosefinSans", "Molengo","Simplicity","ReenieBeanie"};
+      String KEY_CURRENT_COLOR = "keyCurrentColor";
+      String KEY_STATUS_COLOR = "keyStatusColor";
 }

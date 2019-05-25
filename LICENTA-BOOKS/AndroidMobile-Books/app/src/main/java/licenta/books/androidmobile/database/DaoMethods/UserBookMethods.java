@@ -1,10 +1,15 @@
 package licenta.books.androidmobile.database.DaoMethods;
 
+import android.annotation.SuppressLint;
+import android.os.AsyncTask;
+
 import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.UserBookJoin;
@@ -30,6 +35,7 @@ public class UserBookMethods implements UserBookJoinDao {
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     @Override
     public void insertUserBook(final UserBookJoin... userBookJoin) {
         Completable.fromRunnable(new Runnable() {
@@ -38,7 +44,30 @@ public class UserBookMethods implements UserBookJoinDao {
                 userBookJoinDao.insertUserBook(userBookJoin);
             }
         }).subscribeOn(Schedulers.io())
-                .subscribe();
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe().dispose();
+
+
+
+//        new AsyncTask<Void,Void,Void>(){
+//
+//            @Override
+//            protected Void doInBackground(Void... voids) {
+//                userBookJoinDao.insertUserBook(userBookJoin);
+//                return null;
+//            }
+//        }.execute();
+
+//        userBookJoinDao.insertUserBook(user);
+
+//        Completable.fromAction(new Action() {
+//            @Override
+//            public void run() throws Exception {
+//                userBookJoinDao.insertUserBook(userBookJoin);
+//            }
+//        }).subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe();
     }
 
     @Override

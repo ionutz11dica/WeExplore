@@ -25,7 +25,7 @@ import licenta.books.androidmobile.interfaces.Constants;
 
 public class NoteDialogFragment extends DialogFragment {
     RelativeLayout notePopup;
-    Button delete;
+
     Button cancel;
     Button save;
     EditText noteContent;
@@ -42,7 +42,6 @@ public class NoteDialogFragment extends DialogFragment {
 
 
         notePopup = view.findViewById(R.id.relatve_layout_note);
-        delete = view.findViewById(R.id.btn_note_delete);
         cancel= view.findViewById(R.id.btn_note_cancel);
         save = view.findViewById(R.id.btn_note_save);
         noteContent = view.findViewById(R.id.et_note_text);
@@ -64,11 +63,8 @@ public class NoteDialogFragment extends DialogFragment {
         }
 
         if(noteContent.getText().toString().equals("")){
-            cancel.setLayoutParams(new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.WRAP_CONTENT,1.5f));
-            save.setLayoutParams(new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.WRAP_CONTENT,1.5f));
             save.setTextColor(getResources().getColor(R.color.granite));
             save.setClickable(false);
-            delete.setVisibility(View.GONE);
         }
 
         cancel.setOnClickListener(new View.OnClickListener() {
@@ -85,6 +81,7 @@ public class NoteDialogFragment extends DialogFragment {
                 getDialog().dismiss();
             }
         });
+
 
         noteContent.addTextChangedListener(new TextWatcher() {
             @Override

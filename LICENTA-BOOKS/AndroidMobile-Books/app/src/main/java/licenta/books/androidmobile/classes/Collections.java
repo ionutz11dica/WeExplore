@@ -7,35 +7,23 @@ import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-@Entity(
-        tableName = "collection_join",
-        foreignKeys = {
-                @ForeignKey(
-                        entity = BookE.class,
-                        parentColumns = "bookId",
-                        childColumns = "bookId"
-                ),
-                @ForeignKey(
-                        entity = User.class,
-                        parentColumns = "userId",
-                        childColumns = "userId")
-        },
-        indices = {
-                @Index(value = "userId"),
-                @Index(value = "bookId")
-        })
+@Entity(tableName = "collection",
+        foreignKeys = @ForeignKey(entity = User.class,
+                parentColumns = "userId",
+                childColumns = "userId"),
+        indices = {@Index(value = {"userId"},unique = true)})
 public class Collections implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private Integer collectionId;
     private String nameCollection;
-    private String bookId;
+
     private Integer userId;
 
 
-    public Collections(Integer collectionId, String nameCollection, String bookId, Integer userId) {
+    public Collections(Integer collectionId, String nameCollection,  Integer userId) {
         this.collectionId = collectionId;
         this.nameCollection = nameCollection;
-        this.bookId = bookId;
+
         this.userId = userId;
     }
 
@@ -46,7 +34,6 @@ public class Collections implements Parcelable {
             collectionId = in.readInt();
         }
         nameCollection = in.readString();
-        bookId = in.readString();
         if (in.readByte() == 0) {
             userId = null;
         } else {
@@ -63,7 +50,6 @@ public class Collections implements Parcelable {
             dest.writeInt(collectionId);
         }
         dest.writeString(nameCollection);
-        dest.writeString(bookId);
         if (userId == null) {
             dest.writeByte((byte) 0);
         } else {
@@ -105,13 +91,6 @@ public class Collections implements Parcelable {
         this.nameCollection = nameCollection;
     }
 
-    public String getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(String bookId) {
-        this.bookId = bookId;
-    }
 
     public Integer getUserId() {
         return userId;
