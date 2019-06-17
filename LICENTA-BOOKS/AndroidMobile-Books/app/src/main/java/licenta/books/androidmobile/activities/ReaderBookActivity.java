@@ -27,6 +27,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -36,11 +38,14 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -78,6 +83,7 @@ import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.CustomFont;
 import licenta.books.androidmobile.activities.others.HelperApp;
 import licenta.books.androidmobile.activities.others.HelperSettings;
+import licenta.books.androidmobile.adapters.SearchAdapter;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
@@ -146,6 +152,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
 
     ProgressDialog progressDialog;
+    ProgressBar progressBar;
 
     //Handlers
     SelectionHandler selectionHandler;
@@ -169,6 +176,10 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     LinearLayout styleLayout;
     Button typeface;
 
+    LinearLayout searchLayout;
+    EditText searchEditText;
+    TextView cancelTextView;
+    ListView searchListview;
 
     //toolbar controllers
     TextView tvPage;
@@ -176,6 +187,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     ImageButton imgBtnContent;
     ImageButton imgBtnDayNightMode;
     ImageButton imgBtnStyleContent;
+    ImageButton imgBtnSearch;
 
     //lists
     List<Bookmark> bookmarksList;
@@ -184,13 +196,15 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
     //style layout
     SeekBar brightnessControl;
-    Button fontMinus,fontPlus;
-    Button marginMinus,marginPlus;
+    ImageButton fontMinus,fontPlus;
+    ImageButton marginMinus,marginPlus;
     Button colorsBackground;
     Button colorsForeground;
 
 
     ArrayList<CustomFont> fonts = new ArrayList<>();
+    ArrayList<SearchResult> searchResults = new ArrayList<>();
+
     HelperApp app;
     HelperSettings settings;
 
@@ -247,6 +261,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         imgBtnContent = findViewById(R.id.image_button_content);
         imgBtnStyleContent = findViewById(R.id.image_button_style);
         imgBtnDayNightMode = findViewById(R.id.image_button_dayNight);
+        imgBtnSearch = findViewById(R.id.image_button_search);
 
         //highlight buttons
         highlightColorYellow = findViewById(R.id.highlight_yellow);
@@ -269,6 +284,16 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         styleLayout.setVisibility(View.GONE);
         styleLayout.setClickable(true);
         typeface = findViewById(R.id.typeface_btn);
+
+
+        searchLayout = findViewById(R.id.search_layout);
+        searchLayout.setVisibility(View.GONE);
+        searchLayout.setClickable(true);
+        searchEditText = findViewById(R.id.et_search);
+        cancelTextView = findViewById(R.id.tv_search_cancel);
+        searchListview = findViewById(R.id.lv_search_items);
+
+
 
         brightnessControl = findViewById(R.id.brightness_seeker);
         fontMinus = findViewById(R.id.font_minus);
@@ -328,12 +353,52 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             }
         });
 
+        imgBtnSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(searchLayout.getVisibility() == View.GONE) {
+//                    reflowableControl.setClickable(false);
+
+                    slideUp(searchLayout);
+                }
+            }
+        });
+        cancelTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(searchLayout.getVisibility() == View.VISIBLE) {
+//                    reflowableControl.setClickable(true);
+                    hideSoftKeyboard(ReaderBookActivity.this);
+                    slideDown(searchLayout);
+                    searchLayout.setVisibility(View.GONE);
+                }
+            }
+        });
+
 
         typeface.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FontsDialogFragment dialogFragment = new FontsDialogFragment();
                 dialogFragment.show(getSupportFragmentManager(),"test");
+            }
+        });
+
+
+        searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO ||
+                        actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_NEXT){
+                    String keySearch = searchEditText.getText().toString();
+                    if(keySearch !=null && keySearch.length() > 0){
+                        showIndicator();
+                        clearSearchResults(1);
+                        reflowableControl.searchKey(keySearch);
+
+                    }
+                }
+                return false;
             }
         });
 
@@ -374,8 +439,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             @Override
             public void onClick(View v) {
                 if(fontSize < 10) {
-                    fontMinus.setTextColor(Color.GRAY);
+                    fontMinus.setEnabled(false);
                 }else{
+                    fontPlus.setEnabled(true);
                     fontSize--;
                     reflowableControl.changeFontSize(fontSize);
                 }
@@ -388,8 +454,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             @Override
             public void onClick(View v) {
                 if(fontSize > 20) {
-                    fontPlus.setTextColor(Color.GRAY);
+                    fontPlus.setEnabled(false);
                 }else{
+                    fontMinus.setEnabled(true);
                     fontSize++;
                     reflowableControl.changeFontSize(fontSize);
                 }
@@ -455,7 +522,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         TranslateAnimation animate = new TranslateAnimation(
                 0,                 // fromXDelta
                 0,                 // toXDelta
-                view.getHeight(),  // fromYDelta
+                renderRelative.getHeight(),  // fromYDelta
                 0);                // toYDelta
         animate.setDuration(500);
         animate.setFillAfter(true);
@@ -474,7 +541,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         animate.setFillAfter(true);
         view.startAnimation(animate);
         view.setVisibility(View.GONE);
-
     }
 
     @Override
@@ -634,6 +700,11 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 //
         stateHandler = new StateHandler();
         reflowableControl.setStateListener(stateHandler);
+
+        searchHandler = new SearchHandler();
+        reflowableControl.setSearchListener(searchHandler);
+
+        makeIndicator();
 //
 //        bookmarkHandler = new BookmarkHandler();
 //        reflowableControl.setBookmarkListener(bookmarkHandler);
@@ -950,6 +1021,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             if(state.equals(State.NORMAL)){
                 showLog("State =>", "NORMAL");
                 hideProgressDialog();
+                hideIndicator();
                 if(!bookLoadTask) bookLoadTask=true;
             } else if(state.equals(State.LOADING)) {
                 showLog("State =>", "LOADING");
@@ -1253,17 +1325,26 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onKeySearched(SearchResult searchResult) {
-
+            addSearchResult(searchResult,0);
         }
 
         @Override
         public void onSearchFinishedForChapter(SearchResult searchResult) {
+            if(searchResult.numberOfSearchedInChapter != 0){
+                addSearchResult(searchResult,1);
+                reflowableControl.pauseSearch();
+                numberOfSearched = searchResult.numberOfSearched;
+            }else{
+                reflowableControl.searchMore();
+                numberOfSearched = searchResult.numberOfSearched;
+            }
 
         }
 
         @Override
         public void onSearchFinished(SearchResult searchResult) {
-
+            addSearchResult(searchResult,2);
+            hideIndicator();
         }
     }
 
@@ -1271,11 +1352,59 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
 
     // SEARCH --------------
-    public void addSearchResult(SearchResult searchResult, int mode){
 
+    private void clearSearchResults(int mode){
+        if(mode == 0){
+            hideSoftKeyboard(ReaderBookActivity.this);
+            searchResults.clear();
+        }else{
+            searchResults.clear();
+        }
     }
 
+    private void setAdapterSearch(){
 
+        SearchAdapter searchAdapter = new SearchAdapter(this,searchResults);
+        searchListview.setAdapter(searchAdapter);
+    }
+
+    int i = 0;
+    public void addSearchResult(SearchResult searchResult, int mode){
+        i++;
+        Log.i("CONTOR ",String.valueOf(i));
+        Log.i("Mode ",String.valueOf(mode));
+        if(mode == 0 ){
+            searchResults.add(searchResult);
+        }else{
+            if(mode==1){
+                reflowableControl.searchMore();
+                searchResults.add(searchResult);
+            }
+            searchResults.add(searchResult);
+        }
+        setAdapterSearch();
+    }
+
+    public void makeIndicator() {
+        progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyle);
+        searchLayout.addView(progressBar);
+        this.hideIndicator();
+    }
+
+    public void showIndicator() {
+        LinearLayout.LayoutParams params =
+                (LinearLayout.LayoutParams)progressBar.getLayoutParams();
+        params.gravity = Gravity.CENTER;
+        progressBar.setLayoutParams(params);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void hideIndicator() {
+        if (progressBar!=null) {
+            progressBar.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.GONE);
+        }
+    }
 
 
     private void shutTextToSpeechInSelection() {

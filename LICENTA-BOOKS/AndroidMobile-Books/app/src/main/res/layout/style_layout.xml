@@ -59,22 +59,22 @@
             android:layout_weight="0.6"
             android:gravity="center"
             android:padding="10dp"/>
-        <Button
+        <ImageButton
             android:id="@+id/font_minus"
             android:layout_width="0dp"
             android:layout_height="45dp"
             android:layout_gravity="center"
-            android:text="-"
+            android:src="@drawable/ic_font_size"
             android:layout_weight="0.41"
             android:padding="10dp"
             android:background="@drawable/fonts_btn"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/font_plus"
             android:layout_width="0dp"
             android:layout_height="45dp"
             android:layout_gravity="center"
-            android:text="+"
+            android:src="@drawable/ic_capital_t"
             android:layout_weight="0.41"
             android:padding="10dp"
             android:layout_marginLeft="10dp"
@@ -98,22 +98,22 @@
                 android:layout_weight="0.6"
                 android:gravity="center"
                 android:padding="10dp"/>
-            <Button
+            <ImageButton
                 android:id="@+id/margin_minus"
                 android:layout_width="0dp"
                 android:layout_height="45dp"
                 android:layout_gravity="center"
-                android:text="-"
+                android:src="@drawable/ic_left_margin"
                 android:layout_weight="0.41"
                 android:padding="10dp"
                 android:background="@drawable/fonts_btn"/>
 
-            <Button
+            <ImageButton
                 android:id="@+id/margin_plus"
                 android:layout_width="0dp"
                 android:layout_height="45dp"
                 android:layout_gravity="center"
-                android:text="+"
+                android:src="@drawable/ic_right_margin"
                 android:layout_weight="0.41"
                 android:padding="10dp"
                 android:layout_marginLeft="10dp"
@@ -223,22 +223,22 @@
                 android:padding="10dp"
                 android:text="Spacing"
                 android:textSize="15dp" />
-            <Button
+            <ImageButton
                 android:id="@+id/line_spacing_minus"
                 android:layout_width="0dp"
                 android:layout_height="45dp"
                 android:layout_gravity="center"
-                android:text="-"
+                android:src="@drawable/ic_line_spacing_text"
                 android:layout_weight="0.41"
                 android:padding="10dp"
                 android:background="@drawable/fonts_btn"/>
 
-            <Button
+            <ImageButton
                 android:id="@+id/line_spacing_plus"
                 android:layout_width="0dp"
                 android:layout_height="45dp"
                 android:layout_gravity="center"
-                android:text="+"
+                android:src="@drawable/ic_spacing"
                 android:layout_weight="0.41"
                 android:padding="10dp"
                 android:layout_marginLeft="10dp"

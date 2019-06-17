@@ -9,6 +9,8 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 
+import com.commonsware.cwac.saferoom.SQLCipherUtils;
+
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
@@ -55,4 +57,6 @@ public abstract class AppRoomDatabase extends RoomDatabase {
         }
         return appRoomDatabase;
     }
+
+
 }
