@@ -29,7 +29,7 @@ import licenta.books.androidmobile.database.DAO.UserDao;
 import licenta.books.androidmobile.interfaces.Constants;
 
 @Database(entities = {User.class, BookE.class, Review.class, Highlight.class, Bookmark.class,
-        BookState.class, UserBookJoin.class, Collections.class, CollectionBookJoin.class},version = 36,exportSchema = false)
+        BookState.class, UserBookJoin.class, Collections.class, CollectionBookJoin.class},version = 38,exportSchema = false)
 public abstract class AppRoomDatabase extends RoomDatabase {
     //database object
     public abstract BookEDao getBookEDao();

@@ -1,25 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".fragments.ChapterFragment"
-    android:id="@+id/annotation_fragment">
+    android:id="@+id/annotation_fragment"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:fitsSystemWindows="true"
+    android:background="#80b8b8b9">
+
     <LinearLayout
+        android:id="@+id/ll_listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="95dp"
+        android:layout_marginBottom="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="@+id/ll_footer"
+
         android:gravity="center">
-        <TextView
+
+        <ListView
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp"
+            android:id="@+id/lv_annotations"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:gravity="center"
-            android:text="MERGE 3?"
-            android:textSize="16dp"
-            />
+            android:layout_height="match_parent"
+            android:background="@drawable/white"
+            android:clipToPadding="false"
+            android:padding="5dp"
+            android:scrollbarStyle="outsideOverlay"
+            android:divider="#80b8b8b9"
+            android:dividerHeight="5.0sp"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
     </LinearLayout>
 
 
-</FrameLayout>
+    <LinearLayout
+
+        android:id="@+id/ll_footer"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_gravity="bottom"
+        android:background="@drawable/white"
+        android:baselineAligned="false"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="4"
+        app:layout_scrollFlags="scroll"
+        android:clickable="true"
+        tools:layout_editor_absoluteY="619dp">
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.40"
+            >
+
+            <TextView
+                android:id="@+id/tv_show_All"
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:layout_margin="5dp"
+                android:gravity="center"
+                android:text="All"
+                android:textColor="@color/granite"
+                android:textSize="20sp" />
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.35">
+
+            <Button
+                android:id="@+id/btn_highlight_yellow"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/highlight_btn_yellow" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.35">
+
+            <Button
+                android:id="@+id/btn_highlight_green"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/highlight_btn_green" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.35">
+
+            <Button
+                android:id="@+id/btn_highlight_pink"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/highlight_btn_pink" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.35">
+
+            <Button
+                android:id="@+id/btn_highlight_blue"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/highlight_btn_blue" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.35">
+
+            <Button
+                android:id="@+id/btn_highlight_orange"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/highlight_btn_orange" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.35">
+
+            <ImageView
+                android:id="@+id/btn_bookmark"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_margin="5dp"
+                android:gravity="center"
+                android:src="@drawable/ic_bookmark_black_24dp"
+                android:textColor="@color/granite"
+                android:textSize="20sp" />
+        </RelativeLayout>
+    </LinearLayout>
+
+
+
+</android.support.design.widget.CoordinatorLayout>

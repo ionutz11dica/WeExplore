@@ -4,8 +4,14 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.Date;
+
+import licenta.books.androidmobile.classes.Converters.TimestampConverter;
+import licenta.books.androidmobile.interfaces.AnnotationFamily;
 
 @Entity(
         tableName = "bookmark_join",
@@ -24,7 +30,7 @@ import android.os.Parcelable;
                 @Index(value = "userId"),
                 @Index(value = "bookId")
         })
-public class Bookmark implements Parcelable {
+public class Bookmark implements Parcelable, AnnotationFamily {
     @PrimaryKey(autoGenerate = true)
     private Integer bookmarkId;
     private Integer bookmarkCode;
@@ -32,16 +38,21 @@ public class Bookmark implements Parcelable {
     private Integer chapterIndex;
     private Integer pageIndex;
     private String bookmarkPageInfo;
+    @TypeConverters({TimestampConverter.class})
+    private Date bookmarkDate;
+    private String chapterName;
     private String bookId;
     private Integer userId;
 
-    public Bookmark( Integer bookmarkCode, Double pagePosition, Integer chapterIndex, Integer pageIndex, String bookmarkPageInfo, String bookId, Integer userId) {
+    public Bookmark( Integer bookmarkCode, Double pagePosition, Integer chapterIndex, Integer pageIndex, String bookmarkPageInfo,Date bookmarkDate,String chapterName, String bookId, Integer userId) {
 
         this.bookmarkCode = bookmarkCode;
         this.pagePosition = pagePosition;
         this.chapterIndex = chapterIndex;
         this.pageIndex = pageIndex;
         this.bookmarkPageInfo = bookmarkPageInfo;
+        this.bookmarkDate = bookmarkDate;
+        this.chapterName = chapterName;
         this.bookId = bookId;
         this.userId = userId;
     }
@@ -74,6 +85,7 @@ public class Bookmark implements Parcelable {
             pageIndex = in.readInt();
         }
         bookmarkPageInfo = in.readString();
+        chapterName = in.readString();
         bookId = in.readString();
         if (in.readByte() == 0) {
             userId = null;
@@ -115,6 +127,7 @@ public class Bookmark implements Parcelable {
             dest.writeInt(pageIndex);
         }
         dest.writeString(bookmarkPageInfo);
+        dest.writeString(chapterName);
         dest.writeString(bookId);
         if (userId == null) {
             dest.writeByte((byte) 0);
@@ -140,6 +153,22 @@ public class Bookmark implements Parcelable {
             return new Bookmark[size];
         }
     };
+
+    public String getChapterName() {
+        return chapterName;
+    }
+
+    public void setChapterName(String chapterName) {
+        this.chapterName = chapterName;
+    }
+
+    public Date getBookmarkDate() {
+        return bookmarkDate;
+    }
+
+    public void setBookmarkDate(Date bookmarkDate) {
+        this.bookmarkDate = bookmarkDate;
+    }
 
     public Integer getBookmarkId() {
         return bookmarkId;

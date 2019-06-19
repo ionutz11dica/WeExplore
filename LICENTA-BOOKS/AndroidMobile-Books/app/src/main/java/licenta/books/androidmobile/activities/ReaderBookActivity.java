@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -16,12 +15,12 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.support.constraint.solver.widgets.Helper;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -80,6 +79,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.others.BookAnnotations;
 import licenta.books.androidmobile.activities.others.CustomFont;
 import licenta.books.androidmobile.activities.others.HelperApp;
 import licenta.books.androidmobile.activities.others.HelperSettings;
@@ -98,11 +98,12 @@ import licenta.books.androidmobile.database.DAO.HighlightDao;
 import licenta.books.androidmobile.database.DaoMethods.BookStateMethods;
 import licenta.books.androidmobile.database.DaoMethods.BookmarkMethods;
 import licenta.books.androidmobile.database.DaoMethods.HighlightMethods;
+import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.interfaces.Constants;
 
 
 public class ReaderBookActivity extends AppCompatActivity implements View.OnClickListener, NoteDialogFragment.OnCompleteListener,
-        FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor {
+        FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor , AnnotationFragment.OnFragmentInteractionListener {
     ReflowableControl reflowableControl;
     RelativeLayout renderRelative;
 
@@ -135,7 +136,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     User user;
     Menu menuItems;
 
-     Rect highlightStartRect, highlightEndRect;
+    Rect highlightStartRect, highlightEndRect;
 
 
     //book information
@@ -169,6 +170,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     Button highlightColorOrange;
     int currentColor;
     Button audioHighlightBtn;
+    Button shareText;
 
     //Buttons
     Button noteBtn;
@@ -198,16 +200,18 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     SeekBar brightnessControl;
     ImageButton fontMinus,fontPlus;
     ImageButton marginMinus,marginPlus;
+    ImageButton lineSpacingIncrease, lineSpacingDecrease;
     Button colorsBackground;
     Button colorsForeground;
 
 
     ArrayList<CustomFont> fonts = new ArrayList<>();
     ArrayList<SearchResult> searchResults = new ArrayList<>();
+    ArrayList<BookAnnotations> bookAnnotations = new ArrayList<>();
 
     HelperApp app;
     HelperSettings settings;
-
+    int lineSpacing;
 
 
 
@@ -270,6 +274,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         highlightColorBlue = findViewById(R.id.highlight_blue);
         highlightColorOrange = findViewById(R.id.highlight_orange);
         audioHighlightBtn = findViewById(R.id.btn_audio);
+        shareText = findViewById(R.id.btn_share);
 
         highlightColorYellow.setOnClickListener(this);
         highlightColorGreen.setOnClickListener(this);
@@ -277,6 +282,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         highlightColorBlue.setOnClickListener(this);
         highlightColorOrange.setOnClickListener(this);
         audioHighlightBtn.setOnClickListener(this);
+        shareText.setOnClickListener(this);
 
 
         //style layout
@@ -302,7 +308,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         marginPlus = findViewById(R.id.margin_plus);
         colorsBackground = findViewById(R.id.background_btn);
         colorsForeground = findViewById(R.id.textcolor_btn);
-
+        lineSpacingIncrease = findViewById(R.id.line_spacing_plus);
+        lineSpacingDecrease = findViewById(R.id.line_spacing_minus);
 
 
         //TTS AUDIO PLAYER ;
@@ -426,12 +433,29 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             }
         });
 
+
+
         setFontSizeBookMinus();
         setFontSizeBookPlus();
         setBrightnessControl();
         eventClickContent();
+        setLineSpacingIncrease();
+        setLineSpacingDecrease();
+        setShareText();
 
+    }
 
+    private void setShareText(){
+        Intent shareIntent = new Intent();
+        shareText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT,highlightTrue.text);
+                shareIntent.setType("text/plain");
+                startActivity(shareIntent);
+            }
+        });
     }
 
     private void setFontSizeBookMinus() {
@@ -440,8 +464,10 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             public void onClick(View v) {
                 if(fontSize < 10) {
                     fontMinus.setEnabled(false);
+                    fontMinus.setColorFilter(Color.LTGRAY);
                 }else{
                     fontPlus.setEnabled(true);
+                    fontPlus.setColorFilter(Color.BLACK);
                     fontSize--;
                     reflowableControl.changeFontSize(fontSize);
                 }
@@ -455,14 +481,67 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             public void onClick(View v) {
                 if(fontSize > 20) {
                     fontPlus.setEnabled(false);
+                    fontPlus.setColorFilter(Color.LTGRAY);
                 }else{
                     fontMinus.setEnabled(true);
+                    fontMinus.setColorFilter(Color.BLACK);
                     fontSize++;
                     reflowableControl.changeFontSize(fontSize);
                 }
             }
         });
     }
+
+    private void setLineSpacingIncrease(){
+        lineSpacingIncrease.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                increaseLineSpace();
+            }
+        });
+    }
+
+    private void setLineSpacingDecrease() {
+        lineSpacingDecrease.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                decreaseLineSpace();
+            }
+        });
+    }
+
+    public void decreaseLineSpace() {
+        if(lineSpacing !=0){
+            this.lineSpacing--;
+            checkLineSpacing();
+            reflowableControl.changeLineSpacing(getRealLineSpacing(lineSpacing));
+        }
+    }
+    public void increaseLineSpace() {
+        if(lineSpacing !=4){
+            this.lineSpacing++;
+            checkLineSpacing();
+            reflowableControl.changeLineSpacing(getRealLineSpacing(lineSpacing));
+        }
+    }
+    public void checkLineSpacing(){
+        if(lineSpacing ==0){
+            lineSpacingDecrease.setEnabled(false);
+            lineSpacingDecrease.setColorFilter(Color.LTGRAY);
+        }else{
+            lineSpacingDecrease.setEnabled(true);
+            lineSpacingDecrease.setColorFilter(Color.BLACK);
+        }
+
+        if(lineSpacing==4){
+            lineSpacingIncrease.setEnabled(false);
+            lineSpacingIncrease.setColorFilter(Color.LTGRAY);
+        }else{
+            lineSpacingIncrease.setEnabled(true);
+            lineSpacingIncrease.setColorFilter(Color.BLACK);
+        }
+    }
+
 
     private void setBrightnessControl() {
         int cBrightness = Settings.System.getInt(getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,0);
@@ -502,6 +581,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         imgBtnContent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                createList(highlightsList,bookmarksList);
+                RxBus.publishBookAnnotation(bookAnnotations);
                 startActivityForResult(new Intent(getApplicationContext(), AnnotationBookActivity.class), Constants.RESULT_CODE_CHAPTER);
             }
         });
@@ -621,16 +702,35 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         topToolbar.setTitle(book.getTitle());
         topToolbar.setSubtitle(convertFromArray(book.getAuthors()));
         setSupportActionBar(topToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if(getSupportActionBar() !=null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         initBookVariableFromDataBase();
 
         String fileName = book.getTitle()+".epub";
         renderRelative.addView(setUpReflowableController(fileName,"/sdcard/Android/data/licenta.books.androidmobile/files"));
 
+        checkLineSpacing();
+    }
 
-
-
+    public int getRealLineSpacing(int lineSpacing){
+        int space=0;
+        if(lineSpacing==0){
+            space = 100;
+        }else if(lineSpacing==1){
+            space = 120;
+        }else if(lineSpacing==2){
+            space = 140;
+        }else if(lineSpacing==3){
+            space = 155;
+        }else if(lineSpacing==4){
+            space = 170;
+        }else {
+            this.lineSpacing = 1;
+            space = 120;
+        }
+        return space;
     }
 
     private ReflowableControl setUpReflowableController(String fileName, String baseDirectoryPath) {
@@ -648,7 +748,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         reflowableControl.setDoublePagedForLandscape(true);
 
-        reflowableControl.setLineSpacing(135); // the value is supposed to be percent(%).
+//        reflowableControl.setLineSpacing(135); // the value is supposed to be percent(%).
 
         reflowableControl.setHorizontalGapRatio(0.25);
 
@@ -659,9 +759,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         reflowableControl.setFingerTractionForSlide(true);
 
-
-
-
+        reflowableControl.setLineSpacing(this.getRealLineSpacing(this.lineSpacing));
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -957,6 +1055,17 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
+    @Override
+    public void onTransferBookAnnotation(BookAnnotations bookAnnotation) {
+        if(bookAnnotation.getHighlight()!=null){
+            reflowableControl.gotoPageByHighlight(creatorHighlightReverse(bookAnnotation.getHighlight()));
+        }
+        if(bookAnnotation.getBookmark()!=null){
+//            reflowableControl.gotoPageByNavPointIndex(bookAnnotation.getBookmark().getPageIndex());
+            reflowableControl.gotoPageByPagePositionInBook(bookAnnotation.getBookmark().getPagePosition());
+        }
+    }
+
 
     private class SelectionHandler implements SelectionListener {
 
@@ -1054,7 +1163,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             String bookmarkPageInfo = "Chapter : " + pageInformation.chapterIndex + " Page In Chapter : " + pageInformation.pageIndex;
             String bookId = book.get_id();
             Integer userId = user.getUserId();
-            Bookmark bookmark = new Bookmark(bookmarkCode,pagePos,chapterIndex,pageIndex,bookmarkPageInfo,bookId,userId);
+            String chapterName = pageInformation.chapterTitle;
+            Bookmark bookmark = new Bookmark(bookmarkCode,pagePos,chapterIndex,pageIndex,bookmarkPageInfo,Calendar.getInstance().getTime(),chapterName,bookId,userId);
             boolean isBookmark = isBookmarkExists(bookmark);
 
 
@@ -1113,7 +1223,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
 
     private licenta.books.androidmobile.classes.Highlight creatorHighlight(Highlight highlight){
-        licenta.books.androidmobile.classes.Highlight highlightDb = new licenta.books.androidmobile.classes.Highlight(highlight.code,highlight.chapterIndex,highlight.pagePositionInBook,highlight.pagePositionInChapter,
+        licenta.books.androidmobile.classes.Highlight highlightDb = new licenta.books.androidmobile.classes.Highlight(highlight.code,highlight.chapterIndex,reflowableControl.getChapterTitle(highlight.chapterIndex),highlight.pagePositionInBook,highlight.pagePositionInChapter,
                 highlight.startIndex,highlight.endIndex,highlight.startOffset,highlight.endOffset,highlight.color,highlight.text,highlight.left,highlight.top,highlight.note,highlight.isNote,highlight.isOpen,
                 Calendar.getInstance().getTime(),highlight.forSearch,highlight.style,highlight.pageIndex,book.get_id(),user.getUserId());
         return highlightDb;
@@ -1136,7 +1246,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         highlight.note = highlightMine.getNoteContent();
         highlight.isNote = highlightMine.isNote();
         highlight.isOpen = highlightMine.isOpen();
-        highlight.datetime = TimestampConverter.fromDateToString(highlightMine.getHighlightedDate());
+        if(highlightMine.getHighlightedDate()!=null){
+            highlight.datetime = TimestampConverter.fromDateToString(highlightMine.getHighlightedDate());
+        }
         highlight.forSearch = highlightMine.isForSearch();
         highlight.style = highlightMine.getStyle();
         highlight.pageIndex = highlightMine.getPageIndex();
@@ -1441,10 +1553,12 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void loadBookmarkList(List<Bookmark> arrayList){
+        bookmarksList = new ArrayList<>();
         bookmarksList = arrayList;
     }
 
     private void loadHighlight(List<licenta.books.androidmobile.classes.Highlight> highlights){
+        highlightsList = new ArrayList<>();
         highlightsList = highlights;
     }
 
@@ -1611,6 +1725,21 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         reflowableControl.setPageTransition(pageTransition);
     }
 
+    public void createList(List<licenta.books.androidmobile.classes.Highlight> highlights, List<Bookmark> bookmarks){
+        bookAnnotations.removeAll(bookAnnotations);
+        if(highlights !=null) {
+            for (licenta.books.androidmobile.classes.Highlight highlight : highlights) {
+                bookAnnotations.add(new BookAnnotations(highlight));
+            }
+        }
+        if(bookmarks !=null){
+            for (Bookmark bookmark : bookmarks){
+                bookAnnotations.add(new BookAnnotations(bookmark));
+            }
+        }
+        Log.d("Lista:",String.valueOf(bookAnnotations.size()));
+    }
+
     private String convertFromArray(ArrayList<String> authors){
         StringBuilder sb = new StringBuilder();
         for(String s : authors){
@@ -1664,14 +1793,25 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == Constants.RESULT_CODE_CHAPTER && RESULT_OK == resultCode && data!=null){
-            if(data.getIntExtra(Constants.KEY_CHAPTER,0)-1 <0){
-                reflowableControl.gotoPageByNavPointIndex(0);
-            }else{
-                reflowableControl.gotoPageByNavPointIndex(data.getIntExtra(Constants.KEY_CHAPTER,0));
-            }
+            if(data.hasExtra("bookAnot")){
+                BookAnnotations bookAnnotation = data.getParcelableExtra("bookAnot");
+                if(bookAnnotation.getHighlight()!=null){
+                    new Handler().postDelayed(() -> reflowableControl.gotoPageByHighlight(creatorHighlightReverse(bookAnnotation.getHighlight())),200);
+                }else{
+                    new Handler().postDelayed(() -> reflowableControl.gotoPageByPagePositionInBook(bookAnnotation.getBookmark().getPagePosition()),200);
+                }
 
+            }
+            if(data.hasExtra(Constants.KEY_CHAPTER)) {
+                if (data.getIntExtra(Constants.KEY_CHAPTER, 0) - 1 < 0) {
+                    reflowableControl.gotoPageByNavPointIndex(0);
+                } else {
+                    reflowableControl.gotoPageByNavPointIndex(data.getIntExtra(Constants.KEY_CHAPTER, 0));
+                }
+
+
+            }
             insertBookState(subscribeBookState());
-        }else if(requestCode == Constants.RESULT_CODE_BOOKMARK && RESULT_OK == resultCode && data!=null){
 
         }
     }
@@ -1939,4 +2079,16 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         super.onBackPressed();
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        Disposable d = RxBus.subscribeBook(new Consumer<BookE>() {
+            @Override
+            public void accept(BookE bookE) throws Exception {
+                book = bookE;
+                Log.d("Revine: ",book.getTitle());
+            }
+        });
+        d.dispose();
+    }
 }

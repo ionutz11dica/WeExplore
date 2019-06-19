@@ -1,4 +1,10 @@
 package licenta.books.androidmobile.interfaces;
+
+import licenta.books.androidmobile.patterns.strategyAnnotationSort.AllSelected;
+import licenta.books.androidmobile.patterns.strategyAnnotationSort.BookmarkSelected;
+import licenta.books.androidmobile.patterns.strategyAnnotationSort.HighlightSelected;
+import licenta.books.androidmobile.patterns.strategyAnnotationSort.TypeSelection;
+
 public interface Constants {
 
       String DATABASE_NAME = "AppDatabase.db";
@@ -11,7 +17,7 @@ public interface Constants {
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
 
-      String TIME_STAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+      String TIME_STAMP_FORMAT = "MMM dd yyyy HH:mm:ss.SSS";
 
 
       String KEY_IMAGE_URL = "keyImgUrl";
@@ -42,4 +48,14 @@ public interface Constants {
       String[] TYPEFACE_NAMES =  {"BradleyHand","Cantarell","CrimsonText","Inconsolata","JosefinSans", "Molengo","Simplicity","ReenieBeanie"};
       String KEY_CURRENT_COLOR = "keyCurrentColor";
       String KEY_STATUS_COLOR = "keyStatusColor";
+      String KEY_BOOKS_ANNOTATION_LIST = "keyBookAnnotation";
+
+
+      //switcher
+      TypeSelection ALL_SELECTED_SWITCH = new AllSelected();
+      TypeSelection HIGHLIGHT_SELECTED_SWITCH = new HighlightSelected();
+      TypeSelection BOOKMARK_SELECTED_SWITCH = new BookmarkSelected();
+
+
+
 }

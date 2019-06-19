@@ -11,6 +11,7 @@ import android.os.Parcelable;
 import java.util.Date;
 
 import licenta.books.androidmobile.classes.Converters.TimestampConverter;
+import licenta.books.androidmobile.interfaces.AnnotationFamily;
 
 @Entity(tableName = "highlight_join",
         foreignKeys = {
@@ -28,11 +29,12 @@ import licenta.books.androidmobile.classes.Converters.TimestampConverter;
                 @Index(value = "userId"),
                 @Index(value = "bookId")
         })
-public class Highlight implements Parcelable {
+public class Highlight implements Parcelable, AnnotationFamily {
     @PrimaryKey(autoGenerate = true)
     private Integer highlightId;
     private Integer code;
     private Integer chapterIndex;
+    private String chapterName;
     private Double pagePosInBoo;
     private Double pagePosInChapter;
     private Integer startIndex;
@@ -54,10 +56,11 @@ public class Highlight implements Parcelable {
     private String bookId;
     private Integer userId;
 
-    public Highlight(Integer code, Integer chapterIndex, Double pagePosInBoo, Double pagePosInChapter, Integer startIndex, Integer endIndex, Integer startOffset, Integer endOffset, Integer color, String selectedText,
+    public Highlight(Integer code, Integer chapterIndex,String chapterName, Double pagePosInBoo, Double pagePosInChapter, Integer startIndex, Integer endIndex, Integer startOffset, Integer endOffset, Integer color, String selectedText,
                      Integer left, Integer top, String noteContent, Boolean isNote, Boolean isOpen, Date highlightedDate, Boolean forSearch, Integer style, Integer pageIndex, String bookId, Integer userId) {
         this.code = code;
         this.chapterIndex = chapterIndex;
+        this.chapterName = chapterName;
         this.pagePosInBoo = pagePosInBoo;
         this.pagePosInChapter = pagePosInChapter;
         this.startIndex = startIndex;
@@ -79,6 +82,7 @@ public class Highlight implements Parcelable {
         this.userId = userId;
     }
 
+
     protected Highlight(Parcel in) {
         if (in.readByte() == 0) {
             highlightId = null;
@@ -95,6 +99,7 @@ public class Highlight implements Parcelable {
         } else {
             chapterIndex = in.readInt();
         }
+        chapterName = in.readString();
         if (in.readByte() == 0) {
             pagePosInBoo = null;
         } else {
@@ -158,11 +163,7 @@ public class Highlight implements Parcelable {
         } else {
             pageIndex = in.readInt();
         }
-        if (in.readByte() == 0) {
-            bookId = null;
-        } else {
-            bookId = in.readString();
-        }
+        bookId = in.readString();
         if (in.readByte() == 0) {
             userId = null;
         } else {
@@ -190,6 +191,7 @@ public class Highlight implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(chapterIndex);
         }
+        dest.writeString(chapterName);
         if (pagePosInBoo == null) {
             dest.writeByte((byte) 0);
         } else {
@@ -261,12 +263,7 @@ public class Highlight implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(pageIndex);
         }
-        if (bookId == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeString(bookId);
-        }
+        dest.writeString(bookId);
         if (userId == null) {
             dest.writeByte((byte) 0);
         } else {
@@ -291,6 +288,14 @@ public class Highlight implements Parcelable {
             return new Highlight[size];
         }
     };
+
+    public String getChapterName() {
+        return chapterName;
+    }
+
+    public void setChapterName(String chapterName) {
+        this.chapterName = chapterName;
+    }
 
     public Integer getHighlightId() {
         return highlightId;

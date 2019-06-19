@@ -1,5 +1,6 @@
 package licenta.books.androidmobile.activities;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -22,12 +23,14 @@ import info.hoang8f.android.segmented.SegmentedGroup;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.others.BookAnnotations;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.Converters.ArrayStringConverter;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.fragments.ChapterFragment;
 import licenta.books.androidmobile.fragments.InfoFragment;
+import licenta.books.androidmobile.interfaces.Constants;
 
 public class AnnotationBookActivity extends AppCompatActivity implements InfoFragment.OnFragmentInteractionListener,ChapterFragment.OnFragmentInteractionListener, AnnotationFragment.OnFragmentInteractionListener {
     Toolbar toolbar;
@@ -37,6 +40,7 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
     Fragment selectedFragment;
 
     BookE book;
+    ArrayList<BookAnnotations> annotations;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -53,6 +57,8 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void initComp(){
         book = getReadingBook();
+        getBookAnnotations();
+//        RxBus.publishBook(book);
         toolbar = findViewById(R.id.annotation_toolbar);
         toolbar.setTitle(book.getTitle());
         toolbar.setSubtitle(convertFromArray(book.getAuthors()));
@@ -82,13 +88,22 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
             toolbar.setTitleTextColor(Color.GRAY);
             toolbar.setSubtitleTextColor(Color.GRAY);
 
-            segmentedBtn.setTintColor(Color.parseColor("#a0009688"));
+            segmentedBtn.setTintColor(Color.LTGRAY);
             selectedFragment = new ChapterFragment();
         } else if(view == findViewById(R.id.btn_annotations)) {
             toolbar.setBackgroundColor(Color.WHITE);
             segmentedBtn.setBackgroundColor(Color.WHITE);
-            segmentedBtn.setTintColor(Color.DKGRAY);
+            segmentedBtn.setTintColor(Color.LTGRAY);
+
+            toolbar.setTitleTextColor(Color.GRAY);
+            toolbar.setSubtitleTextColor(Color.GRAY);
+
+            Bundle bundle = new Bundle();
+            bundle.putParcelableArrayList(Constants.KEY_BOOKS_ANNOTATION_LIST,annotations);
+
             selectedFragment = new AnnotationFragment();
+            selectedFragment.setArguments(bundle);
+
         }
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment,selectedFragment).commit();
     }
@@ -109,6 +124,16 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
         return book;
     }
 
+    private void getBookAnnotations(){
+        Disposable d = RxBus.subscribeBookAnnotation(new Consumer<ArrayList<BookAnnotations>>() {
+            @Override
+            public void accept(ArrayList<BookAnnotations> bookAnnotations) throws Exception {
+                annotations = bookAnnotations;
+            }
+        });
+        d.dispose();
+    }
+
     private String convertFromArray(ArrayList<String> authors){
         StringBuilder sb = new StringBuilder();
         for(String s : authors){
@@ -120,5 +145,13 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
 
         }
         return sb.toString();
+    }
+
+    @Override
+    public void onTransferBookAnnotation(BookAnnotations bookAnnotation) {
+        Intent intent = new Intent();
+        intent.putExtra("bookAnot",bookAnnotation);
+        setResult(RESULT_OK,intent);
+//        finish();
     }
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.BehaviorSubject;
+import licenta.books.androidmobile.activities.others.BookAnnotations;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
@@ -22,6 +23,7 @@ public final class RxBus {
     private static BehaviorSubject<Integer> behaviorSubjectChapter = BehaviorSubject.create();
     private static BehaviorSubject<String> behaviorSubjectChapterName = BehaviorSubject.create();
     private static BehaviorSubject<Bookmark> behaviorSubjectBookmark = BehaviorSubject.create();
+    private static BehaviorSubject<ArrayList<BookAnnotations>> arrayListBehaviorSubject = BehaviorSubject.create();
 
     public static Disposable subscribeUser(@NonNull Consumer<User> action){
         return behaviorSubjectUser.subscribe(action);
@@ -30,6 +32,14 @@ public final class RxBus {
     public static void publishUser(@NonNull User message){
         behaviorSubjectUser.onNext(message);
     }
+
+    public static Disposable subscribeBookAnnotation(@NonNull Consumer<ArrayList<BookAnnotations>> action){
+        return arrayListBehaviorSubject.subscribe(action);
+    }
+    public static void publishBookAnnotation(@NonNull ArrayList<BookAnnotations> message){
+        arrayListBehaviorSubject.onNext(message);
+    }
+
 
     public static Disposable subscribeBook(@NonNull Consumer<BookE> action){
         return behaviorSubjectBook.subscribe(action);

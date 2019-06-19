@@ -11,6 +11,7 @@
     android:elevation="10dp"
     android:padding="4dp"
     tools:targetApi="lollipop">
+    
     <LinearLayout
         android:id="@+id/highlightColorLinearLayout"
         android:layout_width="280dp"
