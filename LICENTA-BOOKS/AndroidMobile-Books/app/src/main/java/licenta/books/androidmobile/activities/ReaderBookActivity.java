@@ -1586,6 +1586,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             }
         }
 
+        
         if(bookmarkIndex != -1){
             bookmarkMethods.deleteBookmark(bookmark.getPagePosition(),book.get_id());
             bookmarksList.remove(bookmark);
