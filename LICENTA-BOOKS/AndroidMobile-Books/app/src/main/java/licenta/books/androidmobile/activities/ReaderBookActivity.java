@@ -26,19 +26,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -66,6 +67,9 @@ import com.skytree.epub.SkyProvider;
 import com.skytree.epub.State;
 import com.skytree.epub.StateListener;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -103,7 +107,7 @@ import licenta.books.androidmobile.interfaces.Constants;
 
 
 public class ReaderBookActivity extends AppCompatActivity implements View.OnClickListener, NoteDialogFragment.OnCompleteListener,
-        FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor , AnnotationFragment.OnFragmentInteractionListener {
+        FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor, AnnotationFragment.OnFragmentInteractionListener  {
     ReflowableControl reflowableControl;
     RelativeLayout renderRelative;
 
@@ -161,6 +165,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     PagerMoveHandler pageMoveHandler;
     HighLightHandler highLightHandler;
     SearchHandler searchHandler;
+    SeekBarHandler seekBarHandler;
+
 
     //Highlight colors
     Button highlightColorYellow;
@@ -170,7 +176,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     Button highlightColorOrange;
     int currentColor;
     Button audioHighlightBtn;
-    Button shareText;
+    Button shareSelectedText;
+    Button searchSelectedText;
 
     //Buttons
     Button noteBtn;
@@ -212,7 +219,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     HelperApp app;
     HelperSettings settings;
     int lineSpacing;
-
+    TextView footer;
+    View footerView;
 
 
     //audio player TTS ------------
@@ -228,6 +236,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
     private boolean pageAutoFlip = false;
     private boolean bookLoadTask = false;
+    private boolean resume = false;
 
     private MenuItem playPauseItem;
 
@@ -274,7 +283,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         highlightColorBlue = findViewById(R.id.highlight_blue);
         highlightColorOrange = findViewById(R.id.highlight_orange);
         audioHighlightBtn = findViewById(R.id.btn_audio);
-        shareText = findViewById(R.id.btn_share);
+        shareSelectedText = findViewById(R.id.btn_share);
+        searchSelectedText = findViewById(R.id.btn_search);
 
         highlightColorYellow.setOnClickListener(this);
         highlightColorGreen.setOnClickListener(this);
@@ -282,8 +292,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         highlightColorBlue.setOnClickListener(this);
         highlightColorOrange.setOnClickListener(this);
         audioHighlightBtn.setOnClickListener(this);
-        shareText.setOnClickListener(this);
-
+        shareSelectedText.setOnClickListener(this);
+        searchSelectedText.setOnClickListener(this);
 
         //style layout
         styleLayout = findViewById(R.id.relative_test);
@@ -299,7 +309,11 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         cancelTextView = findViewById(R.id.tv_search_cancel);
         searchListview = findViewById(R.id.lv_search_items);
 
-
+        footerView =  ((LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.footer_layout, null, false);
+        footerView.setClickable(true);
+        footer = footerView.findViewById(R.id.footer_1);
+        footer.setOnClickListener(this);
+        footer.setClickable(true);
 
         brightnessControl = findViewById(R.id.brightness_seeker);
         fontMinus = findViewById(R.id.font_minus);
@@ -398,11 +412,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 if(actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO ||
                         actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_NEXT){
                     String keySearch = searchEditText.getText().toString();
-                    if(keySearch !=null && keySearch.length() > 0){
-                        showIndicator();
-                        clearSearchResults(1);
-                        reflowableControl.searchKey(keySearch);
-
+                    if(keySearch.length() > 0){
+                        textSearchMethods(keySearch);
                     }
                 }
                 return false;
@@ -442,18 +453,42 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         setLineSpacingIncrease();
         setLineSpacingDecrease();
         setShareText();
+        setFooterListner();
+        setSearchedItem();
+        setSearchText();
 
+    }
+
+    private void textSearchMethods(String keySearch) {
+        showIndicator();
+        hideProgressDialog();
+        clearSearchResults(1);
+        hideSelectionButtonsPopup();
+        reflowableControl.searchKey(keySearch);
     }
 
     private void setShareText(){
         Intent shareIntent = new Intent();
-        shareText.setOnClickListener(new View.OnClickListener() {
+        shareSelectedText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.putExtra(Intent.EXTRA_TEXT,highlightTrue.text);
                 shareIntent.setType("text/plain");
                 startActivity(shareIntent);
+            }
+        });
+    }
+
+    private void setSearchText(){
+
+        searchSelectedText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String textSelected = highlightTrue.text;
+                searchEditText.setText(textSelected);
+                slideUp(searchLayout);
+                textSearchMethods(textSelected);
             }
         });
     }
@@ -627,7 +662,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         Rect viewRect = new Rect();
-        Animation slideD = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_down_animation);
         styleLayout.getGlobalVisibleRect(viewRect);
         if (isWithinLayoutBounds((int)ev.getRawX(),(int)ev.getRawY())) {
         }else{
@@ -657,8 +691,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
 
     public void setupUI(View view) {
-
-        // Set up touch listener for non-text box views to hide keyboard.
         if (!(view instanceof EditText)) {
             view.setOnTouchListener(new View.OnTouchListener() {
                 public boolean onTouch(View v, MotionEvent event) {
@@ -687,13 +719,10 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         });
         d.dispose();
 
-        Disposable disp = RxBus.subscribeUser(new Consumer<User>() {
-            @Override
-            public void accept(User userr) throws Exception {
-                user = userr;
-                loadBookMarkFromDb(userr);
-                loadHighLightsFromDb(userr);
-            }
+        Disposable disp = RxBus.subscribeUser(userr -> {
+            user = userr;
+            loadBookMarkFromDb(userr);
+            loadHighLightsFromDb(userr);
         });
         disp.dispose();
 
@@ -717,9 +746,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     public int getRealLineSpacing(int lineSpacing){
         int space=0;
         if(lineSpacing==0){
-            space = 100;
-        }else if(lineSpacing==1){
             space = 120;
+        }else if(lineSpacing==1){
+            space = 135;
         }else if(lineSpacing==2){
             space = 140;
         }else if(lineSpacing==3){
@@ -728,8 +757,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             space = 170;
         }else {
             this.lineSpacing = 1;
-            space = 120;
+            space = 135;
         }
+
         return space;
     }
 
@@ -748,7 +778,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         reflowableControl.setDoublePagedForLandscape(true);
 
-//        reflowableControl.setLineSpacing(135); // the value is supposed to be percent(%).
+        reflowableControl.setLineSpacing(135); // the value is supposed to be percent(%).
 
         reflowableControl.setHorizontalGapRatio(0.25);
 
@@ -759,7 +789,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         reflowableControl.setFingerTractionForSlide(true);
 
-        reflowableControl.setLineSpacing(this.getRealLineSpacing(this.lineSpacing));
+//        reflowableControl.setLineSpacing(this.getRealLineSpacing(this.lineSpacing));
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -781,6 +811,19 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         reflowableControl.setBookStyleEnabled(true);
         reflowableControl.setBookFontEnabled(false);
         reflowableControl.setFontUnit("px");
+        reflowableControl.setAutoAdjustContent(true);
+
+        if (this.getMaxSize()<=1280) {
+            reflowableControl.setCurlQuality(1.0f);
+        }else if (this.getMaxSize()<=1920) {
+            reflowableControl.setCurlQuality(0.9f);
+        }else {
+            reflowableControl.setCurlQuality(0.8f);
+        }
+
+        reflowableControl.setBringDelayTime(500);
+        // reloadDelayTime(default 100) is used for delay before reload (eg. changeFont, loadChapter or etc)
+        reflowableControl.setReloadDelayTime(100);
 
 //      reflowableControl.setMediaOverlayListener(new MediaOverlayHandler()); //For Audio Book
 
@@ -803,9 +846,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         reflowableControl.setSearchListener(searchHandler);
 
         makeIndicator();
-//
-//        bookmarkHandler = new BookmarkHandler();
-//        reflowableControl.setBookmarkListener(bookmarkHandler);
 
         return reflowableControl;
     }
@@ -849,6 +889,90 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                         insertBookState(bookState);
                     }
                 });
+    }
+    public int getMaxSize() {
+        int width = this.getRawWidth();
+        int height= this.getRawHeight();
+        return Math.max(width,height);
+    }
+
+    @SuppressLint("NewApi")
+    public int getRawWidth() {
+        int width = 0, height = 0;
+        final DisplayMetrics metrics = new DisplayMetrics();
+        Display display = getWindowManager().getDefaultDisplay();
+        Method mGetRawH = null, mGetRawW = null;
+
+        try {
+            // For JellyBeans and onward
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                display.getRealMetrics(metrics);
+
+                width = metrics.widthPixels;
+                height = metrics.heightPixels;
+            } else {
+                mGetRawH = Display.class.getMethod("getRawHeight");
+                mGetRawW = Display.class.getMethod("getRawWidth");
+
+                try {
+                    width = (Integer) mGetRawW.invoke(display);
+                    height = (Integer) mGetRawH.invoke(display);
+                } catch (IllegalArgumentException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    return 0;
+                } catch (IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    return 0;
+                } catch (InvocationTargetException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    return 0;
+                }
+            }
+            return width;
+        } catch (NoSuchMethodException e3) {
+            e3.printStackTrace();
+            return 0;
+        }
+    }
+
+    @SuppressLint("NewApi")
+    public int getRawHeight() {
+        int width = 0, height = 0;
+        final DisplayMetrics metrics = new DisplayMetrics();
+        Display display = getWindowManager().getDefaultDisplay();
+        Method mGetRawH = null, mGetRawW = null;
+
+        try {
+            // For JellyBeans and onward
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                display.getRealMetrics(metrics);
+                width = metrics.widthPixels;
+                height = metrics.heightPixels;
+            } else {
+                mGetRawH = Display.class.getMethod("getRawHeight");
+                mGetRawW = Display.class.getMethod("getRawWidth");
+                try {
+                    width = (Integer) mGetRawW.invoke(display);
+                    height = (Integer) mGetRawH.invoke(display);
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    return 0;
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    return 0;
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                    return 0;
+                }
+            }
+            return height;
+        } catch (NoSuchMethodException e3) {
+            e3.printStackTrace();
+            return 0;
+        }
     }
 
     @SuppressLint("CheckResult")
@@ -1057,13 +1181,12 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public void onTransferBookAnnotation(BookAnnotations bookAnnotation) {
-        if(bookAnnotation.getHighlight()!=null){
-            reflowableControl.gotoPageByHighlight(creatorHighlightReverse(bookAnnotation.getHighlight()));
-        }
-        if(bookAnnotation.getBookmark()!=null){
-//            reflowableControl.gotoPageByNavPointIndex(bookAnnotation.getBookmark().getPageIndex());
-            reflowableControl.gotoPageByPagePositionInBook(bookAnnotation.getBookmark().getPagePosition());
-        }
+        int x=3;
+    }
+
+    @Override
+    public void onTransferHighlightsList(ArrayList<licenta.books.androidmobile.classes.Highlight> highlights) {
+        int y = 3;
     }
 
 
@@ -1129,18 +1252,22 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         public void onStateChanged(State state) {
             if(state.equals(State.NORMAL)){
                 showLog("State =>", "NORMAL");
-                hideProgressDialog();
                 hideIndicator();
+                hideProgressDialog();
                 if(!bookLoadTask) bookLoadTask=true;
             } else if(state.equals(State.LOADING)) {
                 showLog("State =>", "LOADING");
                 showProgressDialog("Loading","Please wait..",false);
+//                showIndicator();
             }else if (state.equals(State.ROTATING)){
                 showLog("State =>", "ROTATING");
                 showProgressDialog("Loading","Please wait..",false);
+//                showIndicator();
             }else if (state.equals(State.BUSY)){
                 showLog("State =>", "BUSY");
                 showProgressDialog("Loading","Please wait..",false);
+//                showIndicator();
+
             }
         }
     }
@@ -1154,7 +1281,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             show = true;
             textInPage = pageInformation.pageDescription;
             showOrHideToolbar();
-
+            hideSelectionButtonsPopup();
 
             Integer bookmarkCode = getBookmarkCode(pageInformation.chapterIndex,pageInformation.pageIndex);
             Double pagePos = pageInformation.pagePositionInBook;
@@ -1170,27 +1297,18 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
             if(isBookmark){
                 menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_black_24dp));
-                //aici
-
             }else{
                 menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_border_black_24dp));
             }
 
             if(textToSpeechInPage.isSpeaking())  textToSpeechInPage.stop();
-            if(pageAutoFlip){
-                speakingInPage(textInPage);
-            }
+            if(pageAutoFlip) speakingInPage(textInPage);
 
-//            show=true;
-//            showOrHideToolbar();
+
             pagePosition = pageInformation.pagePositionInBook;
             RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,backgroundColor,foregroundColor,pageTransition,theme,book.get_id()));
 
             RxBus.publishBookMark(bookmark);
-            Log.d("Text",pageInformation.pageDescription);
-
-
-
         }
 
 
@@ -1279,7 +1397,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                 highlight.note = arrayList.get(i).getNoteContent();
                 highlight.isNote = arrayList.get(i).isNote();
                 highlight.isOpen = arrayList.get(i).isOpen();
-                highlight.datetime = TimestampConverter.fromDateToString(arrayList.get(i).getHighlightedDate());
+                if(arrayList.get(i).getHighlightedDate()!=null) {
+                    highlight.datetime = TimestampConverter.fromDateToString(arrayList.get(i).getHighlightedDate());
+                }
                 highlight.forSearch = arrayList.get(i).isForSearch();
                 highlight.style = arrayList.get(i).getStyle();
                 highlight.pageIndex = arrayList.get(i).getPageIndex();
@@ -1384,6 +1504,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public Highlights getHighlightsForChapter(int chapterIndex) {
+
             return creatorHighlightSkyEpub(highlightsList,chapterIndex);
         }
 
@@ -1432,6 +1553,49 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
+    private class SeekBarHandler implements SeekBar.OnSeekBarChangeListener {
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            double pagePosBook;
+            PageInformation pageInformation;
+            if(reflowableControl.isGlobalPagination()){
+                int pos = progress;
+                pagePosBook =reflowableControl.getPagePositionByPageIndexInBook(pos);
+                pageInformation = reflowableControl.getPageInformation(pagePosBook);
+            }else{
+                pagePosBook = (double)progress/(double)999.0f;
+                pageInformation = reflowableControl.getPageInformation(pagePosBook);
+            }
+
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            int position = seekBar.getProgress();
+            if(reflowableControl.isGlobalPagination()){
+                int pos = position;
+                double pagePosBook = reflowableControl.getPagePositionByPageIndexInBook(pos);
+                reflowableControl.gotoPageByPagePositionInBook(pagePosBook);
+            }else{
+                double pagePosBook = (double)position/(double)999.0f;
+                reflowableControl.gotoPageByPagePositionInBook(pagePosBook);
+            }
+
+        }
+    }
+
+
+
+
+
+
+
     int numberOfSearched = 0;
     private class SearchHandler implements SearchListener {
 
@@ -1443,6 +1607,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         @Override
         public void onSearchFinishedForChapter(SearchResult searchResult) {
             if(searchResult.numberOfSearchedInChapter != 0){
+                addFooterToSearchListView();
                 addSearchResult(searchResult,1);
                 reflowableControl.pauseSearch();
                 numberOfSearched = searchResult.numberOfSearched;
@@ -1455,13 +1620,48 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onSearchFinished(SearchResult searchResult) {
+            footer.setText("Search finished");
             addSearchResult(searchResult,2);
             hideIndicator();
+            hideProgressDialog();
+
         }
     }
 
+    private void addFooterToSearchListView(){
+        footer.setText("Search more");
+        searchListview.addFooterView(footerView,null,false);
+    }
 
+    private void setFooterListner(){
 
+        footer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("Footer:"," footer clicked");
+//                removeLastResult();
+                reflowableControl.searchMore();
+            }
+        });
+    }
+
+    public void setSearchedItem(){
+        searchListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                reflowableControl.gotoPageBySearchResult(searchResults.get(position),Color.parseColor("#efb1ff"));
+                slideDown(searchLayout);
+            }
+        });
+    }
+
+    public void removeLastResult() {
+        this.searchListview.removeViewAt(searchListview.getChildCount()-1);
+    }
+
+    public void moveSearchScrollViewToEnd(SearchAdapter adapter){
+        searchListview.post(() -> searchListview.setSelection(adapter.getCount()-1));
+    }
 
     // SEARCH --------------
 
@@ -1478,6 +1678,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         SearchAdapter searchAdapter = new SearchAdapter(this,searchResults);
         searchListview.setAdapter(searchAdapter);
+
+//        moveSearchScrollViewToEnd(searchAdapter);
     }
 
     int i = 0;
@@ -1487,18 +1689,16 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         Log.i("Mode ",String.valueOf(mode));
         if(mode == 0 ){
             searchResults.add(searchResult);
-        }else{
-            if(mode==1){
-                reflowableControl.searchMore();
-                searchResults.add(searchResult);
-            }
-            searchResults.add(searchResult);
         }
         setAdapterSearch();
     }
 
     public void makeIndicator() {
+//        renderRelative = new RelativeLayout(this);
+//        RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT,RelativeLayout.LayoutParams.FILL_PARENT);
+//        renderRelative.setLayoutParams(rlp);
         progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyle);
+        progressBar.setBackgroundColor(Color.LTGRAY);
         searchLayout.addView(progressBar);
         this.hideIndicator();
     }
@@ -1506,6 +1706,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     public void showIndicator() {
         LinearLayout.LayoutParams params =
                 (LinearLayout.LayoutParams)progressBar.getLayoutParams();
+//        params.addRule(RelativeLayout.CENTER_IN_PARENT,-1);
         params.gravity = Gravity.CENTER;
         progressBar.setLayoutParams(params);
         progressBar.setVisibility(View.VISIBLE);
@@ -1566,8 +1767,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         if(bookmarksList !=null){
             for(Bookmark bookmarkTemp : bookmarksList){
                 if(bookmarkTemp.getBookmarkCode().equals(bookmark.getBookmarkCode())){
-//                    menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_black_24dp));
-//                    verifyBookMark(bookmark);
                     return true;
                 }
             }
@@ -1586,7 +1785,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             }
         }
 
-        
+
         if(bookmarkIndex != -1){
             bookmarkMethods.deleteBookmark(bookmark.getPagePosition(),book.get_id());
             bookmarksList.remove(bookmark);
@@ -1794,15 +1993,24 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == Constants.RESULT_CODE_CHAPTER && RESULT_OK == resultCode && data!=null){
-            if(data.hasExtra("bookAnot")){
-                BookAnnotations bookAnnotation = data.getParcelableExtra("bookAnot");
+            if(data.hasExtra(Constants.KEY_HIGHLIGHTS_DELETED)){
+                ArrayList<licenta.books.androidmobile.classes.Highlight> highlightsDeleted  = data.getParcelableArrayListExtra(Constants.KEY_HIGHLIGHTS_DELETED);
+//                Highlights highlightsForDeleted = creatorHighlightSkyEpub(highlightsDeleted,reflowableControl.getChapterIndex());
+                creatorHighlightSkyEpub(highlightsDeleted,reflowableControl.getChapterIndex());
+                for(int i = 0 ;i < chapterHighlightsList.getSize();i++){
+                    reflowableControl.deleteHighlight(chapterHighlightsList.getHighlight(i));
+
+                }
+            }
+            if(data.hasExtra(Constants.KEY_BOOK_ANNOTATION)){
+                BookAnnotations bookAnnotation = data.getParcelableExtra(Constants.KEY_BOOK_ANNOTATION);
                 if(bookAnnotation.getHighlight()!=null){
                     new Handler().postDelayed(() -> reflowableControl.gotoPageByHighlight(creatorHighlightReverse(bookAnnotation.getHighlight())),200);
                 }else{
                     new Handler().postDelayed(() -> reflowableControl.gotoPageByPagePositionInBook(bookAnnotation.getBookmark().getPagePosition()),200);
                 }
-
             }
+
             if(data.hasExtra(Constants.KEY_CHAPTER)) {
                 if (data.getIntExtra(Constants.KEY_CHAPTER, 0) - 1 < 0) {
                     reflowableControl.gotoPageByNavPointIndex(0);
@@ -2007,6 +2215,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void speakingInHighlight(String textInHighlight){
+
+
         if(textToSpeechInSelection.isSpeaking()){
             textToSpeechInSelection.stop();
             setPlayButtonHighlight();
@@ -2019,6 +2229,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             }
         }
     }
+
+
 
 
 
@@ -2062,7 +2274,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onPause() {
         insertBookState(subscribeBookState());
-
+        resume = true;
         super.onPause();
     }
 
@@ -2081,15 +2293,27 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     }
 
     @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        Disposable d = RxBus.subscribeBook(new Consumer<BookE>() {
-            @Override
-            public void accept(BookE bookE) throws Exception {
-                book = bookE;
-                Log.d("Revine: ",book.getTitle());
-            }
+    protected void onResume() {
+
+        super.onResume();
+        Intent intent = new Intent();
+        Disposable d = RxBus.subscribeBook(bookE -> {
+            book = bookE;
+            Log.d("Revine: ",book.getTitle());
         });
         d.dispose();
+        if(resume) {
+            intent = getIntent();
+            loadHighLightsFromDb(user);
+            loadBookMarkFromDb(user);
+            if(intent.hasExtra(Constants.KEY_HIGHLIGHTS_DELETED)){
+                ArrayList<licenta.books.androidmobile.classes.Highlight> highlightsForDelete = intent.getParcelableArrayListExtra(Constants.KEY_HIGHLIGHTS_DELETED);
+                creatorHighlightSkyEpub(highlightsForDelete,reflowableControl.getChapterIndex());
+                for(int i = 0 ;i < highlightsForDelete.size();i++){
+                    reflowableControl.deleteHighlight(chapterHighlightsList.getHighlight(i));
+                }
+            }
+
+        }
     }
 }

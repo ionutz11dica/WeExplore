@@ -49,6 +49,8 @@ public interface Constants {
       String KEY_CURRENT_COLOR = "keyCurrentColor";
       String KEY_STATUS_COLOR = "keyStatusColor";
       String KEY_BOOKS_ANNOTATION_LIST = "keyBookAnnotation";
+      String KEY_HIGHLIGHTS_DELETED = "keyHighlightsDeleted";
+      String KEY_BOOK_ANNOTATION = "keyBookAnot";
 
 
       //switcher

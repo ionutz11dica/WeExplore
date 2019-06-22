@@ -26,6 +26,7 @@ import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.BookAnnotations;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.Converters.ArrayStringConverter;
+import licenta.books.androidmobile.classes.Highlight;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.fragments.ChapterFragment;
@@ -36,11 +37,12 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
     Toolbar toolbar;
     SegmentedGroup segmentedBtn;
     RadioButton btnInfo;
-
+    Intent intent = new Intent();
     Fragment selectedFragment;
 
     BookE book;
     ArrayList<BookAnnotations> annotations;
+
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -149,9 +151,21 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
 
     @Override
     public void onTransferBookAnnotation(BookAnnotations bookAnnotation) {
-        Intent intent = new Intent();
-        intent.putExtra("bookAnot",bookAnnotation);
+        intent.putExtra(Constants.KEY_BOOK_ANNOTATION,bookAnnotation);
         setResult(RESULT_OK,intent);
 //        finish();
+    }
+
+    @Override
+    public void onTransferHighlightsList(ArrayList<Highlight> highlights) {
+        intent.putParcelableArrayListExtra(Constants.KEY_HIGHLIGHTS_DELETED,highlights);
+        setResult(RESULT_OK,intent);
+//        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        super.onBackPressed();
     }
 }

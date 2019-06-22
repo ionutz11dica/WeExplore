@@ -11,14 +11,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import licenta.books.androidmobile.R;
-import licenta.books.androidmobile.activities.ReaderActivity;
+import licenta.books.androidmobile.activities.ReaderBookActivity;
 import licenta.books.androidmobile.adapters.ChapterAdapter;
 import licenta.books.androidmobile.classes.Chapter;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
@@ -47,7 +46,7 @@ public class ChapterFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //                RxBus.publishsChapter(position);
-                Intent intent = new Intent(getActivity(), ReaderActivity.class);
+                Intent intent = new Intent(getActivity(), ReaderBookActivity.class);
                 intent.putExtra(Constants.KEY_CHAPTER,position);
                 getActivity().setResult(Activity.RESULT_OK,intent);
                 getActivity().finish();

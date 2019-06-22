@@ -19,6 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.text.ParseException;
@@ -155,4 +158,6 @@ public class AnnotationAdapter extends BaseAdapter {
         tv_highlight.setText(finalText);
         tv_highlight.setTypeface(typeface);
     }
+
+
 }
