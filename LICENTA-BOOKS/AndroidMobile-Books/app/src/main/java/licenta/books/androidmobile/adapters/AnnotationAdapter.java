@@ -19,9 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.text.ParseException;
@@ -74,7 +71,7 @@ public class AnnotationAdapter extends BaseAdapter {
         TextView tv_note = rowView.findViewById(R.id.tv_note_highlight);
         TextView tv_date = rowView.findViewById(R.id.tv_date_info);
         TextView tv_chapter = rowView.findViewById(R.id.tv_chapter_info);
-//        String publishedDate = "<font color =#b7b8b6>Date</font>&nbsp &nbsp &nbsp <font color=#000>"+book.getPublishedDate()+"</font>";
+//        String publishedDate = "<fonts color =#b7b8b6>Date</fonts>&nbsp &nbsp &nbsp <fonts color=#000>"+book.getPublishedDate()+"</fonts>";
         tv_note.setVisibility(View.GONE);
 
         if(bookAnnotations.get(position).getBookmark() != null){
@@ -135,7 +132,7 @@ public class AnnotationAdapter extends BaseAdapter {
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void setHighlightTextDesign(int position, TextView tv_highlight) {
-        Typeface typeface = Typeface.createFromAsset(context.getAssets(),"font/crimsontext.ttf");
+        Typeface typeface = Typeface.createFromAsset(context.getAssets(),"fonts/crimsontext.ttf");
 
         Spanned text1=Html.fromHtml("&ldquo;");
         Spanned text2=Html.fromHtml("&rdquo;");

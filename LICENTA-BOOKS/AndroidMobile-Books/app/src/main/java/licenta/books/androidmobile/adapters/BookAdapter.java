@@ -53,7 +53,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
         viewHolder.title.setText(bookList.get(i).getTitle());
         String authors = convertStringFromArray(bookList.get(i));
         viewHolder.authors.setText(authors);
-        String bookCover = bookList.get(i).getImageLink().replace("zoom=0","zoom=4");
+        String bookCover = bookList.get(i).getImageLink();
+// .replace("zoom=0","zoom=4");
 
         Glide.with(mContext)
                 .load(bookCover)

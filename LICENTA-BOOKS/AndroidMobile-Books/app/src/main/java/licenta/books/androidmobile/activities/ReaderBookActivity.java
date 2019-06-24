@@ -59,6 +59,8 @@ import com.skytree.epub.NavPoints;
 import com.skytree.epub.PageInformation;
 import com.skytree.epub.PageMovedListener;
 import com.skytree.epub.PageTransition;
+import com.skytree.epub.PagingInformation;
+import com.skytree.epub.PagingListener;
 import com.skytree.epub.ReflowableControl;
 import com.skytree.epub.SearchListener;
 import com.skytree.epub.SearchResult;
@@ -106,6 +108,7 @@ import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.interfaces.Constants;
 
 
+
 public class ReaderBookActivity extends AppCompatActivity implements View.OnClickListener, NoteDialogFragment.OnCompleteListener,
         FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor, AnnotationFragment.OnFragmentInteractionListener  {
     ReflowableControl reflowableControl;
@@ -141,6 +144,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     Menu menuItems;
 
     Rect highlightStartRect, highlightEndRect;
+    BookState bookStatePermanent;
+    Bookmark bookmark;
 
 
     //book information
@@ -165,7 +170,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     PagerMoveHandler pageMoveHandler;
     HighLightHandler highLightHandler;
     SearchHandler searchHandler;
-    SeekBarHandler seekBarHandler;
+    PagingListener pagingListener;
 
 
     //Highlight colors
@@ -216,6 +221,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     ArrayList<SearchResult> searchResults = new ArrayList<>();
     ArrayList<BookAnnotations> bookAnnotations = new ArrayList<>();
 
+
     HelperApp app;
     HelperSettings settings;
     int lineSpacing;
@@ -256,6 +262,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     private void initComp(){
         settings = new HelperSettings(getApplicationContext());
         progressDialog = new ProgressDialog(this);
+        bookStatePermanent = new BookState();
+
 
         topToolbar=findViewById(R.id.reader_toolbar_top);
         bottomToolbar=findViewById(R.id.reader_toolbar_bottom);
@@ -275,6 +283,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         imgBtnStyleContent = findViewById(R.id.image_button_style);
         imgBtnDayNightMode = findViewById(R.id.image_button_dayNight);
         imgBtnSearch = findViewById(R.id.image_button_search);
+        seekBarPager = findViewById(R.id.reader_seekBar);
+        tvPage = findViewById(R.id.reader_tv_page);
 
         //highlight buttons
         highlightColorYellow = findViewById(R.id.highlight_yellow);
@@ -784,10 +794,13 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         reflowableControl.setVerticalGapRatio(0.1);
 
+        reflowableControl.setBookFontEnabled(true);
+
         reflowableControl.setPageTransition(PageTransition.Curl);
 
-
         reflowableControl.setFingerTractionForSlide(true);
+
+        reflowableControl.setGlobalPagination(false);
 
 //        reflowableControl.setLineSpacing(this.getRealLineSpacing(this.lineSpacing));
 
@@ -799,6 +812,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         SkyProvider skyProvider = new SkyProvider();
 
+
+
         reflowableControl.setContentProvider(skyProvider);
 
         reflowableControl.useDOMForHighlight(false);
@@ -806,12 +821,14 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         reflowableControl.setNavigationAreaWidthRatio(0.0f); // both left and right side.
 
         //To get text of page in pageMovedListener in pageDescription
+        reflowableControl.setGlobalOffset(true);
         reflowableControl.setExtractText(true);
         reflowableControl.setSigilStyleEnabled(false);
         reflowableControl.setBookStyleEnabled(true);
-        reflowableControl.setBookFontEnabled(false);
+        reflowableControl.setBookFontEnabled(true);
         reflowableControl.setFontUnit("px");
         reflowableControl.setAutoAdjustContent(true);
+//        reflowableControl.setFont("simplicity!!!/fonts/simplicity.ttf",15);
 
         if (this.getMaxSize()<=1280) {
             reflowableControl.setCurlQuality(1.0f);
@@ -844,6 +861,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         searchHandler = new SearchHandler();
         reflowableControl.setSearchListener(searchHandler);
+
+        pagingListener = new PagingHandler();
+        reflowableControl.setPagingListener(pagingListener);
 
         makeIndicator();
 
@@ -1153,16 +1173,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    @Override
-    public void onCompleteFonts(Typeface type, String name,int index) {
-//        reflowableControl.changeFont(name,fontSize);
-        CustomFont customFont = this.getCustomFont(index);
-        String namee = customFont.getFullName();
-        reflowableControl.changeFont("reeniebeanie.ttf",15);
-        typeface.setTypeface(type);
-        typeface.setText(name);
-        //update in database
-    }
+
 
     @Override
     public void onCompleteColors(Integer color, boolean status) {
@@ -1187,6 +1198,16 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     @Override
     public void onTransferHighlightsList(ArrayList<licenta.books.androidmobile.classes.Highlight> highlights) {
         int y = 3;
+    }
+
+    @Override
+    public void onCompleteFonts(Typeface typeface, String name,CustomFont customFont) {
+        String nameFile = customFont.getFullName();
+        if(!fontType.equalsIgnoreCase(nameFile)){
+            settings.fontName = nameFile;
+
+            reflowableControl.changeFont(settings.fontName,fontSize);
+        }
     }
 
 
@@ -1278,6 +1299,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onPageMoved(PageInformation pageInformation) {
+            setSeekBarPager(pageInformation);
+//            progressOnPageMoved(pageInformation);
             show = true;
             textInPage = pageInformation.pageDescription;
             showOrHideToolbar();
@@ -1304,9 +1327,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             if(textToSpeechInPage.isSpeaking())  textToSpeechInPage.stop();
             if(pageAutoFlip) speakingInPage(textInPage);
 
-
             pagePosition = pageInformation.pagePositionInBook;
-            RxBus.publishBookState(new BookState(pagePosition,pageInformation.chapterIndex,Calendar.getInstance().getTime(),fontType,fontSize,backgroundColor,foregroundColor,pageTransition,theme,book.get_id()));
+            setStateBookOnPage(pageInformation);
+            RxBus.publishBookState(bookStatePermanent);
 
             RxBus.publishBookMark(bookmark);
         }
@@ -1314,6 +1337,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public void onChapterLoaded(int i) {
+
             showLog("Chapter Index", String.valueOf(i));
             NavPoints tocNavPoints = reflowableControl.getNavPoints();
             ArrayList<Chapter> chapterList = new ArrayList<>();
@@ -1339,6 +1363,22 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
+    private void setStateBookOnPage(PageInformation pageInformation){
+        bookStatePermanent.setPagePosition(pagePosition);
+        bookStatePermanent.setNoChapter(pageInformation.chapterIndex);
+        bookStatePermanent.setReadDate(Calendar.getInstance().getTime());
+        bookStatePermanent.setFontType(fontType);
+        bookStatePermanent.setFontSize(fontSize);
+        bookStatePermanent.setBackgroundColor(backgroundColor);
+        bookStatePermanent.setColorText(foregroundColor);
+        bookStatePermanent.setPageTransition(pageTransition);
+        bookStatePermanent.setThemeState(theme);
+        bookStatePermanent.setBookId(book.get_id());
+    }
+
+//    private boolean setBookMarkOnPage(){
+//
+//    }
 
     private licenta.books.androidmobile.classes.Highlight creatorHighlight(Highlight highlight){
         licenta.books.androidmobile.classes.Highlight highlightDb = new licenta.books.androidmobile.classes.Highlight(highlight.code,highlight.chapterIndex,reflowableControl.getChapterTitle(highlight.chapterIndex),highlight.pagePositionInBook,highlight.pagePositionInChapter,
@@ -1553,20 +1593,49 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    private class SeekBarHandler implements SeekBar.OnSeekBarChangeListener {
+    private class PagingHandler implements PagingListener{
 
         @Override
+        public void onPagingStarted(int i) {
+            tvPage.setText("Loading page..");
+        }
+
+        @Override
+        public void onPaged(PagingInformation pagingInformation) {
+            tvPage.setText("Loading page..");
+        }
+
+        @Override
+        public void onPagingFinished(int i) {
+
+        }
+
+        @Override
+        public int getNumberOfPagesForPagingInformation(PagingInformation pagingInformation) {
+            return pagingInformation.numberOfPagesInChapter;
+        }
+    }
+
+    private class SeekBarHandler implements SeekBar.OnSeekBarChangeListener {
+        PageInformation information;
+
+        public void setInformation(PageInformation information){
+            this.information = information;
+        }
+        @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            double pagePosBook;
+            int pagePosBook;
+
             PageInformation pageInformation;
             if(reflowableControl.isGlobalPagination()){
                 int pos = progress;
-                pagePosBook =reflowableControl.getPagePositionByPageIndexInBook(pos);
-                pageInformation = reflowableControl.getPageInformation(pagePosBook);
+//                pagePosBook =reflowableControl.getPagePositionByPageIndexInBook(pos);
+//                pageInformation = reflowableControl.getPageInformation(pagePosBook);
             }else{
-                pagePosBook = (double)progress/(double)999.0f;
-                pageInformation = reflowableControl.getPageInformation(pagePosBook);
+                pagePosBook = reflowableControl.getPageIndexInChapter();
+                pageInformation = reflowableControl.getPageInformationByPageIndex(pagePosBook);
             }
+
 
         }
 
@@ -1578,20 +1647,20 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             int position = seekBar.getProgress();
+            int chapterIndex = reflowableControl.getChapterIndex();
             if(reflowableControl.isGlobalPagination()){
                 int pos = position;
-                double pagePosBook = reflowableControl.getPagePositionByPageIndexInBook(pos);
-                reflowableControl.gotoPageByPagePositionInBook(pagePosBook);
+                int  pagePosBook = reflowableControl.getPageIndexInChapter();
+                reflowableControl.gotoPageInChapter(pagePosBook);
             }else{
-                double pagePosBook = (double)position/(double)999.0f;
-                reflowableControl.gotoPageByPagePositionInBook(pagePosBook);
+//                double pageDelta = ((1.0f/information.numberOfChaptersInBook)/information.numberOfPagesInChapter);
+////                double pagePosBook = information.pagePositionInBook+information.pagePositionInChapter/(position*5);
+//                reflowableControl.gotoPageByPagePositionInBook(pageDelta);
+                reflowableControl.gotoPageInChapter(position-1);
             }
 
         }
     }
-
-
-
 
 
 
@@ -1655,13 +1724,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         });
     }
 
-    public void removeLastResult() {
-        this.searchListview.removeViewAt(searchListview.getChildCount()-1);
-    }
-
-    public void moveSearchScrollViewToEnd(SearchAdapter adapter){
-        searchListview.post(() -> searchListview.setSelection(adapter.getCount()-1));
-    }
 
     // SEARCH --------------
 
@@ -1701,6 +1763,30 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         progressBar.setBackgroundColor(Color.LTGRAY);
         searchLayout.addView(progressBar);
         this.hideIndicator();
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void setSeekBarPager(PageInformation information){
+        SeekBarHandler seekBarHandler = new SeekBarHandler();
+        seekBarHandler.setInformation(information);
+        seekBarPager.setOnSeekBarChangeListener(seekBarHandler);
+        if(!reflowableControl.isGlobalPagination()){
+            seekBarPager.setMax(information.numberOfPagesInChapter);
+            seekBarPager.setProgress(information.pageIndex+1);
+            tvPage.setText(information.pageIndex+1+"/" +String.valueOf(information.numberOfPagesInChapter)+ "Pages");
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void progressOnPageMoved(PageInformation pageInformation){
+//        int ppb = pageInformation.pageIndex;
+//        int progress = (int)((double)999.0f * (ppb));
+        int pic = pageInformation.pageIndex;
+
+        seekBarPager.setProgress(pic);
+        tvPage.setText(reflowableControl.getPageIndexInChapter()+"/" +String.valueOf(reflowableControl.getNumberOfPagesInChapter()-1)+ "Pages");
+
+
     }
 
     public void showIndicator() {
@@ -1897,7 +1983,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         if(fontType != null){
             typeface.setText(fontType);
             if(!fontType.equals("TimesRoman")){
-                typeface.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(),"font/"+fontType.toLowerCase()+".ttf"));
+                typeface.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(),"font/"+"simplicity"+".ttf"));
             }
             reflowableControl.setFont(fontType,fontSize);
         }
@@ -2047,7 +2133,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         if (!settings.fontName.equalsIgnoreCase(name)) {
             settings.fontName = name;
 //            checkSettings();
-            Log.d("font name ",settings.fontName);
+            Log.d("fonts name ",settings.fontName);
             reflowableControl.changeFont(settings.fontName,fontSize);
         }
     }

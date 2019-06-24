@@ -135,22 +135,22 @@ public class InfoFragment extends Fragment {
 
         tvBookDescription.setText(book.getDescription());
 
-        String publishedDate = "<font color =#b7b8b6>Date</font>&nbsp &nbsp &nbsp <font color=#000>"+book.getPublishedDate()+"</font>";
+        String publishedDate = "<fonts color =#b7b8b6>Date</fonts>&nbsp &nbsp &nbsp <fonts color=#000>"+book.getPublishedDate()+"</fonts>";
         tvBookInformationDate.setText(Html.fromHtml(publishedDate));
 
-        String format = "<font color =#b7b8b6>Format</font>&nbsp &nbsp &nbsp <font color=#000>EPUB</font>";
+        String format = "<fonts color =#b7b8b6>Format</fonts>&nbsp &nbsp &nbsp <fonts color=#000>EPUB</fonts>";
         tvBookInformationFormat.setText(Html.fromHtml(format));
 
-        String publisher = "<font color =#b7b8b6>Publisher</font>&nbsp &nbsp &nbsp <font color=#000>"+book.getPublisher()+"</font>";
+        String publisher = "<fonts color =#b7b8b6>Publisher</fonts>&nbsp &nbsp &nbsp <fonts color=#000>"+book.getPublisher()+"</fonts>";
         tvBookInformationPublisher.setText(Html.fromHtml(publisher));
 
-        String pages = "<font color =#b7b8b6>Pages</font>&nbsp &nbsp &nbsp <font color=#000>"+book.getPageCount()+"</font>";
+        String pages = "<fonts color =#b7b8b6>Pages</fonts>&nbsp &nbsp &nbsp <fonts color=#000>"+book.getPageCount()+"</fonts>";
         tvBookInformationPages.setText(Html.fromHtml(pages));
 
-        String categories = "<font color =#b7b8b6>Categories</font>&nbsp &nbsp &nbsp <font color=#000>"+BookE.convertFromArray(book.getAuthors())+"</font>";
+        String categories = "<fonts color =#b7b8b6>Categories</fonts>&nbsp &nbsp &nbsp <fonts color=#000>"+BookE.convertFromArray(book.getAuthors())+"</fonts>";
         tvBookInformationCategories.setText(Html.fromHtml(categories));
 
-        String permissions = "<font color =#b7b8b6>Permissions</font>&nbsp &nbsp &nbsp <font color=#000>&#8226; Allow viewing on any device<br/> \t \t \t \t \t \t &nbsp &nbsp &nbsp &nbsp &#8226; Allow copying/pasting</font>";
+        String permissions = "<fonts color =#b7b8b6>Permissions</fonts>&nbsp &nbsp &nbsp <fonts color=#000>&#8226; Allow viewing on any device<br/> \t \t \t \t \t \t &nbsp &nbsp &nbsp &nbsp &#8226; Allow copying/pasting</fonts>";
         tvBookInformationPermissions.setText(Html.fromHtml(permissions));
 
     }

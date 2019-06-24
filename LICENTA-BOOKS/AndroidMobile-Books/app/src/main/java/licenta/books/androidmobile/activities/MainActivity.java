@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.widget.Toast;
 
+import com.skytree.epub.Setting;
 import com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView;
 
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity   {
         }else{
             Toast.makeText(getApplicationContext(),"Internet Problem",Toast.LENGTH_LONG).show();
         }
+        Setting.prepare();
 
     }
 
@@ -129,12 +131,13 @@ public class MainActivity extends AppCompatActivity   {
 
 
     public void registerFonts() {
-        this.registerCustomFont("Mayflower","Mayflower Antique.ttf");
+//        this.registerCustomFont("Mayflower","Mayflower Antique.ttf");
         this.registerCustomFont("Bradleyhand","bradleyhand.ttf");
         this.registerCustomFont("Cantarell","cantarell.ttf");
         this.registerCustomFont("CrimsonText","crimsontext.ttf");
         this.registerCustomFont("Inconsolata","inconsolata.ttf");
         this.registerCustomFont("JosefinSans","josefinsans.ttf");
+        this.registerCustomFont("Hightower","hightower.ttf");
         this.registerCustomFont("Molengo","molengo.ttf");
         this.registerCustomFont("Simplicity","simplicity.ttf");
         this.registerCustomFont("ReenieBeanie","reeniebeanie.ttf");

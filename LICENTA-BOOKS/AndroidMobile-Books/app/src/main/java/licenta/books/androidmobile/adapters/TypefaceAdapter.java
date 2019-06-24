@@ -16,18 +16,19 @@ import java.io.File;
 import java.util.ArrayList;
 
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.others.CustomFont;
 import licenta.books.androidmobile.interfaces.Constants;
 
-public class TypefaceAdapter extends ArrayAdapter<String> {
+public class TypefaceAdapter extends ArrayAdapter<CustomFont> {
 
     private Activity context;
-    private String[] content;
+    private ArrayList<CustomFont> fonts;
 
 
-    public TypefaceAdapter(Activity context, String[] content) {
-        super(context, R.layout.row_typeface_lv, content);
+    public TypefaceAdapter(Activity context, ArrayList<CustomFont> fonts) {
+        super(context, R.layout.row_typeface_lv, fonts);
         this.context = context;
-        this.content = content;
+        this.fonts = fonts;
     }
 
     @NonNull
@@ -38,8 +39,8 @@ public class TypefaceAdapter extends ArrayAdapter<String> {
 
         TextView typeface = view.findViewById(R.id.tv_typeface);
         typeface.setTextColor(Color.GRAY);
-          Typeface tf = Typeface.createFromAsset(context.getAssets(),"font/"+content[position].toLowerCase()+".ttf");
-        typeface.setText(content[position]);
+        Typeface tf = Typeface.createFromAsset(context.getAssets(),fonts.get(position).fontFileName);
+        typeface.setText(fonts.get(position).fontFaceName);
         typeface.setTypeface(tf);
 
         return view;

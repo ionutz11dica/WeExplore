@@ -14,7 +14,7 @@ public class CustomFont {
     public String getFullName() {
         String fullName = "";
         if (fontFileName==null || fontFileName.isEmpty()) {
-            fullName = "Mayflower!!!/fonts/Mayflower Antique.ttf";
+            fullName = this.fontFaceName;
         }else {
             fullName = this.fontFaceName+"!!!/fonts/"+this.fontFileName;
         }

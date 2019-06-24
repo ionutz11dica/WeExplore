@@ -11,7 +11,7 @@
     <ListView
         android:id="@+id/lv_typeface_fonts"
         android:layout_width="350dp"
-        android:layout_height="400dp"
+        android:layout_height="350dp"
         android:layout_gravity="center"/>
 
 </LinearLayout>

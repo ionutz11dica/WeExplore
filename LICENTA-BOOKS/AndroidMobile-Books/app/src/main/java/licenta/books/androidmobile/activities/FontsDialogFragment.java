@@ -14,28 +14,37 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.Objects;
+
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.others.CustomFont;
+import licenta.books.androidmobile.activities.others.HelperApp;
 import licenta.books.androidmobile.adapters.TypefaceAdapter;
 import licenta.books.androidmobile.interfaces.Constants;
 
 public class FontsDialogFragment extends DialogFragment {
     ListView fontsList;
     OnCompleteListenerFonts listener;
+    HelperApp helperApp;
+    private ArrayList<CustomFont> customFonts = new ArrayList<>();
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
          super.onCreateView(inflater, container, savedInstanceState);
          View view = inflater.inflate(R.layout.activity_fonts_dialog_fragment,container,false);
+         helperApp = (HelperApp) Objects.requireNonNull(getActivity()).getApplication();
          fontsList = view.findViewById(R.id.lv_typeface_fonts);
+         createFontsList();
 
-         TypefaceAdapter adapter = new TypefaceAdapter(getActivity(), Constants.TYPEFACE_NAMES);
+         TypefaceAdapter adapter = new TypefaceAdapter(getActivity(), customFonts);
          fontsList.setAdapter(adapter);
 
          fontsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
              @Override
              public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                 Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(),"font/"+Constants.TYPEFACE_NAMES[position].toLowerCase()+".ttf");
-                 listener.onCompleteFonts(typeface,Constants.TYPEFACE_NAMES[position],position);
+                 Typeface typeface = Typeface.createFromAsset(Objects.requireNonNull(getActivity()).getAssets(),customFonts.get(position).fontFileName);
+                 listener.onCompleteFonts(typeface,customFonts.get(position).fontFaceName,customFonts.get(position));
                  dismiss();
              }
          });
@@ -47,7 +56,11 @@ public class FontsDialogFragment extends DialogFragment {
     }
 
     public interface OnCompleteListenerFonts{
-        void onCompleteFonts(Typeface typeface,String name,int index);
+        void onCompleteFonts(Typeface typeface,String name,CustomFont customFont);
+    }
+
+    public void createFontsList(){
+        customFonts.addAll(helperApp.customFonts);
     }
 
 
