@@ -12,6 +12,8 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -77,6 +79,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
 
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -89,30 +92,44 @@ import licenta.books.androidmobile.activities.others.BookAnnotations;
 import licenta.books.androidmobile.activities.others.CustomFont;
 import licenta.books.androidmobile.activities.others.HelperApp;
 import licenta.books.androidmobile.activities.others.HelperSettings;
+import licenta.books.androidmobile.activities.others.ShakeDetector;
 import licenta.books.androidmobile.adapters.SearchAdapter;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
 import licenta.books.androidmobile.classes.Chapter;
 import licenta.books.androidmobile.classes.Converters.TimestampConverter;
+import licenta.books.androidmobile.classes.CycleDay;
+import licenta.books.androidmobile.classes.Estimator;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.BookStateDao;
 import licenta.books.androidmobile.database.DAO.BookmarkDao;
+import licenta.books.androidmobile.database.DAO.EstimatorDao;
 import licenta.books.androidmobile.database.DAO.HighlightDao;
 import licenta.books.androidmobile.database.DaoMethods.BookStateMethods;
 import licenta.books.androidmobile.database.DaoMethods.BookmarkMethods;
+import licenta.books.androidmobile.database.DaoMethods.EstimatorMethods;
 import licenta.books.androidmobile.database.DaoMethods.HighlightMethods;
 import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.interfaces.Constants;
-
+import licenta.books.androidmobile.patterns.readingEstimator.DifficultyRead;
+import licenta.books.androidmobile.patterns.readingEstimator.GunningFogFormula;
 
 
 public class ReaderBookActivity extends AppCompatActivity implements View.OnClickListener, NoteDialogFragment.OnCompleteListener,
         FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor, AnnotationFragment.OnFragmentInteractionListener  {
     ReflowableControl reflowableControl;
     RelativeLayout renderRelative;
+
+    GunningFogFormula difficultyRead;
+
+    //Shaker
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private ShakeDetector shakeDetector;
+
 
     boolean isHighlighted=false;
     boolean forDelete = false;
@@ -134,6 +151,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     BookmarkMethods bookmarkMethods;
     HighlightDao highlightDao;
     HighlightMethods highlightMethods;
+    EstimatorDao estimatorDao;
+    EstimatorMethods estimatorMethods;
 
     licenta.books.androidmobile.classes.Highlight currentHighlight;
     Highlight highlightTrue;
@@ -220,6 +239,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     ArrayList<CustomFont> fonts = new ArrayList<>();
     ArrayList<SearchResult> searchResults = new ArrayList<>();
     ArrayList<BookAnnotations> bookAnnotations = new ArrayList<>();
+    ArrayList<Estimator> estimatorArrayList = new ArrayList<>();
+    ArrayList<Long> times = new ArrayList<>();
+    ArrayList<Long> timesPerPage;
 
 
     HelperApp app;
@@ -256,7 +278,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         makeFonts();
         initComp();
         initPathBook();
-
+        initShaker();
     }
 
     private void initComp(){
@@ -514,6 +536,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                     fontPlus.setEnabled(true);
                     fontPlus.setColorFilter(Color.BLACK);
                     fontSize--;
+                    Estimator.SECOND_INFERIOR_LIMIT +=1000;
                     reflowableControl.changeFontSize(fontSize);
                 }
             }
@@ -531,6 +554,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
                     fontMinus.setEnabled(true);
                     fontMinus.setColorFilter(Color.BLACK);
                     fontSize++;
+                    Estimator.SECOND_INFERIOR_LIMIT -=1000;
                     reflowableControl.changeFontSize(fontSize);
                 }
             }
@@ -541,6 +565,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         lineSpacingIncrease.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 increaseLineSpace();
             }
         });
@@ -558,6 +583,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     public void decreaseLineSpace() {
         if(lineSpacing !=0){
             this.lineSpacing--;
+            Estimator.SECOND_INFERIOR_LIMIT +=800;
             checkLineSpacing();
             reflowableControl.changeLineSpacing(getRealLineSpacing(lineSpacing));
         }
@@ -565,6 +591,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     public void increaseLineSpace() {
         if(lineSpacing !=4){
             this.lineSpacing++;
+            Estimator.SECOND_INFERIOR_LIMIT -=800;
             checkLineSpacing();
             reflowableControl.changeLineSpacing(getRealLineSpacing(lineSpacing));
         }
@@ -868,6 +895,17 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         makeIndicator();
 
         return reflowableControl;
+    }
+
+    private void initShaker(){
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        shakeDetector = new ShakeDetector();
+
+        shakeDetector.setOnShakeListener(count -> {
+            Log.d("Count shake: ", String.valueOf(count));
+            Toast.makeText(getApplicationContext(),"Shake it like it's hot",Toast.LENGTH_LONG).show();
+        });
     }
 
     @SuppressLint("CheckResult")
@@ -1293,18 +1331,24 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-
+String test= "ceva";
 
     private class PagerMoveHandler implements PageMovedListener {
 
         @Override
         public void onPageMoved(PageInformation pageInformation) {
+            addTimesPerPage(System.currentTimeMillis());
             setSeekBarPager(pageInformation);
 //            progressOnPageMoved(pageInformation);
             show = true;
             textInPage = pageInformation.pageDescription;
             showOrHideToolbar();
             hideSelectionButtonsPopup();
+
+            addToEstimatorList(createEstimatorPerPage(pageInformation.pageDescription));
+
+
+            System.out.println();
 
             Integer bookmarkCode = getBookmarkCode(pageInformation.chapterIndex,pageInformation.pageIndex);
             Double pagePos = pageInformation.pagePositionInBook;
@@ -1344,7 +1388,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
             for(int index = 0 ;index < tocNavPoints.getSize();index++){
                 chapterList.add(new Chapter(tocNavPoints.getNavPoint(index).text,tocNavPoints.getNavPoint(index).chapterIndex));
-                showLog("Index",String.valueOf(index)+" " + reflowableControl.getNumberOfPagesInChapter());
             }
 
             RxBus.publishsChapterList(chapterList);
@@ -1376,9 +1419,104 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         bookStatePermanent.setBookId(book.get_id());
     }
 
-//    private boolean setBookMarkOnPage(){
-//
-//    }
+
+
+
+
+
+
+
+
+
+
+    //ESTIMATOOOOOOOOOR
+
+
+    public Estimator createEstimatorPerPage( String textPage ){
+
+        if( textPage == null || DifficultyRead.getNoOfWords(textPage) < 100 ){
+            return null;
+        }
+        Estimator estimator = new Estimator();
+        int timeOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        if(timeOfDay >=0 && timeOfDay < 12){
+            estimator.setCycleDay(CycleDay.MORNING);
+        }else if(timeOfDay >= 12 && timeOfDay < 18){
+            estimator.setCycleDay(CycleDay.AFTERNOON);
+        }else if(timeOfDay >= 18 && timeOfDay <= 24){
+            estimator.setCycleDay(CycleDay.EVENING);
+        }
+        difficultyRead = new DifficultyRead(textPage);
+        System.out.println("Gunning fog score: "+difficultyRead.getGunningFog());
+
+        estimator.setGunningFogScore(difficultyRead.getGunningFog());
+
+        return estimator;
+    }
+
+    public void addToEstimatorList(Estimator estimator){
+        if(estimator !=null){
+            estimatorArrayList.add(estimator);
+        }
+    }
+
+    public void addTimesPerPage(long currentMillis){
+        times.add(currentMillis);
+    }
+
+
+    public void createTimePerPage(){
+        if(times.size() > 1) {
+            timesPerPage = new ArrayList<>();
+            for (int i = 0; i < times.size() - 1; i++) {
+                if (times.get(i + 1) - times.get(i) >= Estimator.SECOND_INFERIOR_LIMIT && times.get(i + 1) - times.get(i) <= Estimator.SECOND_SUPERIOR_LIMIT) {
+                    timesPerPage.add(times.get(i + 1) - times.get(i));
+                }
+            }
+        }
+    }
+
+
+    public Estimator finalEstimator(){
+        Estimator estimator=null;
+        double GFS = 0;
+        CycleDay cycleDay = null;
+        if(estimatorArrayList.size() > 0 && averageTimePerPage() > 0){
+            estimator = new Estimator();
+            for (Estimator est : estimatorArrayList) {
+                GFS += est.getGunningFogScore();
+                cycleDay = est.getCycleDay();
+            }
+            GFS = GFS/estimatorArrayList.size();
+            estimator.setGunningFogScore(GFS);
+            estimator.setCycleDay(cycleDay);
+            estimator.setTimePerPage(averageTimePerPage());
+            estimator.setBookId(book.get_id());
+            estimator.setUserId(user.getUserId());
+        }
+        return estimator;
+    }
+
+    public long averageTimePerPage(){
+        long sum = 0;
+        if(timesPerPage.size()>0) {
+            for (Long l : timesPerPage) {
+                sum += l;
+            }
+            sum = sum/timesPerPage.size();
+        }
+        return sum;
+    }
+
+
+
+
+
+
+
+
+
+
 
     private licenta.books.androidmobile.classes.Highlight creatorHighlight(Highlight highlight){
         licenta.books.androidmobile.classes.Highlight highlightDb = new licenta.books.androidmobile.classes.Highlight(highlight.code,highlight.chapterIndex,reflowableControl.getChapterTitle(highlight.chapterIndex),highlight.pagePositionInBook,highlight.pagePositionInChapter,
@@ -1773,7 +1911,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         if(!reflowableControl.isGlobalPagination()){
             seekBarPager.setMax(information.numberOfPagesInChapter);
             seekBarPager.setProgress(information.pageIndex+1);
-            tvPage.setText(information.pageIndex+1+"/" +String.valueOf(information.numberOfPagesInChapter)+ "Pages");
+            tvPage.setText(information.pageIndex+1+"/" +String.valueOf(information.numberOfPagesInChapter)+ "Pages" );
         }
     }
 
@@ -1985,6 +2123,11 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             if(!fontType.equals("TimesRoman")){
                 typeface.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(),"font/"+"simplicity"+".ttf"));
             }
+            if(fontSize>15){
+                Estimator.SECOND_INFERIOR_LIMIT -= (fontSize-15)*800;
+            }else{
+                Estimator.SECOND_INFERIOR_LIMIT += (15-fontSize)*800;
+            }
             reflowableControl.setFont(fontType,fontSize);
         }
         pagePosition = pageP;
@@ -2043,6 +2186,12 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         bookStateMethods.insertBookState(bookState);
     }
 
+    private void insertEstimation(Estimator estimator){
+        if(estimator!=null){
+            estimatorMethods.insertEstimation(estimator);
+        }
+    }
+
     private BookState subscribeBookState(){
         Disposable disposable = RxBus.subscribeBookState(new Consumer<BookState>() {
             @Override
@@ -2073,6 +2222,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         bookmarkMethods = BookmarkMethods.getInstance(bookmarkDao);
         highlightDao = AppRoomDatabase.getInstance(getApplicationContext()).getHighlightDao();
         highlightMethods = HighlightMethods.getInstance(highlightDao);
+        estimatorDao = AppRoomDatabase.getInstance(getApplicationContext()).getEstimatorDao();
+        estimatorMethods = EstimatorMethods.getInstance(estimatorDao);
     }
 
     @Override
@@ -2361,6 +2512,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     protected void onPause() {
         insertBookState(subscribeBookState());
         resume = true;
+        sensorManager.unregisterListener(shakeDetector);
         super.onPause();
     }
 
@@ -2375,6 +2527,8 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     public void onBackPressed() {
         insertBookState(subscribeBookState());
         shutDownTTS();
+        createTimePerPage();
+        insertEstimation(finalEstimator());
         super.onBackPressed();
     }
 
@@ -2382,6 +2536,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     protected void onResume() {
 
         super.onResume();
+        sensorManager.registerListener(shakeDetector, accelerometer,	SensorManager.SENSOR_DELAY_UI);
         Intent intent = new Intent();
         Disposable d = RxBus.subscribeBook(bookE -> {
             book = bookE;
