@@ -3,11 +3,14 @@ package licenta.books.androidmobile.activities;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.arch.persistence.room.TypeConverters;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -71,7 +74,6 @@ import com.skytree.epub.SkyProvider;
 import com.skytree.epub.State;
 import com.skytree.epub.StateListener;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -79,7 +81,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
 
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -98,6 +99,7 @@ import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.BookState;
 import licenta.books.androidmobile.classes.Bookmark;
 import licenta.books.androidmobile.classes.Chapter;
+import licenta.books.androidmobile.classes.Converters.ArrayIntegerConverter;
 import licenta.books.androidmobile.classes.Converters.TimestampConverter;
 import licenta.books.androidmobile.classes.CycleDay;
 import licenta.books.androidmobile.classes.Estimator;
@@ -114,6 +116,8 @@ import licenta.books.androidmobile.database.DaoMethods.EstimatorMethods;
 import licenta.books.androidmobile.database.DaoMethods.HighlightMethods;
 import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.interfaces.Constants;
+import licenta.books.androidmobile.patterns.readingEstimator.AverageIndicators;
+import licenta.books.androidmobile.patterns.readingEstimator.ChapterIndexes;
 import licenta.books.androidmobile.patterns.readingEstimator.DifficultyRead;
 import licenta.books.androidmobile.patterns.readingEstimator.GunningFogFormula;
 
@@ -123,12 +127,22 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     ReflowableControl reflowableControl;
     RelativeLayout renderRelative;
 
-    GunningFogFormula difficultyRead;
 
+    GunningFogFormula difficultyRead;
     //Shaker
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private ShakeDetector shakeDetector;
+    AverageIndicators averageIndicators;
+    LinearLayout estimationLayout;
+    TextView tvEstimation;
+    Button btnDifficulty;
+
+    int noOfWatchedPage = 0 ;
+    int sumOfWordsPerWatchedPage = 0;
+    int chapterIndex = 0;
+    ArrayList<Integer> chapterIndexes;
+    ArrayList<Integer> watchedPages = new ArrayList<>();
 
 
     boolean isHighlighted=false;
@@ -333,6 +347,23 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         styleLayout.setClickable(true);
         typeface = findViewById(R.id.typeface_btn);
 
+        //shake layout
+        estimationLayout = findViewById(R.id.estimation_layout);
+        estimationLayout.setVisibility(View.GONE);
+        estimationLayout.setClickable(true);
+
+//        BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(estimationLayout);
+//        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+//        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+//        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+//
+//        bottomSheetBehavior.setPeekHeight(340);
+//
+//        bottomSheetBehavior.setHideable(false);
+
+        tvEstimation = findViewById(R.id.tv_estimation);
+        btnDifficulty = findViewById(R.id.grade_difficulty);
+
 
         searchLayout = findViewById(R.id.search_layout);
         searchLayout.setVisibility(View.GONE);
@@ -350,8 +381,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         brightnessControl = findViewById(R.id.brightness_seeker);
         fontMinus = findViewById(R.id.font_minus);
         fontPlus = findViewById(R.id.font_plus);
-        marginMinus = findViewById(R.id.margin_minus);
-        marginPlus = findViewById(R.id.margin_plus);
+
         colorsBackground = findViewById(R.id.background_btn);
         colorsForeground = findViewById(R.id.textcolor_btn);
         lineSpacingIncrease = findViewById(R.id.line_spacing_plus);
@@ -364,6 +394,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         textInHighlight ="";
         prepareAndroidTTSinHighlight(textInHighlight);
+
+
+
 
 
         noteBtn = findViewById(R.id.btn_note);
@@ -488,7 +521,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         setFooterListner();
         setSearchedItem();
         setSearchText();
-
+//        onTouchEstimationView();
     }
 
     private void textSearchMethods(String keySearch) {
@@ -748,12 +781,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void initPathBook(){
-        Disposable d = RxBus.subscribeBook(new Consumer<BookE>() {
-            @Override
-            public void accept(BookE bookE) throws Exception {
-                book = bookE;
-            }
-        });
+        Disposable d = RxBus.subscribeBook(bookE -> book = bookE);
         d.dispose();
 
         Disposable disp = RxBus.subscribeUser(userr -> {
@@ -903,8 +931,12 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         shakeDetector = new ShakeDetector();
 
         shakeDetector.setOnShakeListener(count -> {
-            Log.d("Count shake: ", String.valueOf(count));
-            Toast.makeText(getApplicationContext(),"Shake it like it's hot",Toast.LENGTH_LONG).show();
+            if(estimationLayout.getVisibility()== View.GONE){
+                slideUp(estimationLayout);
+            }else{
+                slideDown(estimationLayout);
+            }
+
         });
     }
 
@@ -1180,13 +1212,15 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
             if((reflowableControl.getWidth() - startRect.left) > selectionButtonsPopup.getWidth()){
                 moveSelectionButtonPopupToBellow(endRect.bottom + 30, startRect.left);
             }else{
-                moveSelectionButtonPopupToBellow(endRect.bottom + 30, reflowableControl.getWidth() - selectionButtonsPopup.getWidth());
+                moveSelectionButtonPopupToBellow(endRect.bottom + 30,
+                        reflowableControl.getWidth() - selectionButtonsPopup.getWidth());
             }
         }else if(startRect.top > (reflowableControl.getHeight()/2)&& endRect.bottom > (selectionButtonsPopup.getHeight()/2)){
             if ((reflowableControl.getWidth() - startRect.left) > selectionButtonsPopup.getWidth()) {
                 moveSelectionButtonPopupToUpper(startRect.top - selectionButtonsPopup.getHeight() - 30, startRect.left);
             } else {
-                moveSelectionButtonPopupToUpper(startRect.top - selectionButtonsPopup.getHeight() - 30, reflowableControl.getWidth() - selectionButtonsPopup.getWidth());
+                moveSelectionButtonPopupToUpper(startRect.top - selectionButtonsPopup.getHeight() - 30,
+                        reflowableControl.getWidth() - selectionButtonsPopup.getWidth());
             }
         } else {
 
@@ -1339,34 +1373,19 @@ String test= "ceva";
         public void onPageMoved(PageInformation pageInformation) {
             addTimesPerPage(System.currentTimeMillis());
             setSeekBarPager(pageInformation);
-//            progressOnPageMoved(pageInformation);
+
             show = true;
             textInPage = pageInformation.pageDescription;
             showOrHideToolbar();
             hideSelectionButtonsPopup();
 
+
+            setChapterIndexes(pageInformation);
+            setSumOfWordsPerWatchedPage(pageInformation);
             addToEstimatorList(createEstimatorPerPage(pageInformation.pageDescription));
+            setEstimationAndDifficulty(pageInformation);
 
-
-            System.out.println();
-
-            Integer bookmarkCode = getBookmarkCode(pageInformation.chapterIndex,pageInformation.pageIndex);
-            Double pagePos = pageInformation.pagePositionInBook;
-            Integer chapterIndex = pageInformation.chapterIndex;
-            Integer pageIndex = pageInformation.pageIndex;
-            String bookmarkPageInfo = "Chapter : " + pageInformation.chapterIndex + " Page In Chapter : " + pageInformation.pageIndex;
-            String bookId = book.get_id();
-            Integer userId = user.getUserId();
-            String chapterName = pageInformation.chapterTitle;
-            Bookmark bookmark = new Bookmark(bookmarkCode,pagePos,chapterIndex,pageIndex,bookmarkPageInfo,Calendar.getInstance().getTime(),chapterName,bookId,userId);
-            boolean isBookmark = isBookmarkExists(bookmark);
-
-
-            if(isBookmark){
-                menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_black_24dp));
-            }else{
-                menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_border_black_24dp));
-            }
+            Bookmark bookmark = getBookmark(pageInformation);
 
             if(textToSpeechInPage.isSpeaking())  textToSpeechInPage.stop();
             if(pageAutoFlip) speakingInPage(textInPage);
@@ -1381,6 +1400,7 @@ String test= "ceva";
 
         @Override
         public void onChapterLoaded(int i) {
+            chapterIndex = i;
 
             showLog("Chapter Index", String.valueOf(i));
             NavPoints tocNavPoints = reflowableControl.getNavPoints();
@@ -1404,6 +1424,27 @@ String test= "ceva";
         public void onFailedToMove(boolean b) {
             showLog("Fail?", String.valueOf(b));
         }
+    }
+
+    private Bookmark getBookmark(PageInformation pageInformation) {
+        Integer bookmarkCode = getBookmarkCode(pageInformation.chapterIndex,pageInformation.pageIndex);
+        Double pagePos = pageInformation.pagePositionInBook;
+        Integer chapterIndex = pageInformation.chapterIndex;
+        Integer pageIndex = pageInformation.pageIndex;
+        String bookmarkPageInfo = "Chapter : " + pageInformation.chapterIndex + " Page In Chapter : " + pageInformation.pageIndex;
+        String bookId = book.get_id();
+        Integer userId = user.getUserId();
+        String chapterName = pageInformation.chapterTitle;
+        Bookmark bookmark = new Bookmark(bookmarkCode,pagePos,chapterIndex,pageIndex,bookmarkPageInfo, Calendar.getInstance().getTime(),chapterName,bookId,userId);
+        boolean isBookmark = isBookmarkExists(bookmark);
+
+
+        if(isBookmark){
+            menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_black_24dp));
+        }else{
+            menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_border_black_24dp));
+        }
+        return bookmark;
     }
 
     private void setStateBookOnPage(PageInformation pageInformation){
@@ -1438,14 +1479,14 @@ String test= "ceva";
             return null;
         }
         Estimator estimator = new Estimator();
-        int timeOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        if(timeOfDay >=0 && timeOfDay < 12){
-            estimator.setCycleDay(CycleDay.MORNING);
-        }else if(timeOfDay >= 12 && timeOfDay < 18){
-            estimator.setCycleDay(CycleDay.AFTERNOON);
-        }else if(timeOfDay >= 18 && timeOfDay <= 24){
-            estimator.setCycleDay(CycleDay.EVENING);
-        }
+//        int timeOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+//        if(timeOfDay >=0 && timeOfDay < 12){
+//            estimator.setCycleDay(CycleDay.MORNING);
+//        }else if(timeOfDay >= 12 && timeOfDay < 18){
+//            estimator.setCycleDay(CycleDay.AFTERNOON);
+//        }else if(timeOfDay >= 18 && timeOfDay <= 24){
+//            estimator.setCycleDay(CycleDay.EVENING);
+//        }
         difficultyRead = new DifficultyRead(textPage);
         System.out.println("Gunning fog score: "+difficultyRead.getGunningFog());
 
@@ -1453,6 +1494,117 @@ String test= "ceva";
 
         return estimator;
     }
+
+    private synchronized void fetchAverageIndicators(){
+        Integer cycleDay = null;
+        int timeOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        if(timeOfDay >=0 && timeOfDay < 12){
+            cycleDay = 0;
+        }else if(timeOfDay >= 12 && timeOfDay < 18){
+            cycleDay = 1;
+        }else if(timeOfDay >= 18 && timeOfDay <= 24){
+            cycleDay = 2;
+        }
+        Single<AverageIndicators> averageIndicatorsSingle = estimatorMethods.fetchAverageIndicators(book.get_id(),user.getUserId());
+        averageIndicatorsSingle.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<AverageIndicators>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(AverageIndicators averageTime) {
+                        estimationForChapter(averageTime);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+                });
+    }
+
+    private synchronized void fetchChapterIndexes(){
+        Single<ChapterIndexes> arrayListSingle = estimatorMethods.fetchWatchedChapterIndexes(book.get_id(),user.getUserId());
+        arrayListSingle.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<ChapterIndexes>() {
+                    @Override
+                    public void onSubscribe(Disposable disposable) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(ChapterIndexes integers) {
+                        setChapterIndexes(integers.chapterList);
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        setChapterIndexes(new ArrayList<>());
+                    }
+                });
+    }
+
+    public void setChapterIndexes(ArrayList<Integer> arrayList){
+        chapterIndexes = arrayList;
+    }
+
+    private void estimationForChapter(AverageIndicators averageIndicators){
+        this.averageIndicators = averageIndicators;
+        this.sumOfWordsPerWatchedPage = averageIndicators.sumWords;
+        this.noOfWatchedPage = averageIndicators.sumPages;
+        System.out.println(averageIndicators.avgGFS + " --- " + averageIndicators.avgTime);
+
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void setEstimationAndDifficulty(PageInformation information){
+        averageIndicators.sumPages = noOfWatchedPage;
+        averageIndicators.sumWords = sumOfWordsPerWatchedPage;
+//        double GFS = 0;
+//        for (Estimator est : estimatorArrayList) {
+//            GFS += est.getGunningFogScore();
+////                cycleDay = est.getCycleDay();
+//        }
+//        GFS = GFS/estimatorArrayList.size();
+//        if(averageIndicators.avgGFS !=0){
+//            averageIndicators.avgGFS = (GFS + averageIndicators.avgGFS)/2;
+//        }else{
+//            averageIndicators.avgGFS = GFS;
+//        }
+
+        long estimatedTime =(long) Estimator.chapterEstimator(information,averageIndicators);
+        int hours   = (int) ((estimatedTime / (60*60)) % 24);
+        int minutes = (int) ((estimatedTime / (60)) % 60);
+        int seconds = (int) (estimatedTime ) % 60 ;
+
+        tvEstimation.setText(String.valueOf(hours)+"hours "+String.valueOf(minutes)+"minutes "+String.valueOf(seconds)+ "seconds");
+        btnDifficulty.setText(String.valueOf(DifficultyRead.round(averageIndicators.avgGFS,3)));
+        btnDifficulty.setBackgroundDrawable(changeDrawableColor(getDifficultyColor(8)));
+    }
+
+    public Drawable changeDrawableColor( int newColor) {
+        Drawable mDrawable=null;
+
+        mDrawable = ContextCompat.getDrawable(getApplicationContext(), R.drawable.btn_rounded).mutate();
+
+        mDrawable.setColorFilter(new PorterDuffColorFilter(newColor, PorterDuff.Mode.SRC_IN));
+        return mDrawable;
+    }
+
+    private int getDifficultyColor(double grad){
+        int lv = (int) Math.round(grad *5);
+//        int R = (255 * lv)/100;
+        int R = 2 * lv;
+        int G = (255 * (100 - lv))/100;
+        int B = 0;
+
+       return Color.rgb(R,G,B);
+    }
+
 
     public void addToEstimatorList(Estimator estimator){
         if(estimator !=null){
@@ -1480,26 +1632,34 @@ String test= "ceva";
     public Estimator finalEstimator(){
         Estimator estimator=null;
         double GFS = 0;
+        for (Estimator est : estimatorArrayList) {
+            GFS += est.getGunningFogScore();
+//                cycleDay = est.getCycleDay();
+        }
+        GFS = GFS/estimatorArrayList.size();
+        if(averageIndicators.avgGFS !=0) {
+            GFS = (GFS + averageIndicators.avgGFS) / 2;
+        }
         CycleDay cycleDay = null;
         if(estimatorArrayList.size() > 0 && averageTimePerPage() > 0){
             estimator = new Estimator();
-            for (Estimator est : estimatorArrayList) {
-                GFS += est.getGunningFogScore();
-                cycleDay = est.getCycleDay();
-            }
-            GFS = GFS/estimatorArrayList.size();
+
             estimator.setGunningFogScore(GFS);
-            estimator.setCycleDay(cycleDay);
             estimator.setTimePerPage(averageTimePerPage());
+            estimator.setTotalOfWatchedWords(sumOfWordsPerWatchedPage);
+            estimator.setTotalOfWatchedPages(noOfWatchedPage);
+            estimator.setChapterIndexes(chapterIndexes);
             estimator.setBookId(book.get_id());
             estimator.setUserId(user.getUserId());
+        }else{
+            estimatorMethods.updateIndicators(sumOfWordsPerWatchedPage,noOfWatchedPage, GFS,ArrayIntegerConverter.fromArrayList(chapterIndexes),book.get_id(),user.getUserId());
         }
         return estimator;
     }
 
     public long averageTimePerPage(){
         long sum = 0;
-        if(timesPerPage.size()>0) {
+        if(timesPerPage !=null && timesPerPage.size()>0) {
             for (Long l : timesPerPage) {
                 sum += l;
             }
@@ -1508,12 +1668,52 @@ String test= "ceva";
         return sum;
     }
 
+    public void setSumOfWordsPerWatchedPage(PageInformation information){
+        int code = uniqueCodePage(information.pageIndex);
+//        && !chapterIndexes.contains(information.chapterIndex)
+        if(!watchedPages.contains(code) ){
+            watchedPages.add(code);
+            sumOfWordsPerWatchedPage += DifficultyRead.getNoOfWords(information.pageDescription);
+            setNoOfWatchedPage();
+        }
+    }
 
+    public void setNoOfWatchedPage(){
+        noOfWatchedPage += 1;
+    }
 
+    public int uniqueCodePage(int pageIndex){
+        int code = pageIndex*chapterIndex - chapterIndex*99;
 
+        return Math.abs(code);
+    }
 
+    public void setChapterIndexes(PageInformation information){
+        if(!chapterIndexes.contains(information.chapterIndex) && information.pageIndex > Math.round(information.numberOfPagesInChapter/2)){
+            chapterIndexes.add(information.chapterIndex);
+        }
+    }
 
-
+    @SuppressLint("ClickableViewAccessibility")
+    private void onTouchEstimationView(){
+        estimationLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                float startY=0;
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        startY = event.getY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        float endY = event.getY();
+                        if(endY > startY){
+                            slideDown(estimationLayout);
+                        }
+                }
+                return true;
+            }
+        });
+    }
 
 
 
@@ -1915,17 +2115,6 @@ String test= "ceva";
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private void progressOnPageMoved(PageInformation pageInformation){
-//        int ppb = pageInformation.pageIndex;
-//        int progress = (int)((double)999.0f * (ppb));
-        int pic = pageInformation.pageIndex;
-
-        seekBarPager.setProgress(pic);
-        tvPage.setText(reflowableControl.getPageIndexInChapter()+"/" +String.valueOf(reflowableControl.getNumberOfPagesInChapter()-1)+ "Pages");
-
-
-    }
 
     public void showIndicator() {
         LinearLayout.LayoutParams params =
@@ -2073,7 +2262,6 @@ String test= "ceva";
 
         showSelectionButtonsPopup();
     }
-
 
 
     private void showOrHideToolbar(){
@@ -2534,7 +2722,6 @@ String test= "ceva";
 
     @Override
     protected void onResume() {
-
         super.onResume();
         sensorManager.registerListener(shakeDetector, accelerometer,	SensorManager.SENSOR_DELAY_UI);
         Intent intent = new Intent();
@@ -2543,6 +2730,15 @@ String test= "ceva";
             Log.d("Revine: ",book.getTitle());
         });
         d.dispose();
+
+        Disposable d2 = RxBus.subscribeUser(userr-> {
+            user = userr;
+//            Log.d("Revine: ",book.getTitle());
+        });
+        d2.dispose();
+
+        fetchAverageIndicators();
+        fetchChapterIndexes();
         if(resume) {
             intent = getIntent();
             loadHighLightsFromDb(user);

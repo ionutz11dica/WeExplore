@@ -10,142 +10,110 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="295dp"
         android:background="#f1f1f2"
         android:orientation="vertical">
+
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/granite"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:background="@color/granite" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:weightSum="2"
             android:layout_marginTop="5dp"
+            android:gravity="center"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:weightSum="2">
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Brightness"
-                android:textSize="15dp"
                 android:layout_weight="0.6"
                 android:gravity="center"
-                android:padding="10dp"/>
+                android:padding="10dp"
+                android:text="Brightness"
+                android:textSize="15dp" />
+
             <SeekBar
                 android:id="@+id/brightness_seeker"
                 android:layout_width="0dp"
 
                 android:layout_height="wrap_content"
-                android:layout_weight="0.87"/>
+                android:layout_weight="0.87" />
         </LinearLayout>
 
 
-
         <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:weightSum="2"
-            android:layout_marginTop="5dp"
-        android:orientation="horizontal"
-        android:gravity="center">
-        <TextView
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fonts"
-            android:textSize="15dp"
-            android:layout_weight="0.6"
+            android:layout_marginTop="5dp"
             android:gravity="center"
-            android:padding="10dp"/>
-        <ImageButton
-            android:id="@+id/font_minus"
-            android:layout_width="0dp"
-            android:layout_height="45dp"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_font_size"
-            android:layout_weight="0.41"
-            android:padding="10dp"
-            android:background="@drawable/fonts_btn"/>
-
-        <ImageButton
-            android:id="@+id/font_plus"
-            android:layout_width="0dp"
-            android:layout_height="45dp"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_capital_t"
-            android:layout_weight="0.41"
-            android:padding="10dp"
-            android:layout_marginLeft="10dp"
-            android:background="@drawable/fonts_btn"/>
-    </LinearLayout>
-
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:weightSum="2"
-            android:layout_marginTop="5dp"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:weightSum="2">
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Margins"
-                android:textSize="15dp"
                 android:layout_weight="0.6"
                 android:gravity="center"
-                android:padding="10dp"/>
-            <ImageButton
-                android:id="@+id/margin_minus"
-                android:layout_width="0dp"
-                android:layout_height="45dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_left_margin"
-                android:layout_weight="0.41"
                 android:padding="10dp"
-                android:background="@drawable/fonts_btn"/>
+                android:text="Fonts"
+                android:textSize="15dp" />
 
             <ImageButton
-                android:id="@+id/margin_plus"
+                android:id="@+id/font_minus"
                 android:layout_width="0dp"
                 android:layout_height="45dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_right_margin"
                 android:layout_weight="0.41"
+                android:background="@drawable/fonts_btn"
                 android:padding="10dp"
+                android:src="@drawable/ic_font_size" />
+
+            <ImageButton
+                android:id="@+id/font_plus"
+                android:layout_width="0dp"
+                android:layout_height="45dp"
+                android:layout_gravity="center"
                 android:layout_marginLeft="10dp"
-                android:background="@drawable/fonts_btn"/>
+                android:layout_weight="0.41"
+                android:background="@drawable/fonts_btn"
+                android:padding="10dp"
+                android:src="@drawable/ic_capital_t" />
         </LinearLayout>
 
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:weightSum="2"
             android:layout_marginTop="5dp"
+            android:gravity="center"
 
             android:orientation="horizontal"
-            android:gravity="center">
+            android:weightSum="2">
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Typeface"
-                android:textSize="15dp"
                 android:layout_weight="0.6"
                 android:gravity="center"
-                android:padding="10dp"/>
+                android:padding="10dp"
+                android:text="Typeface"
+                android:textSize="15dp" />
+
             <Button
                 android:id="@+id/typeface_btn"
                 android:layout_width="0dp"
                 android:layout_height="35dp"
                 android:layout_gravity="center"
-                android:text="typeface"
-                android:textSize="12dp"
                 android:layout_weight="0.85"
+                android:background="@drawable/fonts_btn"
                 android:padding="10dp"
-                android:background="@drawable/fonts_btn"/>
+                android:text="typeface"
+                android:textSize="12dp" />
 
         </LinearLayout>
 
@@ -174,27 +142,28 @@
                 android:layout_gravity="center"
                 android:layout_weight="0.85"
                 android:background="@drawable/fonts_btn"
-                android:padding="10dp"
-               />
+                android:padding="10dp" />
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:weightSum="2"
             android:layout_marginTop="5dp"
+            android:gravity="center"
 
             android:orientation="horizontal"
-            android:gravity="center">
+            android:weightSum="2">
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Text Color"
-                android:textSize="15dp"
                 android:layout_weight="0.6"
                 android:gravity="center"
-                android:padding="10dp"/>
+                android:padding="10dp"
+                android:text="Text Color"
+                android:textSize="15dp" />
+
             <Button
                 android:id="@+id/textcolor_btn"
                 android:layout_width="0dp"
@@ -202,18 +171,18 @@
                 android:layout_gravity="center"
 
                 android:layout_weight="0.85"
-                android:padding="10dp"
-                android:background="@drawable/fonts_btn"/>
+                android:background="@drawable/fonts_btn"
+                android:padding="10dp" />
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:weightSum="2"
             android:layout_marginTop="5dp"
+            android:gravity="center"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:weightSum="2">
 
             <TextView
                 android:layout_width="0dp"
@@ -223,26 +192,27 @@
                 android:padding="10dp"
                 android:text="Spacing"
                 android:textSize="15dp" />
+
             <ImageButton
                 android:id="@+id/line_spacing_minus"
                 android:layout_width="0dp"
                 android:layout_height="45dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_line_spacing_text"
                 android:layout_weight="0.41"
+                android:background="@drawable/fonts_btn"
                 android:padding="10dp"
-                android:background="@drawable/fonts_btn"/>
+                android:src="@drawable/ic_line_spacing_text" />
 
             <ImageButton
                 android:id="@+id/line_spacing_plus"
                 android:layout_width="0dp"
                 android:layout_height="45dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_spacing"
-                android:layout_weight="0.41"
-                android:padding="10dp"
                 android:layout_marginLeft="10dp"
-                android:background="@drawable/fonts_btn"/>
+                android:layout_weight="0.41"
+                android:background="@drawable/fonts_btn"
+                android:padding="10dp"
+                android:src="@drawable/ic_spacing" />
         </LinearLayout>
 
 

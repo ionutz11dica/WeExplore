@@ -75,8 +75,8 @@ public class ColorsDialogFragment extends DialogFragment {
         List<Integer> colorList = new ArrayList<>();
 
         int R = 245;
-        int G = 245;
-        int B = 245;
+        int G;
+        int B;
         int decreser = 0;
         for(int i = 0; i<5;i++){
             R = R-decreser;
@@ -91,7 +91,6 @@ public class ColorsDialogFragment extends DialogFragment {
                 }
             }
         }
-
         return colorList.toArray(new Integer[0]);
     }
 

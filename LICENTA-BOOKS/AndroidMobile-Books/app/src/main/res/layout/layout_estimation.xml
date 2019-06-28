@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="270dp"
+    android:background="@drawable/layout_radius_est"
+    android:layout_gravity="bottom|center"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="15dp"
+        android:elevation="5dp"
+        android:gravity="center">
+
+        <View
+            android:layout_width="50dp"
+            android:layout_height="5dp"
+            android:background="@drawable/white"
+            android:layout_gravity="center"
+            android:elevation="5dp" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_margin="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:textAlignment="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25dp"
+            android:text="Estimated time for chapter"/>
+
+        <TextView
+            android:id="@+id/tv_estimation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="estimarea"
+            android:textSize="25dp"
+            android:textStyle="normal|bold"
+            android:fontFamily="@font/crimsontext"
+            android:textAlignment="center"/>
+
+    </LinearLayout>
+    <View
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@drawable/dark_grey"
+        android:layout_gravity="center"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="10dp"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_gravity="center"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.7"
+            android:text="Book Difficulty"
+            android:textAlignment="center"
+            android:textSize="25dp"/>
+
+        <Button
+            android:id="@+id/grade_difficulty"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_rounded"
+            android:layout_weight="0.3"/>
+    </LinearLayout>
+    <View
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@drawable/dark_grey"
+        android:layout_gravity="center"
+        />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Rating: "
+            android:textSize="20dp"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:layout_weight="0.3"/>
+        <RatingBar
+            android:id="@+id/star_ratingbar"
+            android:layout_width="0dp"
+            style="?android:attr/ratingBarStyleIndicator"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.7"
+            android:numStars="5"/>
+    </LinearLayout>
+
+
+</LinearLayout>

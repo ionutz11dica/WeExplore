@@ -7,7 +7,7 @@ import licenta.books.androidmobile.classes.CycleDay;
 public class CycleDayConverter {
 
     @TypeConverter
-    public static CycleDay toEnum(int status){
+    public static CycleDay toEnumCycle(int status){
         switch (status){
             case 0:
                 return CycleDay.MORNING;

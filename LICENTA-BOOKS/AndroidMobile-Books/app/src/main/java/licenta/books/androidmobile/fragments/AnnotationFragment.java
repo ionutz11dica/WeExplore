@@ -158,17 +158,16 @@ public class AnnotationFragment extends Fragment implements View.OnClickListener
                                         bookAnnotations.remove(position);
                                         listBookAnnotations.remove(position);
                                     }else {
+                                        if(listBookAnnotations.get(position).getBookmark()!=null){
+                                            bookAnnotations.removeIf(n->(n.getBookmark()!=null && n.getBookmark().getBookmarkId().equals(listBookAnnotations.get(position).getBookmark().getBookmarkId())));
+                                        }else{
+                                            bookAnnotations.removeIf(n->(n.getHighlight()!=null && n.getHighlight().getHighlightId().equals(listBookAnnotations.get(position).getHighlight().getHighlightId())));
+                                        }
 
-                                        bookAnnotations.removeIf(n->(n.getHighlight()!=null && n.getHighlight().getHighlightId().equals(listBookAnnotations.get(position).getHighlight().getHighlightId()))||
-                                                (n.getBookmark()!=null && n.getBookmark().getBookmarkId().equals(listBookAnnotations.get(position).getBookmark().getBookmarkId())));
                                         listBookAnnotations.remove(position);
-//                                               n.getBookmark() !=null &&  n.getBookmark().getBookmarkId().equals(listBookAnnotations.get(position).getBookmark().getBookmarkId()));
                                     }
-
                                     annotationAdapter.notifyDataSetChanged();
                                 }
-
-
                             }
                         });
         lv_annotations.setOnTouchListener(touchListener);
