@@ -258,7 +258,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                         public synchronized void onSuccess(final User user) {
                             Log.d("User id: ", user.getUserId().toString());
                             if(userBookJoin==null){
-                                verifyExistanceBook(book.get_id(),user.getUserId());
+                                verifyExistenceBook(book.get_id(),user.getUserId());
                             }else {
                                 userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
                                 if(btnDownload.getText().toString().equals("Wait..")){
@@ -292,7 +292,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                         public synchronized void onSuccess(User user) {
                             Log.d("User id: ", user.getUserId().toString());
                             if(userBookJoin==null){
-                                verifyExistanceBook(book.get_id(),user.getUserId());
+                                verifyExistenceBook(book.get_id(),user.getUserId());
                             }else {
                                 userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
                                 if(btnDownload.getText().toString().equals("Wait..")){
@@ -378,7 +378,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         userBookMethods = UserBookMethods.getInstance(userBookJoinDao);
     }
 
-    private void verifyExistanceBook(String bookId,Integer userId){
+    private void verifyExistenceBook(String bookId,Integer userId){
         Single<BookE> bookESingle = userBookMethods.getBookFromDatabase(userId,bookId);
         bookESingle.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
