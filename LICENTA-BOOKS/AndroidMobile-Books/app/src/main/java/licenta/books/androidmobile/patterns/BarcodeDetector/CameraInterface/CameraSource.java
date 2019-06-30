@@ -32,6 +32,7 @@ import java.util.Map;
 public class CameraSource {
     @SuppressLint("InlinedApi")
     public static final int CAMERA_FACING_BACK = Camera.CameraInfo.CAMERA_FACING_BACK;
+    public static final int CAMERA_FACING_FRONT = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private static final String TAG = "OpenCameraSource";
 
     private static final int TEXTURE_NAME_VALUE = 100;
@@ -95,6 +96,7 @@ public class CameraSource {
 
     //builder pentru configurarea si crearea unei camere sursa asociate
     public static class Builder {
+
         private final Detector<?> detector;
         private CameraSource cameraSource = new CameraSource();
 
@@ -145,9 +147,9 @@ public class CameraSource {
         }
 
         //setam camera de spate si verificam daca este sau nu setata corect
-        public Builder setFacing(int facing){
-            if((facing!= CAMERA_FACING_BACK)){
-                throw new IllegalArgumentException("Invalid camera: "+facing);
+        public Builder setFacing(int facing) {
+            if ((facing != CAMERA_FACING_BACK) && (facing != CAMERA_FACING_FRONT)) {
+                throw new IllegalArgumentException("Invalid camera: " + facing);
             }
             cameraSource.facing = facing;
             return this;
@@ -234,7 +236,7 @@ public class CameraSource {
     }
 
 
-    private void stop() {
+    public void stop() {
         synchronized (cameraLock) {
             frameProcessor.setActive(false);
             if (frameProcessor !=null){
@@ -351,6 +353,12 @@ public class CameraSource {
         }
         return -1;
     }
+    public int getCameraFacing() {
+        return facing;
+    }
+    public Size getPreviewSize() {
+        return previewSize;
+    }
 
     /** Creaza un buffer pt apelul camerei. Marimea buffer ului este bazat pe marimea camerei previzualizate si pe formatul camerei
      * */
@@ -379,8 +387,8 @@ public class CameraSource {
         WindowManager windowManager =
                 (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         int degrees = 0;
-        int rotation = windowManager.getDefaultDisplay().getRotation();
-        switch (rotation) {
+        int localRotation = windowManager.getDefaultDisplay().getRotation();
+        switch (localRotation) {
             case Surface.ROTATION_0:
                 degrees = 0;
                 break;
@@ -394,7 +402,7 @@ public class CameraSource {
                 degrees = 270;
                 break;
             default:
-                Log.e(TAG, "Bad rotation value: " + rotation);
+                Log.e(TAG, "Bad rotation value: " + localRotation);
         }
 
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
@@ -410,7 +418,7 @@ public class CameraSource {
             displayAngle = angle;
         }
 
-        // This corresponds to the rotation constants in {@link Frame}.
+
         rotation = angle / 90;
 
         camera.setDisplayOrientation(displayAngle);
