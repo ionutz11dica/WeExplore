@@ -136,6 +136,7 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
         d.dispose();
     }
 
+
     private String convertFromArray(ArrayList<String> authors){
         StringBuilder sb = new StringBuilder();
         for(String s : authors){

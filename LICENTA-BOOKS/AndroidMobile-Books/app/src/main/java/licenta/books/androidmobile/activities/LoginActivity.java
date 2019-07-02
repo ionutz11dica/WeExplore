@@ -183,7 +183,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
      void verifyLoginFromDb() {
         final CustomToast customToast = new CustomToast(this);
         final User userr = new User();
-        final Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+        final Intent intent = new Intent(getApplicationContext(),HomeActivity.class);
         if(verifySignin()){
             userr.setUsername(tie_signinUsername.getText().toString());
             userr.setPassword(tie_signinPassword.getText().toString());
@@ -204,7 +204,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     @Override
                     public void onSuccess(User user) {
                         Log.d("User: ",user.getEmail());
-                            startActivity(intent);
+                        RxBus.publishUser(user);
+                        startActivity(intent);
 
                     }
 
@@ -213,36 +214,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                         customToast.show("Passowrd or username incorrect",R.drawable.ic_error_outline_24dp,getApplicationContext());
                     }
                 });
-
-//            new AsyncTask<User, Void,Boolean>(){
-//                @Override
-//                protected void onPreExecute() {
-//                    super.onPreExecute();
-//
-//                }
-//
-//                @Override
-//                protected Boolean doInBackground(User... users) {
-////                    Single<User> userDb  = userDao.verifyAvailableAccount(userr.getUsername(),userr.getPassword());
-//
-//
-//                    if(userDb !=null && userDb.getUsername().equals(userr.getUsername()) && userDb.getPassword().equals(userr.getPassword())){
-//                        return true;
-//                    }else{
-//                        return false;
-//                    }
-//                }
-//
-//                @Override
-//                protected void onPostExecute(Boolean user) {
-//                    super.onPostExecute(user);
-//                    if(user){
-//                        startActivity(intent);
-//                    }else{
-//                        Toast.makeText(getApplicationContext(),"Incorect password or username",Toast.LENGTH_LONG).show();
-//                    }
-//                }
-//            }.execute();
         }
 
     }
@@ -252,7 +223,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         final User userr = new User();
         userr.setEmail(account.getEmail());
 
-        final Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+        final Intent intent = new Intent(getApplicationContext(),HomeActivity.class);
         editor.putString(Constants.KEY_USER_EMAIL, userr.getEmail());
         editor.apply();
 
@@ -483,7 +454,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
                             @Override
                             public void onSuccess(User user) {
-                                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                                Intent intent = new Intent(getApplicationContext(),HomeActivity.class);
                                 startActivity(intent);
                             }
 

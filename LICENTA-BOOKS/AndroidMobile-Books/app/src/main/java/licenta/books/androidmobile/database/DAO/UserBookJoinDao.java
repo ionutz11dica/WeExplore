@@ -22,7 +22,7 @@ public interface UserBookJoinDao  {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM book INNER JOIN userBook ON book.bookId = userBook.bookId WHERE userBook.userId = :userId")
-    Flowable<List<BookE>> getAllUserBooksFromDatabase(Integer userId);
+    Single<List<BookE>> getAllUserBooksFromDatabase(Integer userId);
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM book INNER JOIN userBook ON book.bookId = userBook.bookId where userBook.userId = :userId AND userBook.bookId = :bookId")

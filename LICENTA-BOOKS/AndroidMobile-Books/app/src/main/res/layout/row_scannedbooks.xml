@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <CheckBox
+            android:id="@+id/rb_select"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:buttonTint="#d8cbbb"
+
+            android:layout_gravity="center"/>
+
+        <ImageView
+            android:id="@+id/iv_bookcover_lv"
+            android:layout_margin="5dp"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_remove_circle_black_24dp"
+            android:layout_weight="0.4"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1.35"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/tv_title_lv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="22dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="#000"
+                android:fontFamily="@font/crimsontext"
+                android:text="titlu"/>
+
+            <TextView
+                android:id="@+id/tv_authors_lv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:fontFamily="@font/crimsontext"
+                android:text="autori"/>
+
+            <TextView
+                android:id="@+id/tv_isbn_lv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:fontFamily="@font/crimsontext"
+                android:text="isbn"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

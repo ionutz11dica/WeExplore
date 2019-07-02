@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity   {
 
             @Override
             public void onFailure(Call<ArrayList<BookE>> call, Throwable t) {
-
+                Toast.makeText(getApplicationContext(),t.getMessage(),Toast.LENGTH_LONG).show();
             }
         });
 

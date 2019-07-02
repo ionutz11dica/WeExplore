@@ -12,7 +12,7 @@ public interface Constants {
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;
 
-      String BASE_URL = "http://172.20.10.9:4000/";
+      String BASE_URL = "http://192.168.1.7:4000/";
 
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
@@ -36,6 +36,7 @@ public interface Constants {
 
       String KEY_STATUS = "keyStatus";
 
+      String COLOR_PALLET = "#d8cbbb";
 
       int RESULT_CODE_CHAPTER = 101;
       int RESULT_CODE_BOOKMARK = 102;

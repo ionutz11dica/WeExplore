@@ -1,17 +1,29 @@
 package licenta.books.androidmobile.api;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Observable;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.Review;
 import licenta.books.androidmobile.classes.User;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.HTTP;
 import retrofit2.http.Headers;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -48,7 +60,7 @@ public interface ApiService {
 
     //adauga book per user
     @PATCH("users/{bookId}/{email}")
-    Call<ResponseBody> syncUserBooksAddEmail(@Path("bookId") String book_id, @Path("email") String email);
+    Call<User> syncUserBooksAddEmail(@Path("bookId") String book_id, @Path("email") String email);
 
     @PATCH("users/{bookId}/{username}/{password}")
     Call<ResponseBody> syncUserBooksAddUsername(@Path("bookId") String book_id, @Path("username") String username, @Path("password") String password);
@@ -61,7 +73,15 @@ public interface ApiService {
     @PUT("users/{username}/{password}/{bookId}")
     Call<ResponseBody> syncUserBooksDeleteUsername( @Path("username") String username, @Path("password") String password, @Path("bookId") String book_id);
 
+    @GET("books/{isbn}")
+    Call<BookE> getBookByISBN(@Path("isbn") String isbn);
 
+    @GET("users/{email}")
+    Call<ArrayList<BookE>> getScannedBooks(@Path("email") String email);
 
+//    @FormUrlEncoded
+    @Headers("Content-Type: application/json")
+    @PUT("users/delete/{email}")
+    Call<RequestBody> deleteScannedBooks(@Path("email") String email, @Body String books);
 
 }

@@ -39,6 +39,7 @@ public class BarcodeGraphicTracker extends Tracker<Barcode> {
     @Override
     public void onUpdate(Detector.Detections<Barcode> detections, Barcode barcode) {
         overlay.add(graphic);
+        graphic.updateItem(barcode);
     }
 
     @Override

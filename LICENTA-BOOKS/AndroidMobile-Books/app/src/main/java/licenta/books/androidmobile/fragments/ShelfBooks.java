@@ -30,6 +30,7 @@ import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.adapters.ShelfAdapter;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
@@ -51,7 +52,7 @@ public class ShelfBooks extends Fragment {
 
     RecyclerView recyclerView;
     ShelfAdapter adapter;
-
+    User user;
 
 
     public ShelfBooks() {
@@ -65,8 +66,11 @@ public class ShelfBooks extends Fragment {
         openDb();
         initComp(view);
         initSharedPref();
-        getUserBooks();
-
+        Disposable d = RxBus.subscribeUser(user2 -> {
+            user = user2;
+        });
+        d.dispose();
+        setRecycleView(user);
         return view;
     }
 
@@ -75,74 +79,84 @@ public class ShelfBooks extends Fragment {
     private void setRecycleView(User user){
 
 
-        Flowable<List<BookE>> books = userBookMethods.getAllUserBooksFromDatabase(user.getUserId());
-        books.subscribeOn(Schedulers.io())
+        Single<List<BookE>> books = userBookMethods.getAllUserBooksFromDatabase(user.getUserId());
+
+
+        books.observeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<BookE>>() {
+                .subscribe(new SingleObserver<List<BookE>>() {
                     @Override
-                    public void accept(List<BookE> bookES) throws Exception {
-                        Log.d("SIZE LISTA: ",String.valueOf(bookES.size()));
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(List<BookE> bookES) {
                         adapter = new ShelfAdapter(bookES,getContext());
                         recyclerView.setAdapter(adapter);
                         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                        setRecyclerViewAnim();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
                     }
                 });
     }
 
 
-    private void getUserBooks() {
-        String status = sharedPreferences.getString(Constants.KEY_STATUS, null);
-
-        if (status.equals("with")) {
-
-            final String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
-            Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
-            userSingle.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new SingleObserver<User>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-
-                        }
-
-                        @Override
-                        public void onSuccess(User user) {
-                            Log.d("User id: ", user.getUserId().toString());
-                            setRecycleView(user);
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-
-                        }
-                    });
-        } else {
-            final String username = sharedPreferences.getString(Constants.KEY_USER_USERNAME, null);
-            final String password = sharedPreferences.getString(Constants.KEY_USER_PASSWORD, null);
-
-            Single<User> userSingle = userMethods.verifyAvailableAccount(username, password);
-            userSingle.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new SingleObserver<User>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-
-                        }
-
-                        @Override
-                        public void onSuccess(User user) {
-                            Log.d("User id: ", user.getUserId().toString());
-                            setRecycleView(user);
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-
-                        }
-                    });
-        }
-    }
+//    private void getUserBooks() {
+//        String status = sharedPreferences.getString(Constants.KEY_STATUS, null);
+//
+//        if (status.equals("with")) {
+//
+//            final String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
+//            Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
+//            userSingle.subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(new SingleObserver<User>() {
+//                        @Override
+//                        public void onSubscribe(Disposable d) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onSuccess(User user) {
+//                            Log.d("User id: ", user.getUserId().toString());
+//                            setRecycleView(user);
+//                        }
+//
+//                        @Override
+//                        public void onError(Throwable e) {
+//
+//                        }
+//                    });
+//        } else {
+//            final String username = sharedPreferences.getString(Constants.KEY_USER_USERNAME, null);
+//            final String password = sharedPreferences.getString(Constants.KEY_USER_PASSWORD, null);
+//
+//            Single<User> userSingle = userMethods.verifyAvailableAccount(username, password);
+//            userSingle.subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(new SingleObserver<User>() {
+//                        @Override
+//                        public void onSubscribe(Disposable d) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onSuccess(User user) {
+//                            Log.d("User id: ", user.getUserId().toString());
+//                            setRecycleView(user);
+//                        }
+//
+//                        @Override
+//                        public void onError(Throwable e) {
+//
+//                        }
+//                    });
+//        }
+//    }
 
     private void setRecyclerViewAnim(){
         RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();

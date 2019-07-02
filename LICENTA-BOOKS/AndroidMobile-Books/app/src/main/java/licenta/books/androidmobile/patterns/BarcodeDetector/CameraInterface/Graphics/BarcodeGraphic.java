@@ -33,6 +33,7 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
 
         rectPaint = new Paint();
         rectPaint.setColor(selectedColor);
+        rectPaint.setStyle(Paint.Style.STROKE);
         rectPaint.setStrokeWidth(3.0f);
 
         textPaint = new Paint();
@@ -43,6 +44,8 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
     public void setId(int id) {
         this.id = id;
     }
+
+    public int getId(){return id;}
 
     public Barcode getBarcode() {
         return barcode;

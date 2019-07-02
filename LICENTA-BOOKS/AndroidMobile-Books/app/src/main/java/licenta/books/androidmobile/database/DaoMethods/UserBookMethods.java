@@ -71,7 +71,7 @@ public class UserBookMethods implements UserBookJoinDao {
     }
 
     @Override
-    public Flowable<List<BookE>> getAllUserBooksFromDatabase(Integer userId) {
+    public Single<List<BookE>> getAllUserBooksFromDatabase(Integer userId) {
         return userBookJoinDao.getAllUserBooksFromDatabase(userId);
     }
 

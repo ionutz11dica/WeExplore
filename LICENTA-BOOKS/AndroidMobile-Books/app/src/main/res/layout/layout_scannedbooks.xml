@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="550dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+   >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="18dp"
+            android:layout_weight="1.5"
+            android:textAlignment="textStart"
+            android:text="RECENT SCANS"
+            android:padding="5dp"
+            android:fontFamily="@font/crimsontext"
+            android:gravity="start" />
+        <Button
+            android:id="@+id/btn_select_all"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:text="Select all"
+            android:layout_weight="0.45"
+            android:fontFamily="@font/crimsontext"
+            android:textAllCaps="false"
+            android:background="@drawable/rounded_button_grey"/>
+    </LinearLayout>
+    <com.baoyz.swipemenulistview.SwipeMenuListView
+        android:id="@+id/lv_scannedbooks"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/white"
+        android:clipToPadding="false"
+        android:padding="5dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:divider="#80b8b8b9"
+        android:dividerHeight="2.0sp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+       />
+</LinearLayout>

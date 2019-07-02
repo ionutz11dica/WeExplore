@@ -241,7 +241,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
         if (status.equals("with")) {
             final String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
-            final Call<ResponseBody> call = apiService.syncUserBooksAddEmail(book.get_id(),email);
+
 
 
             Single<User> userSingle = userMethods.verifyExistenceGoogleAcount(email);
@@ -261,9 +261,6 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                                 verifyExistenceBook(book.get_id(),user.getUserId());
                             }else {
                                 userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
-                                if(btnDownload.getText().toString().equals("Wait..")){
-                                    userBookAddCloud(call);
-                                }
                             }
 
 
@@ -277,7 +274,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         } else {
             final String username = sharedPreferences.getString(Constants.KEY_USER_USERNAME, null);
             final String password = sharedPreferences.getString(Constants.KEY_USER_PASSWORD, null);
-            final Call<ResponseBody> call = apiService.syncUserBooksAddUsername(book.get_id(),username,password);
+
 
             Single<User> userSingle = userMethods.verifyAvailableAccount(username, password);
             userSingle.subscribeOn(Schedulers.io())
@@ -295,9 +292,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                                 verifyExistenceBook(book.get_id(),user.getUserId());
                             }else {
                                 userBookJoin[0] = new UserBookJoin(book.get_id(), user.getUserId());
-                                if(btnDownload.getText().toString().equals("Wait..")){
-                                    userBookAddCloud(call);
-                                }
+
                             }
 
                         }
@@ -310,26 +305,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         }
     }
 
-    private void userBookAddCloud(Call<ResponseBody> call) {
-        if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        Log.d("ADD Sync: ", response.message());
-                    }
-                }
 
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                }
-            });
-        }else{
-
-        }
-
-    }
 
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)

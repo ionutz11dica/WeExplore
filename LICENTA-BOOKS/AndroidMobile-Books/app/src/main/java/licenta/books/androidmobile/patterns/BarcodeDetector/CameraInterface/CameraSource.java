@@ -2,6 +2,7 @@ package licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -200,7 +201,7 @@ public class CameraSource {
     public interface AutoFocusMoveCallback {
         /** folosita cand auto-focusare a pornit sau s-a oprit
          * @param start true daca a inceput, false daca s-a oprit */
-        void autoFocusMoving(boolean start);
+        void onAutoFocusMoving(boolean start);
     }
 
     //Public
@@ -239,7 +240,7 @@ public class CameraSource {
     public void stop() {
         synchronized (cameraLock) {
             frameProcessor.setActive(false);
-            if (frameProcessor !=null){
+            if (processingThread !=null){
                 try{
                     //Astemptam thread ul sa se termine pentru evita sa avem threaduri ce se executa
                     //concomitent(ex: ce s-ar intampla daca apelam start prea repede dupa stop)
@@ -268,6 +269,32 @@ public class CameraSource {
                     camera.release();
                     camera = null;
                 }
+            }
+        }
+    }
+
+    private class CameraAutoFocusCallback implements Camera.AutoFocusCallback {
+        private AutoFocusCallback mDelegate;
+
+        @Override
+        public void onAutoFocus(boolean success, Camera camera) {
+            if (mDelegate != null) {
+                mDelegate.onAutoFocus(success);
+            }
+        }
+    }
+
+    /**
+     * Wraps the camera1 auto focus move callback so that the deprecated API isn't exposed.
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private class CameraAutoFocusMoveCallback implements Camera.AutoFocusMoveCallback {
+        private AutoFocusMoveCallback mDelegate;
+
+        @Override
+        public void onAutoFocusMoving(boolean start, Camera camera) {
+            if (mDelegate != null) {
+                mDelegate.onAutoFocusMoving(start);
             }
         }
     }
@@ -353,6 +380,40 @@ public class CameraSource {
         }
         return -1;
     }
+
+    public int doZoom(float scale) {
+        synchronized (cameraLock) {
+            if (camera == null) {
+                return 0;
+            }
+            int currentZoom = 0;
+            int maxZoom;
+            Camera.Parameters parameters = camera.getParameters();
+            if (!parameters.isZoomSupported()) {
+                Log.w(TAG, "Zoom is not supported on this device");
+                return currentZoom;
+            }
+            maxZoom = parameters.getMaxZoom();
+
+            currentZoom = parameters.getZoom() + 1;
+            float newZoom;
+            if (scale > 1) {
+                newZoom = currentZoom + scale * (maxZoom / 10);
+            } else {
+                newZoom = currentZoom * scale;
+            }
+            currentZoom = Math.round(newZoom) - 1;
+            if (currentZoom < 0) {
+                currentZoom = 0;
+            } else if (currentZoom > maxZoom) {
+                currentZoom = maxZoom;
+            }
+            parameters.setZoom(currentZoom);
+            camera.setParameters(parameters);
+            return currentZoom;
+        }
+    }
+
     public int getCameraFacing() {
         return facing;
     }
@@ -367,9 +428,6 @@ public class CameraSource {
         long sizeInBits = previewSize.getHeight() * previewSize.getWidth() * bitsPerPixel;
         int bufferSize = (int) Math.ceil(sizeInBits / 8.0d) + 1;
 
-        //
-        // NOTICE: This code only works when using play services v. 8.1 or higher.
-        //
 
         byte[] byteArray = new byte[bufferSize];
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);

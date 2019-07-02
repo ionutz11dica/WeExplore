@@ -78,7 +78,7 @@ public class CameraSourcePreview extends ViewGroup {
             if(overlay !=null){
                 Size size = cameraSource.getPreviewSize();
                 int min = Math.min(size.getWidth(), size.getHeight());
-                int max = Math.max(size.getWidth(),size.getHeight());
+                int max = Math.max(size.getWidth(), size.getHeight());
                 if(isPortraitMode()){
                     overlay.setCameraInfo(min, max, cameraSource.getCameraFacing());
                 } else {
@@ -111,7 +111,7 @@ public class CameraSourcePreview extends ViewGroup {
 
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
-
+            surfaceAvailable = false;
         }
     }
 

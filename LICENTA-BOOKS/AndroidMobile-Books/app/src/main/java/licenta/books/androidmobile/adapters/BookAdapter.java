@@ -67,7 +67,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
         return bookList.size();
     }
 
-    public String convertStringFromArray(BookE book){
+    public static String convertStringFromArray(BookE book){
         StringBuilder sb = new StringBuilder();
         for(String author : book.getAuthors()){
             if(book.getAuthors().size()>1){

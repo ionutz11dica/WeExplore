@@ -25,7 +25,7 @@ public class User implements Parcelable {
     @Ignore
     private String _id;
     @Ignore
-    private ArrayList<BookE> books;
+    private String[] books;
 
     @Ignore
     public User() {
@@ -34,7 +34,7 @@ public class User implements Parcelable {
 
 
     @Ignore
-    public User(Integer userId,@NonNull String email,@Nullable String username,@Nullable String password, ArrayList<BookE> books) {
+    public User(Integer userId,@NonNull String email,@Nullable String username,@Nullable String password, String[] books) {
         this.userId = userId;
         this.email = email;
         this.username = username;
@@ -60,7 +60,7 @@ public class User implements Parcelable {
         email = in.readString();
         username = in.readString();
         password = in.readString();
-        books = in.createTypedArrayList(BookE.CREATOR);
+        books = in.createStringArray();
     }
 
     @Override
@@ -75,7 +75,7 @@ public class User implements Parcelable {
         dest.writeString(email);
         dest.writeString(username);
         dest.writeString(password);
-        dest.writeTypedList(books);
+        dest.writeSerializable(books);
     }
 
     @Override
@@ -135,11 +135,11 @@ public class User implements Parcelable {
         this.password = password;
     }
 
-    public ArrayList<BookE> getBooks() {
+    public String[] getBooks() {
         return books;
     }
 
-    public void setBooks(ArrayList<BookE> books) {
+    public void setBooks(String[] books) {
         this.books = books;
     }
 }

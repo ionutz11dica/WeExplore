@@ -8,6 +8,7 @@ import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 
 import licenta.books.androidmobile.classes.Converters.ArrayStringConverter;
@@ -72,24 +73,6 @@ public class BookE implements Parcelable {
 
     }
 
-//    @Ignore
-//    public BookE( String title, ArrayList<String> authors, ArrayList<String> categories, ArrayList<Review> reviews,
-//                 Integer pageCount, String description, String publisher, String publishedDate, String imageLink, String fileID,String pathBook,String isbn) {
-//
-//        this.title = title;
-//        this.authors = authors;
-//        this.categories = categories;
-//        this.reviews = reviews;
-//        this.pageCount = pageCount;
-//        this.description = description;
-//        this.publisher = publisher;
-//        this.publishedDate = publishedDate;
-//        this.imageLink = imageLink;
-//
-//        this.fileID = fileID;
-//        this.pathBook = pathBook;
-//        this.isbn = isbn;
-//    }
 
 
     @Ignore
@@ -99,7 +82,7 @@ public class BookE implements Parcelable {
 
 
     protected BookE(Parcel in) {
-
+        _id = in.readString();
         title = in.readString();
         authors = in.createStringArrayList();
         categories = in.createStringArrayList();
@@ -114,10 +97,9 @@ public class BookE implements Parcelable {
         image = in.createByteArray();
         pathBook = in.readString();
         isbn = in.readString();
+        imageLink = in.readString();
         reviews = in.createTypedArrayList(Review.CREATOR);
         fileID = in.readString();
-        imageLink = in.readString();
-        _id = in.readString();
         byte tmpIsEbook = in.readByte();
         isEbook = tmpIsEbook == 0 ? null : tmpIsEbook == 1;
         byte tmpPublicDomain = in.readByte();
@@ -125,11 +107,12 @@ public class BookE implements Parcelable {
         byte tmpIsAvailableEpub = in.readByte();
         isAvailableEpub = tmpIsAvailableEpub == 0 ? null : tmpIsAvailableEpub == 1;
         downloadLink = in.readString();
+
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-
+        dest.writeString(_id);
         dest.writeString(title);
         dest.writeStringList(authors);
         dest.writeStringList(categories);
@@ -145,14 +128,14 @@ public class BookE implements Parcelable {
         dest.writeByteArray(image);
         dest.writeString(pathBook);
         dest.writeString(isbn);
+        dest.writeString(imageLink);
         dest.writeTypedList(reviews);
         dest.writeString(fileID);
-        dest.writeString(imageLink);
-        dest.writeString(_id);
         dest.writeByte((byte) (isEbook == null ? 0 : isEbook ? 1 : 2));
         dest.writeByte((byte) (publicDomain == null ? 0 : publicDomain ? 1 : 2));
         dest.writeByte((byte) (isAvailableEpub == null ? 0 : isAvailableEpub ? 1 : 2));
         dest.writeString(downloadLink);
+
     }
 
     @Override
@@ -171,6 +154,8 @@ public class BookE implements Parcelable {
             return new BookE[size];
         }
     };
+
+
 
 
 
