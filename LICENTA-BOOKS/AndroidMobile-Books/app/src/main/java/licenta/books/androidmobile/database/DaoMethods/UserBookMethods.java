@@ -1,6 +1,7 @@
 package licenta.books.androidmobile.database.DaoMethods;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.LiveData;
 import android.os.AsyncTask;
 
 import java.util.List;

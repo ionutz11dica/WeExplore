@@ -1416,7 +1416,7 @@ String test= "ceva";
                 RxBus.publishsChapter(reflowableControl.getChapterIndex());
             }else {
 
-                RxBus.publishsChapterName(reflowableControl.getChapterTitle(i+1));
+                RxBus.publishsChapterName("Chapter "+i);//probleme aici
                 RxBus.publishsChapter(reflowableControl.getChapterIndex());
             }
         }

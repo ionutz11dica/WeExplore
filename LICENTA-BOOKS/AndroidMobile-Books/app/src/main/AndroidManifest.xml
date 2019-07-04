@@ -39,9 +39,6 @@
         <activity android:name=".activities.AnnotationBookActivity" />
         <activity android:name=".activities.ReaderBookActivity" />
         <activity
-            android:name=".activities.ShelfActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".activities.DetailsActivity"
             android:theme="@style/AppTheme" />
         <activity

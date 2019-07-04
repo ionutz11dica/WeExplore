@@ -2,6 +2,7 @@ package licenta.books.androidmobile.activities;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -22,15 +23,18 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 
+import io.reactivex.disposables.Disposable;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.CheckForNetwork;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.classes.Collections;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.fragments.ScannerFragment;
+import licenta.books.androidmobile.fragments.ShelfBooks;
 import licenta.books.androidmobile.interfaces.Constants;
 import licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.Graphics.BarcodeGraphicTracker;
 import okhttp3.ResponseBody;
@@ -40,15 +44,20 @@ import retrofit2.Response;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class HomeActivity extends AppCompatActivity implements ScannerFragment.OnScannerInteractionListener, BarcodeGraphicTracker.BarcodeUpdateListener,
-                                    BookScanDialogFragment.OnCompleteListenerBookScan{
+                                    BookScanDialogFragment.OnCompleteListenerBookScan,ShelfBooks.OnFragmentInteractionListener, CreateShelfDialogFragment.OnCompleteListenerShelf{
     BottomNavigationView bottomNavigationView;
     ApiService apiService;
     Bundle bundle = new Bundle();
     LinearLayout layout;
     RadioButton rbBooksScanned;
+    User user;
+
+
+
+
 
     final Fragment scannerFragment = new ScannerFragment();
-
+    final Fragment shelfBooks = new ShelfBooks();
     final FragmentManager fm = getSupportFragmentManager();
     Fragment active = scannerFragment;
 
@@ -57,7 +66,10 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        Disposable d = RxBus.subscribeUser(userr -> user = userr);
+        d.dispose();
         fm.beginTransaction().add(R.id.frament_contianer,scannerFragment,"scanner").hide(scannerFragment).commit();
+        fm.beginTransaction().add(R.id.frament_contianer,shelfBooks,"shelf").hide(shelfBooks).commit();
         initComp();
     }
 
@@ -72,7 +84,9 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
             item -> {
                 switch (item.getItemId()){
                     case R.id.item_shelfBooks:
-                        startActivity(new Intent(getApplicationContext(),ShelfActivity.class));
+//                        startActivity(new Intent(getApplicationContext(),ShelfActivity.class));
+                        fm.beginTransaction().hide(active).show(shelfBooks).commit();
+                        active = shelfBooks;
                         return true;
                     case R.id.item_Scanner:
                         fm.beginTransaction().hide(active).show(scannerFragment).commit();
@@ -102,7 +116,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
                         assert response.body() != null;
                         RxBus.publishBook(response.body());
 
-                        Call<User> updateScanned = apiService.syncUserBooksAddEmail(response.body().get_id(), "nicolae.ionut9711@gmail.com");
+                        Call<User> updateScanned = apiService.syncUserBooksAddEmail(response.body().get_id(), user.getEmail());
                         addBookToScannedBooks(response.body());
                         userScannedBookAddCloud(updateScanned);
                         BookScanDialogFragment bookScanDialogFragment = new BookScanDialogFragment();
@@ -180,6 +194,16 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
 
     @Override
     public void onCompleteBookScanned(Integer color, boolean status) {
+
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onCompleteCreateShelf(Collections name) {
 
     }
 }

@@ -4,7 +4,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import licenta.books.androidmobile.fragments.CollectionsBooks;
 import licenta.books.androidmobile.fragments.RecentlyRead;
 import licenta.books.androidmobile.fragments.ShelfBooks;
 
@@ -27,9 +26,7 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
             case 1:
                 ShelfBooks shelfBooks = new ShelfBooks();
                 return shelfBooks;
-            case 2:
-                CollectionsBooks collectionsBooks = new CollectionsBooks();
-                return collectionsBooks;
+
             default:
                 return null;
         }

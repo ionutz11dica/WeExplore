@@ -60,5 +60,5 @@ public interface Constants {
       TypeSelection BOOKMARK_SELECTED_SWITCH = new BookmarkSelected();
 
 
-
+      String KEY_COLLECTION = "keyCollection";
 }

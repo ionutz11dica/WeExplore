@@ -37,12 +37,13 @@
                 android:textSize="22dp" />
 
 
+
             <info.hoang8f.android.segmented.SegmentedGroup xmlns:segmentedgroup="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/segmentedScan"
                 android:layout_width="match_parent"
                 android:layout_height="30dp"
 
-                android:layout_marginTop="60dp"
+                android:layout_marginTop="40dp"
                 android:background="#00000000"
                 android:gravity="center"
                 android:orientation="horizontal"
@@ -90,6 +91,8 @@
             android:id="@+id/graphic_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
+
 
     </licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.CameraSourcePreview>
 <RelativeLayout

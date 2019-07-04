@@ -39,11 +39,6 @@
             android:layout_height="wrap_content"
             android:text="ShelfBooks"/>
 
-        <android.support.design.widget.TabItem
-            android:id="@+id/tabitem_collectionsBooks"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Collections Books"/>
     </android.support.design.widget.TabLayout>
 
     <android.support.v4.view.ViewPager

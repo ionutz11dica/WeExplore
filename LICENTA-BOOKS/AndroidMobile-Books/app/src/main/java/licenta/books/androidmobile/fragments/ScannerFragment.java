@@ -15,6 +15,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CpuUsageInfo;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -54,11 +55,17 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import info.hoang8f.android.segmented.SegmentedGroup;
+import io.reactivex.Single;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.DetailsActivity;
 import licenta.books.androidmobile.adapters.ScannedBooksAdapter;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.classes.RxJava.RxBus;
+import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.interfaces.Constants;
 import licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.CameraSource;
 import licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.CameraSourcePreview;
@@ -70,6 +77,8 @@ import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static java.security.AccessController.getContext;
 
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -100,12 +109,13 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
     public  ScannedBooksAdapter adapter ;
     private LinearLayout listScan ;
     LinearLayout linearLayoutFooter;
+
     TextView footer;
     private ImageView ivScan;
     View footerView;
     boolean isSelected=true;
     public static boolean flagForFlag = false;
-    private static String[] idStrings;
+    private User user;
 
     public ScannerFragment() {
 
@@ -117,7 +127,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_scanner, container, false);
-
+        getUserInfo();
         initComp(view);
 
         //garantarea permisiunilor pentru camera
@@ -125,6 +135,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
             int rc = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA);
             if(rc == PackageManager.PERMISSION_GRANTED){
                 createCameraSource(true,false);
+
             }else{
                 requestCameraPermission(view);
             }
@@ -132,20 +143,15 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
             scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleListener());
         }
 
-        view.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-
-                if(event.getAction() == MotionEvent.ACTION_MOVE){
-                    boolean b = scaleGestureDetector.onTouchEvent(event);
-
-                    boolean c = gestureDetector.onTouchEvent(event);
-
-                    return b || c ;
-                }
-                return true;
-            }
-        });
         return view;
+    }
+
+    private void getUserInfo() {
+        Disposable d = RxBus.subscribeUser(userr -> user = userr);
+        d.dispose();
+        if(user!=null){
+//            Single<>
+        }
     }
 
     public void initComp(View view){
@@ -169,6 +175,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         swipeMenuListView = listScan.findViewById(R.id.lv_scannedbooks);
         createSwipeMenu();
         swipeMenuListView.setOnMenuItemClickListener(menuItemClickListener);
+        swipeMenuListView.setOnItemClickListener(itemClickListener);
 
         footerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.footer_layout, null, false);
         linearLayoutFooter = footerView.findViewById(R.id.footer_layout);
@@ -200,7 +207,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         listScan.setVisibility(View.GONE);
         preview.setVisibility(View.VISIBLE);
         linearLayoutFooter.removeView(ivScan);
-        startCameraSource();
+        startCameraSource();//treb sa verific
         rbScannedBooks.setClickable(true);
         rbScan.setClickable(false);
     };
@@ -222,6 +229,12 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
     private SwipeMenuListView.OnMenuItemClickListener menuItemClickListener = (position, menu, index) -> {
       switch (index){
           case 0:
+              Intent intent = new Intent(getContext(), DetailsActivity.class);
+              intent.putExtra(Constants.KEY_BOOK,scannedBooks.get(position));
+              intent.putExtra(Constants.KEY_IMAGE_URL,scannedBooks.get(position).getImageLink());
+              startActivity(intent);
+              break;
+          case 1:
               String id = scannedBooks.get(position).get_id();
               String[] arrayList = {id};
               JSONArray books = new JSONArray(Arrays.asList(arrayList));
@@ -297,7 +310,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
     private void deleteScannedBooks(JSONArray books) throws JSONException {
         JSONObject object = new JSONObject();
         object.put("books",books);
-        Call<RequestBody> responseCall = apiService.deleteScannedBooks("nicolae.ionut9711@gmail.com",object.toString());
+        Call<RequestBody> responseCall = apiService.deleteScannedBooks(user.getEmail(),object.toString());
         responseCall.enqueue(new Callback<RequestBody>() {
             @Override
             public void onResponse(Call<RequestBody> call, Response<RequestBody> response) {
@@ -314,7 +327,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
     }
 
     private void getScannedBooks(){
-        Call<ArrayList<BookE>> call = apiService.getScannedBooks("nicolae.ionut9711@gmail.com");
+        Call<ArrayList<BookE>> call = apiService.getScannedBooks(user.getEmail());
         call.enqueue(new Callback<ArrayList<BookE>>() {
             @Override
             public void onResponse(Call<ArrayList<BookE>> call, Response<ArrayList<BookE>> response) {
@@ -388,6 +401,10 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
             SwipeMenuItem openItem = new SwipeMenuItem(
                     getContext());
 
+            openItem.setBackground(new ColorDrawable(Color.parseColor("#53d397")));
+            openItem.setWidth(100);
+            openItem.setIcon(R.drawable.ic_unlocked);
+            menu.addMenuItem(openItem);
             // create "delete" item
             SwipeMenuItem deleteItem = new SwipeMenuItem(
                     getContext());

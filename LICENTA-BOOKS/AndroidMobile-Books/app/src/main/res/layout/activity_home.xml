@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".activities.HomeActivity">
 
+
     <FrameLayout
         android:id="@+id/frament_contianer"
         android:layout_width="match_parent"
