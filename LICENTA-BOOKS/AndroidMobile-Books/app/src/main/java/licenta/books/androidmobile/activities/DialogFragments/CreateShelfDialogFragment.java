@@ -1,4 +1,4 @@
-package licenta.books.androidmobile.activities;
+package licenta.books.androidmobile.activities.DialogFragments;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,14 +12,16 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 
 import java.util.Objects;
 
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.classes.CollectionPOJO;
 import licenta.books.androidmobile.classes.Collections;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
@@ -54,14 +56,23 @@ public class CreateShelfDialogFragment extends DialogFragment {
     }
 
     private View.OnClickListener btnCreateListener = v -> {
-        Collections collection = new Collections(Objects.hash(edShelfName.getText().toString()),
-                edShelfName.getText().toString(), user.getUserId());
-        collectionMethods.insertCollection(collection);
-        Intent i = new Intent();
-        i.putExtra(Constants.KEY_COLLECTION,collection);
-        assert getTargetFragment() != null;
-        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
-        dismiss();
+        if(edShelfName.getText().toString().length() > 0) {
+            Collections collection = new Collections(Objects.hash(edShelfName.getText().toString()),
+                    edShelfName.getText().toString(), user.getUserId());
+            CollectionPOJO pojo = new CollectionPOJO();
+            pojo.bookIds = 0;
+            pojo.collectionName = edShelfName.getText().toString();
+
+            collectionMethods.insertCollection(collection);
+            Intent i = new Intent();
+            i.putExtra(Constants.KEY_COLLECTION, pojo);
+            assert getTargetFragment() != null;
+            getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
+            dismiss();
+        }else{
+            Animation shake = AnimationUtils.loadAnimation(getContext(), R.anim.edit_animation);
+            edShelfName.startAnimation(shake);
+        }
     };
 
 

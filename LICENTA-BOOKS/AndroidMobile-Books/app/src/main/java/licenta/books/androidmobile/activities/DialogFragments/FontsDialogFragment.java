@@ -1,4 +1,4 @@
-package licenta.books.androidmobile.activities;
+package licenta.books.androidmobile.activities.DialogFragments;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -21,7 +21,6 @@ import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.CustomFont;
 import licenta.books.androidmobile.activities.others.HelperApp;
 import licenta.books.androidmobile.adapters.TypefaceAdapter;
-import licenta.books.androidmobile.interfaces.Constants;
 
 public class FontsDialogFragment extends DialogFragment {
     ListView fontsList;

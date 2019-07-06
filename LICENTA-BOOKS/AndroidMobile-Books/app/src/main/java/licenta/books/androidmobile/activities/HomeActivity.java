@@ -1,10 +1,7 @@
 package licenta.books.androidmobile.activities;
 
-import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.Snackbar;
@@ -13,18 +10,17 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 
 import com.google.android.gms.vision.barcode.Barcode;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
 
 import io.reactivex.disposables.Disposable;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.DialogFragments.BookScanDialogFragment;
+import licenta.books.androidmobile.activities.DialogFragments.CreateShelfDialogFragment;
+import licenta.books.androidmobile.activities.DialogFragments.ShelfOptionsDialogFragment;
+import licenta.books.androidmobile.activities.DialogFragments.StrategySortDialogFragment;
 import licenta.books.androidmobile.activities.others.CheckForNetwork;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
@@ -32,19 +28,17 @@ import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.Collections;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
-import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.fragments.ScannerFragment;
 import licenta.books.androidmobile.fragments.ShelfBooks;
-import licenta.books.androidmobile.interfaces.Constants;
 import licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.Graphics.BarcodeGraphicTracker;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class HomeActivity extends AppCompatActivity implements ScannerFragment.OnScannerInteractionListener, BarcodeGraphicTracker.BarcodeUpdateListener,
-                                    BookScanDialogFragment.OnCompleteListenerBookScan,ShelfBooks.OnFragmentInteractionListener, CreateShelfDialogFragment.OnCompleteListenerShelf{
+                                    BookScanDialogFragment.OnCompleteListenerBookScan,ShelfBooks.OnFragmentInteractionListener, CreateShelfDialogFragment.OnCompleteListenerShelf
+                                    , StrategySortDialogFragment.OnCompleteListenerStrategySort, ShelfOptionsDialogFragment.OnCompleteListenerOptions {
     BottomNavigationView bottomNavigationView;
     ApiService apiService;
     Bundle bundle = new Bundle();
@@ -204,6 +198,11 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
 
     @Override
     public void onCompleteCreateShelf(Collections name) {
+
+    }
+
+    @Override
+    public void onCompleteStrategy(String strategy) {
 
     }
 }

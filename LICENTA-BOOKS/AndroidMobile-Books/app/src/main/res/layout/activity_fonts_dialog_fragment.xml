@@ -4,14 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    tools:context=".activities.FontsDialogFragment"
+    tools:context=".activities.DialogFragments.FontsDialogFragment"
     android:layout_gravity="bottom|center"
     android:orientation="horizontal">
 
     <ListView
         android:id="@+id/lv_typeface_fonts"
         android:layout_width="350dp"
-        android:layout_height="350dp"
+        android:layout_height="wrap_content"
+
         android:layout_gravity="center"/>
 
 </LinearLayout>

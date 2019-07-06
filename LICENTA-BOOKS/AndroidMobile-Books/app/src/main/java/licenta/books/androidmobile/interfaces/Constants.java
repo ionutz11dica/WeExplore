@@ -1,5 +1,10 @@
 package licenta.books.androidmobile.interfaces;
 
+import licenta.books.androidmobile.patterns.StrategySortBooks.AuthorSort;
+import licenta.books.androidmobile.patterns.StrategySortBooks.NoPagesSort;
+import licenta.books.androidmobile.patterns.StrategySortBooks.PublishedDateSort;
+import licenta.books.androidmobile.patterns.StrategySortBooks.StrategySort;
+import licenta.books.androidmobile.patterns.StrategySortBooks.TitleSort;
 import licenta.books.androidmobile.patterns.strategyAnnotationSort.AllSelected;
 import licenta.books.androidmobile.patterns.strategyAnnotationSort.BookmarkSelected;
 import licenta.books.androidmobile.patterns.strategyAnnotationSort.HighlightSelected;
@@ -12,7 +17,7 @@ public interface Constants {
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;
 
-      String BASE_URL = "http://192.168.1.7:4000/";
+      String BASE_URL = "http://192.168.1.5:4000/";
 
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
@@ -60,5 +65,14 @@ public interface Constants {
       TypeSelection BOOKMARK_SELECTED_SWITCH = new BookmarkSelected();
 
 
+
+
       String KEY_COLLECTION = "keyCollection";
+      String[] STRATEGY_SORT = {"Title","Authors","Number of Pages","Publication Date"};
+      StrategySort[] STRATEGY_SORTERS = {new TitleSort(), new AuthorSort(),new NoPagesSort(),new PublishedDateSort()};
+
+      String KEY_STRATEGY = "keyStrategySort";
+      String KEY_STRATEGY_NAME = "keyStrategyName";
+
+      String[] OPTIONS_SHELF = {"Add Books","Update Shelf", "Delete"};
 }

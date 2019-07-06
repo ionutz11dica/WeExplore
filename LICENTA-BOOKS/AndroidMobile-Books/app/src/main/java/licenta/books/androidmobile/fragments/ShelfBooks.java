@@ -1,14 +1,10 @@
 package licenta.books.androidmobile.fragments;
 
-import android.annotation.SuppressLint;
-import android.arch.lifecycle.LiveData;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,84 +12,86 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.flexbox.AlignContent;
 import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexDirection;
-import com.google.android.flexbox.FlexWrap;
-import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
-import org.reactivestreams.Subscription;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import io.reactivex.Flowable;
-import io.reactivex.FlowableSubscriber;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
-import licenta.books.androidmobile.activities.CreateShelfDialogFragment;
+import licenta.books.androidmobile.activities.DialogFragments.CreateShelfDialogFragment;
+import licenta.books.androidmobile.activities.DialogFragments.ShelfOptionsDialogFragment;
+import licenta.books.androidmobile.activities.DialogFragments.StrategySortDialogFragment;
 import licenta.books.androidmobile.adapters.FlexboxAdapter;
-import licenta.books.androidmobile.adapters.ShelfAdapter;
+import licenta.books.androidmobile.adapters.ShelfBooksAdapter;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.classes.CollectionPOJO;
 import licenta.books.androidmobile.classes.Collections;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
+import licenta.books.androidmobile.database.DAO.BookCollectionJoinDao;
 import licenta.books.androidmobile.database.DAO.CollectionDao;
-import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
-import licenta.books.androidmobile.database.DAO.UserDao;
+import licenta.books.androidmobile.database.DaoMethods.BookCollectionJoinMethods;
 import licenta.books.androidmobile.database.DaoMethods.CollectionMethods;
-import licenta.books.androidmobile.database.DaoMethods.UserBookMethods;
-import licenta.books.androidmobile.database.DaoMethods.UserMethods;
 import licenta.books.androidmobile.interfaces.Constants;
+import licenta.books.androidmobile.patterns.StrategySortBooks.Sorter;
+import licenta.books.androidmobile.patterns.StrategySortBooks.StrategySort;
 
 import static android.app.Activity.RESULT_OK;
 
 
-public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.OnCompleteListenerShelf {
+@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.OnCompleteListenerShelf,FlexboxAdapter.OnClickItem, StrategySortDialogFragment.OnCompleteListenerStrategySort
+                                            {
     private OnFragmentInteractionListener listener;
     private CollectionDao collectionDao;
     private CollectionMethods collectionMethods;
+    private BookCollectionJoinDao bookCollectionJoinDao;
+    private BookCollectionJoinMethods bookCollectionJoinMethods;
 
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
 
     RecyclerView recyclerView;
+    LinearLayout ll_books;
+    Toolbar shelfToolbar;
 
     User user;
 
 
-    List<Collections> arrayList = new ArrayList<>();
+    List<CollectionPOJO> arrayList = new ArrayList<>();
+    List<BookE> bookES ;
     FlexboxAdapter adapter;
-
+    ShelfBooksAdapter adapterBooks;
+    ListView lvBooksShelf;
     private Button addShelf;
-    private FlexboxLayout linearTags;
-    int i =0;
+    private ImageView imvOptions;
+    private TextView titleShelf;
+    private Button reverse;
+    private boolean isReversed = false;
+    private TextView strategySort;
+    private ImageView ivHome;
+
     public ShelfBooks() {
     }
 
@@ -105,7 +103,9 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
         Disposable d = RxBus.subscribeUser(us -> user = us);
         d.dispose();
 
-        addShelf = view.findViewById(R.id.btn_add_shelf);
+        initComp(view);
+
+
         openDb();
 
 
@@ -133,37 +133,136 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
         return view;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void initComp(View view) {
+        addShelf = view.findViewById(R.id.btn_add_shelf);
+        ll_books = view.findViewById(R.id.books_layout);
+        shelfToolbar = view.findViewById(R.id.shelfbooks_toolbar);
+        imvOptions = view.findViewById(R.id.imv_options);
+        imvOptions.setOnClickListener(imvOptionsListener);
+
+        titleShelf = view.findViewById(R.id.toolbar_title);
+        reverse = view.findViewById(R.id.btn_reverse);
+        reverse.setOnClickListener(reverseListener);
+
+        strategySort = view.findViewById(R.id.strategy_sorting);
+        ivHome = view.findViewById(R.id.btn_home);
+        ivHome.setOnClickListener(homeListener);
+
+        lvBooksShelf = view.findViewById(R.id.lv_books_shelf);
+        strategySort.setOnClickListener(strategySortListener);
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode){
             case 1:
                 if(resultCode == RESULT_OK){
-                    Collections collections = data.getParcelableExtra(Constants.KEY_COLLECTION);
+                    CollectionPOJO collections = data.getParcelableExtra(Constants.KEY_COLLECTION);
                     if(collections!=null){
                         arrayList.add(collections);
                         adapter.notifyDataSetChanged();
                         recyclerView.setAdapter(adapter);
                     }
                 }
+                break;
+            case 2:
+                if(resultCode == RESULT_OK){
+                    StrategySort strategySort = data.getParcelableExtra(Constants.KEY_STRATEGY);
+                    String strategyName = data.getStringExtra(Constants.KEY_STRATEGY_NAME);
+                    Sorter sorter = new Sorter(strategySort);
+                    sorter.sorting(bookES);
+                    adapterBooks.notifyDataSetChanged();
+                    this.strategySort.setText(strategyName);
+                }
+                break;
         }
     }
 
+    private View.OnClickListener reverseListener = v -> {
+        if(!isReversed){
+            reverse.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_arrow_upward_black_24dp,0,0,0);
+            java.util.Collections.reverse(bookES);
+            adapterBooks.notifyDataSetChanged();
+            isReversed = true;
+        }else{
+            reverse.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_arrow_downward_black_24dp,0,0,0);
+            java.util.Collections.reverse(bookES);
+            adapterBooks.notifyDataSetChanged();
+            isReversed = false;
+        }
+    };
+
+
+
+    private View.OnClickListener homeListener = v -> {
+
+        addShelf.setVisibility(View.VISIBLE);
+        animateViewDisappear(imvOptions);
+        animateViewDisappear(ll_books);
+//        animateViewDisappear(ll_books);
+//        animateViewDisappear(ivHome);
+//        ll_books.setVisibility(View.GONE);
+        titleShelf.setText("My books");
+        ivHome.setVisibility(View.INVISIBLE);
+
+    };
+
+    private View.OnClickListener imvOptionsListener = v -> {
+        ShelfOptionsDialogFragment shelfOptionsDialogFragment = new ShelfOptionsDialogFragment();
+        shelfOptionsDialogFragment.show(getFragmentManager(),"tager");
+    };
+
+    private View.OnClickListener strategySortListener = v -> {
+        StrategySortDialogFragment strategySortDialogFragment = new StrategySortDialogFragment();
+        assert getFragmentManager() != null;
+        strategySortDialogFragment.setTargetFragment(getFragmentManager().findFragmentByTag("shelf"),2);
+        strategySortDialogFragment.show(getFragmentManager(),"sorter");
+    };
+
+    private void animateViewAppear(View view){
+        view.animate()
+                .alpha(1.0f)
+                .setDuration(300)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        view.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
+    private void animateViewDisappear(View view){
+        view.animate()
+                .alpha(0.0f)
+                .setDuration(400)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        view.setVisibility(View.GONE);
+                    }
+                });
+    }
+
     private void initArray() {
-        Single<List<Collections>> collections = collectionDao.getAllUserCollections(user.getUserId());
+        Single<List<CollectionPOJO>> collections = bookCollectionJoinMethods.fetchUserCollection(user.getUserId());
         collections.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<List<Collections>>() {
+                .subscribe(new SingleObserver<List<CollectionPOJO>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onSuccess(List<Collections> collections) {
-                        setCollectionList(collections);
-                        adapter = new FlexboxAdapter(getContext(), arrayList);
+                    public void onSuccess(List<CollectionPOJO> collections) {
+                        Log.d("Size", String.valueOf(collections.size()));
+                        adapter = new FlexboxAdapter(getContext(), collections);
                         recyclerView.setAdapter(adapter);
+                        setCollectionList(collections);
                     }
 
                     @Override
@@ -172,32 +271,68 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
                     }
                 });
 
-
-
-
     }
 
-    private void setCollectionList(List<Collections> arrayList){
+    private void setCollectionList(List<CollectionPOJO> arrayList){
         this.arrayList = arrayList;
+
+        adapter.setOnClickItem(this);
     }
 
-    public void animate(RecyclerView.ViewHolder viewHolder) {
-        final Animation animAnticipateOvershoot = AnimationUtils.loadAnimation(getContext(), R.anim.bounce_interpolator);
-        viewHolder.itemView.setAnimation(animAnticipateOvershoot);
+    private void setShelfBooks(List<BookE> arrayList){
+        this.bookES = arrayList;
     }
 
-    @SuppressLint("CommitPrefEdits")
-    private void initSharedPref(){
-        sharedPreferences = getActivity().getSharedPreferences(Constants.KEY_PREF_USER,Context.MODE_PRIVATE);
-        editor = sharedPreferences.edit();
+
+    @Override
+    public void onCompleteCreateShelf(Collections collections) {
+
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @Override
+    public void respond(CollectionPOJO collection) {
+        titleShelf.setText(collection.collectionName);
+        animateViewAppear(imvOptions);
+        ll_books.setClickable(true);
+//        ll_books.setVisibility(View.VISIBLE);
+        animateViewAppear(ll_books);
+        ivHome.setVisibility(View.VISIBLE);
+
+        addShelf.setVisibility(View.INVISIBLE);
+
+        Single<List<BookE>> listSingle = bookCollectionJoinMethods.fetchCollectionBooks(user.getUserId(),collection.collectionName);
+        listSingle.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<List<BookE>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        Log.d("Suc", "intra?");
+                    }
+
+                    @Override
+                    public void onSuccess(List<BookE> bookES) {
+                        Log.d("Suc", String.valueOf(bookES.size()));
+                        setShelfBooks(bookES);
+                        adapterBooks = new ShelfBooksAdapter(getActivity(),bookES);
+                        lvBooksShelf.setAdapter(adapterBooks);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d("Suc", "Nope");
+                    }
+                });
+
+    }
 
 
     private void openDb(){
         collectionDao = AppRoomDatabase.getInstance(getContext()).getCollectionDao();
         collectionMethods = CollectionMethods.getInstance(collectionDao,getContext());
 
+        bookCollectionJoinDao = AppRoomDatabase.getInstance(getContext()).getBookCollectionJoinDao();
+        bookCollectionJoinMethods = BookCollectionJoinMethods.getInstance(bookCollectionJoinDao);
 
     }
 
@@ -227,23 +362,13 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     }
 
     @Override
-    public void onCompleteCreateShelf(Collections collections) {
-        arrayList.add(collections);
-        adapter.notifyDataSetChanged();
-    }
+    public void onCompleteStrategy(String strategy) {
 
-//    @Override
-//    public void onClick(View v) {
-//        switch (v.getTag().toString()) {
-//            case "nume1":
-//                Toast.makeText(getContext(),"Merge?",Toast.LENGTH_LONG).show();
-//                break;
-//            }
-//        }
+    }
 
 
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
+
         void onFragmentInteraction(Uri uri);
     }
 }

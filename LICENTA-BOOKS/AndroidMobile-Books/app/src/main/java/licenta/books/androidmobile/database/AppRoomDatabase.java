@@ -21,6 +21,7 @@ import licenta.books.androidmobile.classes.Highlight;
 import licenta.books.androidmobile.classes.Review;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.classes.UserBookJoin;
+import licenta.books.androidmobile.database.DAO.BookCollectionJoinDao;
 import licenta.books.androidmobile.database.DAO.BookEDao;
 import licenta.books.androidmobile.database.DAO.BookStateDao;
 import licenta.books.androidmobile.database.DAO.BookmarkDao;
@@ -43,8 +44,7 @@ public abstract class AppRoomDatabase extends RoomDatabase {
     public abstract HighlightDao getHighlightDao();
     public abstract EstimatorDao getEstimatorDao();
     public abstract CollectionDao getCollectionDao();
-
-
+    public abstract BookCollectionJoinDao getBookCollectionJoinDao();
 
 
     private static volatile AppRoomDatabase appRoomDatabase=null;

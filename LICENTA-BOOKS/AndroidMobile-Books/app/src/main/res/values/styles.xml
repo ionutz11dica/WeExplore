@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -65,6 +65,10 @@
     <dimen name="small_text">12dp</dimen>
     <dimen name="padding_five_dp">1dp</dimen>
 
+
+    <style name="CrimsonTextAppearance">
+        <item name="android:fontFamily" tools:targetApi="jelly_bean">@font/crimsontext</item>
+    </style>
 
 
 

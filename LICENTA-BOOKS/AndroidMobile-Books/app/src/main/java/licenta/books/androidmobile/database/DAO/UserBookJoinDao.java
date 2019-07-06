@@ -25,6 +25,8 @@ public interface UserBookJoinDao  {
     @Query("SELECT * FROM book INNER JOIN userBook ON book.bookId = userBook.bookId WHERE userBook.userId = :userId")
     Single<List<BookE>> getAllUserBooksFromDatabase(Integer userId);
 
+
+
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM book INNER JOIN userBook ON book.bookId = userBook.bookId where userBook.userId = :userId AND userBook.bookId = :bookId")
     Single<BookE> getBookFromDatabase(Integer userId, String bookId);
@@ -36,3 +38,4 @@ public interface UserBookJoinDao  {
     void deleteUserBook(UserBookJoin... userBookJoin);
 
 }
+//    SELECT COUNT(bookId), nameCollection from collectionBook a, collection b where a.collectionId = b.collectionId and b.userId = 1 group by bookId

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:context=".activities.DialogFragments.FontsDialogFragment"
+    android:layout_gravity="bottom|center"
+    android:orientation="vertical">
+
+    <ListView
+        android:id="@+id/lv_options"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:dividerHeight="4.0sp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/ronunded_corner_white" />
+
+    <Button
+        android:id="@+id/brn_cancel_options"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ronunded_corner_white"
+        android:text="Cancel"
+        android:textColor="@color/grey"
+        android:textAllCaps="false"
+        android:textSize="23dp"
+        android:fontFamily="@font/crimsontext"
+        />
+
+</LinearLayout>

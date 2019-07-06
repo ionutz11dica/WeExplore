@@ -1,4 +1,4 @@
-package licenta.books.androidmobile.activities;
+package licenta.books.androidmobile.activities.DialogFragments;
 
 import android.app.Activity;
 import android.content.Context;
@@ -38,7 +38,6 @@ public class NoteDialogFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.note_highlight_popup,container,false);
-
 
 
         notePopup = view.findViewById(R.id.relatve_layout_note);

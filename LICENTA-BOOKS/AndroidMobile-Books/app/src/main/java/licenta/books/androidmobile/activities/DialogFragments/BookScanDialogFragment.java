@@ -1,4 +1,4 @@
-package licenta.books.androidmobile.activities;
+package licenta.books.androidmobile.activities.DialogFragments;
 
 import android.content.Context;
 import android.graphics.Color;
