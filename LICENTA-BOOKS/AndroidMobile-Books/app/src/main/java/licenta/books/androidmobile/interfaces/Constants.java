@@ -17,7 +17,7 @@ public interface Constants {
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;
 
-      String BASE_URL = "http://192.168.1.5:4000/";
+      String BASE_URL = "http://192.168.1.9:4000/";
 
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
@@ -75,4 +75,6 @@ public interface Constants {
       String KEY_STRATEGY_NAME = "keyStrategyName";
 
       String[] OPTIONS_SHELF = {"Add Books","Update Shelf", "Delete"};
+      String POSITION_OPTIONS = "keyPosition";
+      String KEY_IS_UPDATE_SHELF = "keyIsUpdateShelf";
 }

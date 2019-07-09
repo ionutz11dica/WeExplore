@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,13 +24,14 @@ import licenta.books.androidmobile.classes.BookE;
 public class ShelfBooksAdapter extends ArrayAdapter<BookE> {
     private Activity context;
     private List<BookE> books;
-
+    private List<BookE> origData;
 
 
     public ShelfBooksAdapter(Activity context, List<BookE> books) {
         super(context, R.layout.row_shelf_books, books);
         this.context = context;
         this.books = books;
+        this.origData = new ArrayList<>(books);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -40,7 +42,7 @@ public class ShelfBooksAdapter extends ArrayAdapter<BookE> {
         @SuppressLint("ViewHolder") View view = inflater.inflate(R.layout.row_shelf_books, null, false);
         TextView title = view.findViewById(R.id.tv_title_shelf);
         TextView authors = view.findViewById(R.id.tv_authors_shelf);
-        TextView publicationYear= view.findViewById(R.id.tv_publication_year_shelf);
+        TextView publicationYear = view.findViewById(R.id.tv_publication_year_shelf);
         TextView noPage = view.findViewById(R.id.tv_no_page_shelf);
         ImageView cover = view.findViewById(R.id.iv_bookcover_shelf);
 
@@ -58,5 +60,40 @@ public class ShelfBooksAdapter extends ArrayAdapter<BookE> {
         return view;
     }
 
+    @NonNull
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                constraint = constraint.toString().toLowerCase();
+                FilterResults results = new FilterResults();
 
+                if (constraint != null && constraint.toString().length() > 0) {
+                    List<BookE> founded = new ArrayList<>();
+                    for (BookE book : books) {
+                        if (book.getTitle().toLowerCase().contains(constraint)) {
+                            founded.add(book);
+                        }
+                    }
+                    results.values = founded;
+                    results.count = founded.size();
+                } else {
+                    results.values = origData;
+                    results.count = origData.size();
+                }
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                clear();
+                for (BookE book : (List<BookE>) results.values) {
+                    add(book);
+                }
+                notifyDataSetChanged();
+            }
+
+        };
+    }
 }

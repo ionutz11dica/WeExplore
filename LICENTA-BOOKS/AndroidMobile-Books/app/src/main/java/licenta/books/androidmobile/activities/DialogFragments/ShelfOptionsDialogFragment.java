@@ -1,6 +1,8 @@
 package licenta.books.androidmobile.activities.DialogFragments;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -41,18 +44,18 @@ public class ShelfOptionsDialogFragment extends DialogFragment {
 //        StrategySortAdapter adapter = new StrategySortAdapter(getActivity(), Constants.STRATEGY_SORTERS);
 //        strategySortLv.setAdapter(adapter);
 //
-//        strategySortLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent i = new Intent();
-//                StrategySort strategySort = Constants.STRATEGY_SORTERS[position];
-//                i.putExtra(Constants.KEY_STRATEGY, (Parcelable) strategySort);
-//                i.putExtra(Constants.KEY_STRATEGY_NAME,Constants.STRATEGY_SORT[position]);
-//                assert getTargetFragment() != null;
-//                getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
-//                dismiss();
-//            }
-//        });
+        lvOptions.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            Intent i = new Intent();
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                i.putExtra(Constants.POSITION_OPTIONS,position);
+                assert getTargetFragment() != null;
+                getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
+                dismiss();
+            }
+        });
+
+        btnCancel.setOnClickListener(v -> dismiss());
 
         Window window = getDialog().getWindow();
         window.setGravity(Gravity.CENTER|Gravity.BOTTOM);
@@ -61,8 +64,9 @@ public class ShelfOptionsDialogFragment extends DialogFragment {
     }
 
     public interface OnCompleteListenerOptions{
-        void onCompleteStrategy(String strategy);
+        void onCompleteOptions();
     }
+
 
 
 

@@ -23,7 +23,7 @@ public class FlexboxAdapter extends RecyclerView.Adapter<FlexboxAdapter.ViewHold
     OnClickItem onClickItem;
 
     public interface OnClickItem {
-        void respond(CollectionPOJO collection);
+        void respond(CollectionPOJO collection,int pos);
     }
 
     public FlexboxAdapter(Context context, List<CollectionPOJO> arrayList) {
@@ -48,7 +48,7 @@ public class FlexboxAdapter extends RecyclerView.Adapter<FlexboxAdapter.ViewHold
 
         holder.title.setText(arrayList.get(position).collectionName +" (" + arrayList.get(position).bookIds+")");
 
-        holder.title.setOnClickListener(v -> onClickItem.respond(arrayList.get(position)));
+        holder.title.setOnClickListener(v -> onClickItem.respond(arrayList.get(position),position));
 
 
     }

@@ -5,6 +5,8 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.support.annotation.NonNull;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 
 @Entity(
         tableName = "collectionBook",
@@ -18,7 +20,9 @@ import android.support.annotation.NonNull;
                 @ForeignKey(
                         entity = Collections.class,
                         parentColumns = "collectionId",
-                        childColumns = "collectionId")
+                        childColumns = "collectionId",
+                        onDelete = CASCADE,
+                        onUpdate = CASCADE )
         },
         indices = {
                 @Index(value = "collectionId"),

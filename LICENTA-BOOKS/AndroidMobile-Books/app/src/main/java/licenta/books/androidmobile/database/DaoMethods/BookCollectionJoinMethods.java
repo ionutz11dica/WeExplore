@@ -1,7 +1,5 @@
 package licenta.books.androidmobile.database.DaoMethods;
 
-import android.app.AlertDialog;
-import android.content.Context;
 import android.util.Log;
 
 import java.util.List;
@@ -21,7 +19,6 @@ public class BookCollectionJoinMethods implements BookCollectionJoinDao {
 
     private BookCollectionJoinDao bookCollectionJoinDao;
     private static BookCollectionJoinMethods bookCollectionJoinMethods;
-    private Context context;
 
     private BookCollectionJoinMethods(BookCollectionJoinDao bookCollectionJoinDao){
         this.bookCollectionJoinDao = bookCollectionJoinDao;
@@ -57,13 +54,7 @@ public class BookCollectionJoinMethods implements BookCollectionJoinDao {
 
                     @Override
                     public void onError(Throwable e) {
-                        AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-                        alertDialog.setTitle("Alert");
 
-                        alertDialog.setMessage("This name is already used");
-                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                                (dialog, which) -> dialog.dismiss());
-                        alertDialog.show();
                     }
                 });
     }

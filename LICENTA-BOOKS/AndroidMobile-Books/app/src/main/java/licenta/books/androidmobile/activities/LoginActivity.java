@@ -237,7 +237,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     }
 
                     @Override
-                    public void onSuccess(User user) {
+                    public synchronized void onSuccess(User user) {
                         RxBus.publishUser(user);
                         startActivity(intent);
 

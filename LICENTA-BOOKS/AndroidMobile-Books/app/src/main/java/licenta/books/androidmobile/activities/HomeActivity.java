@@ -29,6 +29,7 @@ import licenta.books.androidmobile.classes.Collections;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.fragments.ScannerFragment;
+import licenta.books.androidmobile.fragments.SearchFragment;
 import licenta.books.androidmobile.fragments.ShelfBooks;
 import licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.Graphics.BarcodeGraphicTracker;
 import retrofit2.Call;
@@ -38,7 +39,8 @@ import retrofit2.Response;
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class HomeActivity extends AppCompatActivity implements ScannerFragment.OnScannerInteractionListener, BarcodeGraphicTracker.BarcodeUpdateListener,
                                     BookScanDialogFragment.OnCompleteListenerBookScan,ShelfBooks.OnFragmentInteractionListener, CreateShelfDialogFragment.OnCompleteListenerShelf
-                                    , StrategySortDialogFragment.OnCompleteListenerStrategySort, ShelfOptionsDialogFragment.OnCompleteListenerOptions {
+                                    , StrategySortDialogFragment.OnCompleteListenerStrategySort, ShelfOptionsDialogFragment.OnCompleteListenerOptions, ShelfBooks.OnSwitchFragment
+                                    , SearchFragment.OnFragmentSearchListener{
     BottomNavigationView bottomNavigationView;
     ApiService apiService;
     Bundle bundle = new Bundle();
@@ -52,8 +54,9 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
 
     final Fragment scannerFragment = new ScannerFragment();
     final Fragment shelfBooks = new ShelfBooks();
+    final Fragment searchFragment = new SearchFragment();
     final FragmentManager fm = getSupportFragmentManager();
-    Fragment active = scannerFragment;
+    Fragment active = searchFragment;
 
     Fragment prev = null;
     @Override
@@ -64,6 +67,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
         d.dispose();
         fm.beginTransaction().add(R.id.frament_contianer,scannerFragment,"scanner").hide(scannerFragment).commit();
         fm.beginTransaction().add(R.id.frament_contianer,shelfBooks,"shelf").hide(shelfBooks).commit();
+        fm.beginTransaction().add(R.id.frament_contianer,searchFragment,"search").commit();
         initComp();
     }
 
@@ -78,7 +82,6 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
             item -> {
                 switch (item.getItemId()){
                     case R.id.item_shelfBooks:
-//                        startActivity(new Intent(getApplicationContext(),ShelfActivity.class));
                         fm.beginTransaction().hide(active).show(shelfBooks).commit();
                         active = shelfBooks;
                         return true;
@@ -87,9 +90,10 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
                         active = scannerFragment;
                         return true;
                     case R.id.item_searchBooks:
-                        //
-
+                        fm.beginTransaction().hide(active).show(searchFragment).commit();
+                        active = searchFragment;
                         return true;
+
                     case R.id.item_backUp:
 
                         return true;
@@ -203,6 +207,21 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
 
     @Override
     public void onCompleteStrategy(String strategy) {
+
+    }
+
+    @Override
+    public void onSwitchFragment(int id) {
+        bottomNavigationView.setSelectedItemId(id);
+    }
+
+    @Override
+    public void onCompleteOptions() {
+
+    }
+
+    @Override
+    public void onFragmentSearch() {
 
     }
 }

@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/shelfbooks_toolbar"
@@ -60,7 +61,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@drawable/white"
-        android:weightSum="1"
+
         android:layout_below="@+id/shelfbooks_toolbar"
         android:layout_marginTop="0dp"
 
@@ -76,19 +77,20 @@
             android:textSize="18dp"
             android:singleLine="true"
             android:drawableLeft="@drawable/ic_search_black_24dp"
-            android:layout_weight="1"
+            android:layout_weight="0.8"
             android:layout_gravity="center"
             android:inputType="text"
             android:imeOptions="actionSearch"
             android:background="@drawable/edit_text_round"/>
         <TextView
-            android:id="@+id/tv_search_cancel"
+            android:id="@+id/tv_search_cancel_books"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.0"
+            android:layout_weight="0.2"
             android:textSize="18dp"
             android:text="Cancel"
 
+            android:visibility="gone"
             android:textAlignment="center"
             android:layout_gravity="center"/>
     </LinearLayout>
@@ -99,6 +101,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/ll_search_db"
         android:layout_margin="5dp"
+        android:clickable="false"
         android:orientation="horizontal">
 
         <ImageView
@@ -162,7 +165,9 @@
             android:layout_width="80dp"
             android:layout_height="100dp"
             android:layout_gravity="center"
+                android:clickable="false"
             android:src="@drawable/ic_instruction"/>
+
                 <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -177,6 +182,7 @@
 
                     android:textSize="25dp" />
                     <TextView
+                        android:id="@+id/tv_size_reading"
                     android:padding="9dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -240,5 +246,14 @@
         android:layout_marginBottom="?attr/actionBarSize"
         android:visibility="gone"/>
 
+
+    <include
+        android:id="@+id/search_layout"
+        layout="@layout/search_db_books_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/ll_search_db"
+        android:visibility="gone"
+        />
 
 </RelativeLayout>

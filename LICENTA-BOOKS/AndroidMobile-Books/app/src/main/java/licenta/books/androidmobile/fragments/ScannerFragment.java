@@ -15,7 +15,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CpuUsageInfo;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -55,9 +54,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import info.hoang8f.android.segmented.SegmentedGroup;
-import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.DetailsActivity;
 import licenta.books.androidmobile.adapters.ScannedBooksAdapter;
@@ -77,8 +74,6 @@ import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import static java.security.AccessController.getContext;
 
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -129,7 +124,6 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         View view = inflater.inflate(R.layout.fragment_scanner, container, false);
         getUserInfo();
         initComp(view);
-
         //garantarea permisiunilor pentru camera
         if(getContext()!=null) {
             int rc = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA);
@@ -185,12 +179,13 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         swipeMenuListView.addFooterView(footerView,null,false);
         apiService = ApiClient.getRetrofit().create(ApiService.class);
 
-        getScannedBooks();
+//        getScannedBooks();
 
 
     }
 
     private View.OnClickListener listenerScannedBooks = v -> {
+        getScannedBooks();
         listScan.setVisibility(View.VISIBLE);
         cameraSource.stop();
         preview.setVisibility(View.INVISIBLE);

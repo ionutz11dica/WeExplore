@@ -8,10 +8,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(tableName = "collection",
         foreignKeys = @ForeignKey(entity = User.class,
                 parentColumns = "userId",
-                childColumns = "userId"),
+                childColumns = "userId",
+                onDelete = CASCADE,
+                onUpdate = CASCADE),
             indices = {@Index(value = "userId")})
 public class Collections implements Parcelable {
     @NonNull
