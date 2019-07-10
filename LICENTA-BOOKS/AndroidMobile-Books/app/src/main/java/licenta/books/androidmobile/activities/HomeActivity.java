@@ -15,6 +15,8 @@ import android.widget.RadioButton;
 
 import com.google.android.gms.vision.barcode.Barcode;
 
+import java.util.ArrayList;
+
 import io.reactivex.disposables.Disposable;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.DialogFragments.BookScanDialogFragment;
@@ -32,6 +34,7 @@ import licenta.books.androidmobile.fragments.ScannerFragment;
 import licenta.books.androidmobile.fragments.SearchFragment;
 import licenta.books.androidmobile.fragments.ShelfBooks;
 import licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.Graphics.BarcodeGraphicTracker;
+import licenta.books.androidmobile.patterns.Carousel.Photo;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -47,6 +50,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     LinearLayout layout;
     RadioButton rbBooksScanned;
     User user;
+    ArrayList<Photo> photosTitles;
 
 
 
@@ -65,6 +69,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
         setContentView(R.layout.activity_home);
         Disposable d = RxBus.subscribeUser(userr -> user = userr);
         d.dispose();
+
         fm.beginTransaction().add(R.id.frament_contianer,scannerFragment,"scanner").hide(scannerFragment).commit();
         fm.beginTransaction().add(R.id.frament_contianer,shelfBooks,"shelf").hide(shelfBooks).commit();
         fm.beginTransaction().add(R.id.frament_contianer,searchFragment,"search").commit();
@@ -142,6 +147,14 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
             }
         });
     }
+
+    public void setPhotosTitles(ArrayList<Photo> photosTitles){
+        this.photosTitles = photosTitles;
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("test",photosTitles);
+        active.setArguments(bundle);
+    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void addBookToScannedBooks(BookE book){

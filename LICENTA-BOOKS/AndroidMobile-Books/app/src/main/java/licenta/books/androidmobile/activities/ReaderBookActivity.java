@@ -2752,7 +2752,6 @@ String test= "ceva";
                     reflowableControl.deleteHighlight(chapterHighlightsList.getHighlight(i));
                 }
             }
-
         }
     }
 }

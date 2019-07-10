@@ -31,7 +31,8 @@
         android:theme="@style/AppTheme.NoActionBar.FullScreen"
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="n">
-        <activity android:name=".activities.HomeActivity" />
+        <activity android:name=".activities.HomeActivity"
+            android:configChanges="keyboardHidden|orientation"/>
 
         <activity
             android:name=".activities.StylePopupActivity"
@@ -44,7 +45,8 @@
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/AppTheme" />
-        <activity android:name=".activities.LoginActivity">
+        <activity android:name=".activities.LoginActivity"
+            android:configChanges="keyboardHidden|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

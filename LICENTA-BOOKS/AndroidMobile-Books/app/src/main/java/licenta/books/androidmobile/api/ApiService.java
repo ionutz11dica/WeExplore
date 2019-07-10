@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
+import licenta.books.androidmobile.activities.others.Title;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.Review;
 import licenta.books.androidmobile.classes.User;
+import licenta.books.androidmobile.patterns.Carousel.Photo;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -83,5 +85,11 @@ public interface ApiService {
     @Headers("Content-Type: application/json")
     @PUT("users/delete/{email}")
     Call<RequestBody> deleteScannedBooks(@Path("email") String email, @Body String books);
+
+    @GET("books/someImageBooks")
+    Call<ArrayList<Photo>> getRandomTitles();
+
+    @GET("books/{elementSearched}")
+    Call<ArrayList<BookE>> getBooksSearched(@Path("elementSearched") String elementSearched);
 
 }
