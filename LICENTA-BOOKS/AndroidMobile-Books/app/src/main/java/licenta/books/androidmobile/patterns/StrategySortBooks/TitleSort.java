@@ -14,7 +14,7 @@ import licenta.books.androidmobile.classes.BookE;
 public class TitleSort implements StrategySort, Parcelable {
     public String title = "Title";
 
-    private Comparator<BookE> comparator = (BookE o1, BookE o2)-> o1.getTitle().compareTo(o2.getTitle());
+    private Comparator<BookE> comparator = (BookE o1, BookE o2)-> o2.getTitle().compareTo(o1.getTitle());
 
     public TitleSort() {
     }

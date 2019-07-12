@@ -13,7 +13,7 @@ import licenta.books.androidmobile.classes.Converters.ArrayStringConverter;
 
 public class AuthorSort implements StrategySort, Parcelable {
     public String author = "Authors";
-    private Comparator<BookE> comparator = (BookE o1, BookE o2)-> ArrayStringConverter.fromArrayList(o1.getAuthors()).compareTo(ArrayStringConverter.fromArrayList(o2.getAuthors()));
+    private Comparator<BookE> comparator = (BookE o1, BookE o2)-> ArrayStringConverter.fromArrayList(o2.getAuthors()).compareTo(ArrayStringConverter.fromArrayList(o1.getAuthors()));
 
     public AuthorSort() {
     }

@@ -3,12 +3,16 @@ package licenta.books.androidmobile.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -19,12 +23,18 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.quinny898.library.persistentsearch.SearchBox;
 import com.quinny898.library.persistentsearch.SearchResult;
 import com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView;
@@ -33,6 +43,7 @@ import java.util.ArrayList;
 
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.HomeActivity;
+import licenta.books.androidmobile.activities.others.BlurBuilder;
 import licenta.books.androidmobile.adapters.BookAdapter;
 import licenta.books.androidmobile.api.ApiClient;
 import licenta.books.androidmobile.api.ApiService;
@@ -43,13 +54,15 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import static android.app.Activity.RESULT_OK;
+import static io.reactivex.schedulers.Schedulers.start;
 
 public class SearchFragment extends Fragment {
 
     private OnFragmentSearchListener listener;
+    private OnFragmentGenreSwitchListener switchListenr;
     private SearchBox search;
     private Toolbar toolbar;
-    private ArrayList<Photo> titlesAuthors;
+    private ArrayList<BookE> titlesAuthors;
     private ApiService apiService;
 
     private LinearLayoutManager firstManager;
@@ -65,10 +78,18 @@ public class SearchFragment extends Fragment {
     private ArrayList<ImageView> images;
     private AnimationDrawable animationDrawable;
     private AnimationDrawable animationDrawable2;
+
     private View view;
 
+    private ScrollView scrollView;
     private LinearLayout ll_noBooks;
-
+    private TextView genreClassic;
+    private TextView genreRomance;
+    private TextView genreFiction;
+    private TextView genreNonFiction;
+    private TextView genreScience;
+    private TextView genreInspirational;
+    private TextView noDownloads;
 
     public SearchFragment() {
     }
@@ -86,13 +107,18 @@ public class SearchFragment extends Fragment {
         animationDrawable = (AnimationDrawable) relativeBackground.getBackground();
         animationDrawable2 = (AnimationDrawable) toolbar.getBackground();
 
+       
+
+
 
         // setting enter fade animation duration to 5 seconds
         animationDrawable.setEnterFadeDuration(3000);
         animationDrawable2.setEnterFadeDuration(3000);
+
         // setting exit fade animation duration to 2 seconds
         animationDrawable.setExitFadeDuration(2000);
         animationDrawable2.setExitFadeDuration(2000);
+
 //        ValueAnimator anim = ValueAnimator.ofFloat(0, 1);
 //        anim.setDuration(10000);
 //
@@ -142,8 +168,8 @@ public class SearchFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (animationDrawable != null && !animationDrawable.isRunning()&& animationDrawable2 !=null && !animationDrawable2.isRunning()) {
-            // start the animation
+        if (animationDrawable != null && !animationDrawable.isRunning()&&
+                animationDrawable2 !=null && !animationDrawable2.isRunning() ) {
             animationDrawable2.start();
             animationDrawable.start();
         }
@@ -152,8 +178,8 @@ public class SearchFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        if (animationDrawable != null && animationDrawable.isRunning() && animationDrawable2 !=null && animationDrawable2.isRunning()) {
-            // stop the animation
+        if (animationDrawable != null && animationDrawable.isRunning() &&
+                animationDrawable2 !=null && animationDrawable2.isRunning()) {
             animationDrawable.stop();
             animationDrawable2.stop();
         }
@@ -164,6 +190,13 @@ public class SearchFragment extends Fragment {
             openSearch();
             return true;
         });
+    }
+
+    private View.OnClickListener listenerGenres(String category){
+        View.OnClickListener listener = v -> {
+            switchListenr.onFragmentSwitch(category);
+        };
+        return listener;
     }
 
     private void initComp(View view) {
@@ -189,6 +222,7 @@ public class SearchFragment extends Fragment {
 
         ll_noBooks = view.findViewById(R.id.no_downloaded_books);
 
+
         ll_noBooks.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -196,7 +230,53 @@ public class SearchFragment extends Fragment {
             }
         });
 
+        scrollView = view.findViewById(R.id.scroll_search);
+
+        genreClassic = view.findViewById(R.id.genre_classics);
+        genreClassic.setOnClickListener(listenerGenres(genreClassic.getText().toString()));
+        genreRomance = view.findViewById(R.id.genre_romance);
+        genreRomance.setOnClickListener(listenerGenres(genreRomance.getText().toString()));
+        genreFiction = view.findViewById(R.id.genre_ficton);
+        genreFiction.setOnClickListener(listenerGenres(genreFiction.getText().toString()));
+        genreNonFiction = view.findViewById(R.id.genre_non_fiction);
+        genreNonFiction.setOnClickListener(listenerGenres(genreNonFiction.getText().toString()));
+        genreScience = view.findViewById(R.id.genre_science);
+        genreScience.setOnClickListener(listenerGenres(genreScience.getText().toString()));
+        genreInspirational = view.findViewById(R.id.genre_inspirational);
+        genreInspirational.setOnClickListener(listenerGenres(genreInspirational.getText().toString()));
+
+        loadImageForGenre("https://i.imgur.com/PS4vvGU.jpg",genreClassic," Classics");
+        loadImageForGenre("https://i.imgur.com/BQDW6P3.jpg",genreRomance," Romance");
+        loadImageForGenre("https://i.imgur.com/P0REIa6.jpg",genreFiction," Fiction");
+        loadImageForGenre("https://i.imgur.com/ifd1a49.jpg",genreNonFiction," Non-Fiction");
+        loadImageForGenre("https://i.imgur.com/ZjxlK9B.jpg",genreScience," Science");
+        loadImageForGenre("https://i.imgur.com/0hcW1Lt.jpg",genreInspirational," Inspirational");
+
+        noDownloads = view.findViewById(R.id.tv_no_downloads);
+//        Glide.get(getContext()).clearMemory();
+//
+//        new Thread(() -> Glide.get(getContext()).clearDiskCache()).start();
         relativeBackground = view.findViewById(R.id.relative_background);
+    }
+
+    private void loadImageForGenre(String url, TextView textView,String text) {
+        Glide.with(this)
+                .asBitmap()
+                .load(url)
+                .into(new SimpleTarget<Bitmap>() {
+                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        Bitmap resultImg = BlurBuilder.blurImageGenre(getContext(), resource);
+                        Bitmap brightnessImg = BlurBuilder.changeBitmapContrastBrightness(resultImg, 0.55f, 1);
+                        Bitmap bitmapRadius = BlurBuilder.getRoundedCornerBitmap(brightnessImg, 20);
+                        BitmapDrawable drawable = new BitmapDrawable(bitmapRadius);
+
+                        textView.setBackgroundDrawable(drawable);
+                        textView.setText(text);
+
+                    }
+                });
     }
 
     private void initApiService(){
@@ -266,6 +346,7 @@ public class SearchFragment extends Fragment {
             public void onSearch(String searchTerm) {
 //                hideKeyboardFrom(getContext(),search);
                 getSearchedBooks(searchTerm);
+                scrollView.postDelayed(()-> scrollView.fullScroll(View.FOCUS_DOWN),500);
 
 
             }
@@ -299,21 +380,24 @@ public class SearchFragment extends Fragment {
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
-    private synchronized void setImagesBooks(ArrayList<Photo> str){
+    private synchronized void setImagesBooks(ArrayList<BookE> str){
+        int sum = 0;
         for(int i = 0 ;i < images.size();i++) {
             Glide.with(getContext())
-                    .load(str.get(i).imageLink)
+                    .load(str.get(i).getImageLink())
                     .placeholder(R.drawable.ic_error_outline_24dp)
                     .into(images.get(i));
+            sum+=str.get(i).getNoDownloads();
         }
+        noDownloads.setText(String.valueOf(sum) +" Downloads");
     }
 
 
     public void getTitlesForSearchView(){
-        Call<ArrayList<Photo>> call = apiService.getRandomTitles();
-        call.enqueue(new Callback<ArrayList<Photo>>() {
+        Call<ArrayList<BookE>> call = apiService.getRandomTitles();
+        call.enqueue(new Callback<ArrayList<BookE>>() {
             @Override
-            public void onResponse(Call<ArrayList<Photo>> call, Response<ArrayList<Photo>> response) {
+            public void onResponse(Call<ArrayList<BookE>> call, Response<ArrayList<BookE>> response) {
                 if(response.isSuccessful()){
                     Log.d("Response ","Suc");
 
@@ -324,7 +408,7 @@ public class SearchFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<ArrayList<Photo>> call, Throwable t) {
+            public void onFailure(Call<ArrayList<BookE>> call, Throwable t) {
                 Log.d("Response ",t.getMessage());
             }
         });
@@ -357,19 +441,18 @@ public class SearchFragment extends Fragment {
 
     }
 
-    private void setTitlesAuthors(ArrayList<Photo> arrayList){
+    private void setTitlesAuthors(ArrayList<BookE> arrayList){
         this.titlesAuthors = arrayList;
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        hideKeyboardFrom(getContext(),search);
         if (requestCode == 1234 && resultCode == RESULT_OK) {
             ArrayList<String> matches = data
                     .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-//            search.populateEditText(matches.get(0));
             hideKeyboardFrom(getContext(),view);
             getSearchedBooks(matches.get(0));
+            scrollView.postDelayed(()-> scrollView.fullScroll(View.FOCUS_DOWN),500);
 
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -380,6 +463,7 @@ public class SearchFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof SearchFragment.OnFragmentSearchListener) {
             listener = (SearchFragment.OnFragmentSearchListener) context;
+            switchListenr = (SearchFragment.OnFragmentGenreSwitchListener)context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -397,10 +481,15 @@ public class SearchFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         listener = null;
+        switchListenr = null;
     }
 
     public interface OnFragmentSearchListener {
-        // TODO: Update argument type and name
+
         void onFragmentSearch();
+    }
+
+    public interface OnFragmentGenreSwitchListener {
+        void onFragmentSwitch(String category);
     }
 }

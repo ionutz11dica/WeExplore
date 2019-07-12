@@ -22,6 +22,9 @@ public interface Constants {
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
 
+      float BITMAP_SCALE_GENRE = 0.8f;
+      float BLUR_RADIUS_GENRE = 13f;
+
       String TIME_STAMP_FORMAT = "MMM dd yyyy HH:mm:ss.SSS";
 
 

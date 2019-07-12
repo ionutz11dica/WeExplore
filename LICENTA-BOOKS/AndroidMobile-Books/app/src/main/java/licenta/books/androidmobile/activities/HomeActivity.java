@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.Toast;
 
 import com.google.android.gms.vision.barcode.Barcode;
 
@@ -30,6 +31,7 @@ import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.Collections;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
+import licenta.books.androidmobile.fragments.GenreBooksFragment;
 import licenta.books.androidmobile.fragments.ScannerFragment;
 import licenta.books.androidmobile.fragments.SearchFragment;
 import licenta.books.androidmobile.fragments.ShelfBooks;
@@ -43,7 +45,7 @@ import retrofit2.Response;
 public class HomeActivity extends AppCompatActivity implements ScannerFragment.OnScannerInteractionListener, BarcodeGraphicTracker.BarcodeUpdateListener,
                                     BookScanDialogFragment.OnCompleteListenerBookScan,ShelfBooks.OnFragmentInteractionListener, CreateShelfDialogFragment.OnCompleteListenerShelf
                                     , StrategySortDialogFragment.OnCompleteListenerStrategySort, ShelfOptionsDialogFragment.OnCompleteListenerOptions, ShelfBooks.OnSwitchFragment
-                                    , SearchFragment.OnFragmentSearchListener{
+                                    , SearchFragment.OnFragmentSearchListener, SearchFragment.OnFragmentGenreSwitchListener, GenreBooksFragment.OnFragmentGenreBooksListener {
     BottomNavigationView bottomNavigationView;
     ApiService apiService;
     Bundle bundle = new Bundle();
@@ -59,6 +61,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     final Fragment scannerFragment = new ScannerFragment();
     final Fragment shelfBooks = new ShelfBooks();
     final Fragment searchFragment = new SearchFragment();
+
     final FragmentManager fm = getSupportFragmentManager();
     Fragment active = searchFragment;
 
@@ -72,6 +75,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
 
         fm.beginTransaction().add(R.id.frament_contianer,scannerFragment,"scanner").hide(scannerFragment).commit();
         fm.beginTransaction().add(R.id.frament_contianer,shelfBooks,"shelf").hide(shelfBooks).commit();
+
         fm.beginTransaction().add(R.id.frament_contianer,searchFragment,"search").commit();
         initComp();
     }
@@ -113,6 +117,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
         call.enqueue(new Callback<BookE>() {
             @Override
             public void onResponse(Call<BookE> call, Response<BookE> response) {
+                Log.d("ISBN Error", String.valueOf(response.code()));
                 if(response.isSuccessful() ){
                     prev = getSupportFragmentManager().findFragmentByTag("Tag");
                     if(prev==null) {
@@ -143,7 +148,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
 
             @Override
             public void onFailure(Call<BookE> call, Throwable t) {
-
+                Log.d("ISBN Error",t.getMessage());
             }
         });
     }
@@ -235,6 +240,23 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
 
     @Override
     public void onFragmentSearch() {
+
+    }
+
+    @Override
+    public void onFragmentGenreBooks() {
+
+    }
+
+    @Override
+    public void onFragmentSwitch(String category) {
+//        Toast.makeText(getApplicationContext(),category +" what",Toast.LENGTH_LONG).show();
+        final Fragment genresFragment = new GenreBooksFragment();
+        fm.beginTransaction().add(R.id.frament_contianer,genresFragment,"genres").hide(genresFragment).commit();
+        bundle.putString("testCategory",category);
+        genresFragment.setArguments(bundle);
+        fm.beginTransaction().hide(active).show(genresFragment).commit();
+        active = genresFragment;
 
     }
 }

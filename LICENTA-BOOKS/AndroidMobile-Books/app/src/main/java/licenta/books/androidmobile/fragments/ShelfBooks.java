@@ -116,6 +116,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     private LinearLayout reading;
     private LinearLayout ll_search;
     private ListView lvSearchedBook;
+    private boolean isReading = true;
 
     public ShelfBooks() {
     }
@@ -217,8 +218,14 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
                     StrategySort strategySort = data.getParcelableExtra(Constants.KEY_STRATEGY);
                     String strategyName = data.getStringExtra(Constants.KEY_STRATEGY_NAME);
                     Sorter sorter = new Sorter(strategySort);
-                    sorter.sorting(bookES);
-                    adapterBooks.notifyDataSetChanged();
+                    if(isReading){
+                        sorter.sorting(readingBooks);
+                        adapterReadingBooks.notifyDataSetChanged();
+                    }else {
+                        sorter.sorting(bookES);
+                        adapterBooks.notifyDataSetChanged();
+                    }
+
                     this.strategySort.setText(strategyName);
                 }
                 break;
@@ -271,13 +278,25 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
          private View.OnClickListener reverseListener = v -> {
         if(!isReversed){
             reverse.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_arrow_upward_black_24dp,0,0,0);
-            java.util.Collections.reverse(bookES);
-            adapterBooks.notifyDataSetChanged();
+
+            if(isReading){
+                java.util.Collections.reverse(readingBooks);
+                adapterReadingBooks.notifyDataSetChanged();
+            }else {
+                java.util.Collections.reverse(bookES);
+                adapterBooks.notifyDataSetChanged();
+            }
+
             isReversed = true;
         }else{
             reverse.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_arrow_downward_black_24dp,0,0,0);
-            java.util.Collections.reverse(bookES);
-            adapterBooks.notifyDataSetChanged();
+            if(isReading){
+                java.util.Collections.reverse(readingBooks);
+                adapterReadingBooks.notifyDataSetChanged();
+            }else {
+                java.util.Collections.reverse(bookES);
+                adapterBooks.notifyDataSetChanged();
+            }
             isReversed = false;
         }
     };
@@ -328,6 +347,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
 
     private View.OnClickListener readingListener = v -> {
         readingLayoutTest();
+        isReading = true;
         lvBooksShelf.setAdapter(adapterReadingBooks);
     };
 
@@ -388,9 +408,9 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
                     public void onSuccess(List<BookE> bookES) {
                         Log.d("Suc", String.valueOf(bookES.size()));
                         //                        setShelfBooks(bookES);
-                        adapterReadingBooks = new ShelfBooksAdapter(getActivity(),bookES);
-                        lvBooksShelf.setAdapter(adapterReadingBooks);
-                        setShelfBooks(bookES);
+
+                        setReadingBooks(bookES);
+//                        setShelfBooks(bookES);
 
                     }
 
@@ -462,15 +482,20 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
 
     private void setCollectionList(List<CollectionPOJO> arrayList){
         this.arrayList = arrayList;
-
         adapter.setOnClickItem(this);
     }
 
     private void setShelfBooks(List<BookE> arrayList){
         this.bookES = arrayList;
-        sizeReading.setText(arrayList.size() +" books");
+        adapterBooks = new ShelfBooksAdapter(getActivity(),bookES);
+        lvBooksShelf.setAdapter(adapterBooks);
+
     }
-    private void setReadingBooks(List<BookE> books){this.readingBooks = books;}
+    private void setReadingBooks(List<BookE> books){
+        this.readingBooks = books;
+        adapterReadingBooks = new ShelfBooksAdapter(getActivity(),books);
+        lvBooksShelf.setAdapter(adapterReadingBooks);
+        sizeReading.setText(books.size() +" books");}
 
 
 
@@ -483,6 +508,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     @Override
     public void respond(CollectionPOJO collection,int pos) {
         selectedPos = pos;
+        isReading = false;
         titleShelf.setText(collection.collectionName);
         animateViewAppear(imvOptions);
         ll_books.setClickable(true);
@@ -505,8 +531,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
                     public void onSuccess(List<BookE> bookES) {
                         Log.d("Suc", String.valueOf(bookES.size()));
                         setShelfBooks(bookES);
-                        adapterBooks = new ShelfBooksAdapter(getActivity(),bookES);
-                        lvBooksShelf.setAdapter(adapterBooks);
+
                     }
 
                     @Override

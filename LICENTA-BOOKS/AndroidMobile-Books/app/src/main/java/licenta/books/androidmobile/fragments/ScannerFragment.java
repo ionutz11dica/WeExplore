@@ -381,6 +381,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         linearLayoutFooter.setLayoutParams(params);
         ivScan.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT,0.5f));
         ivScan.setImageResource(R.drawable.ic_qr_code);
+        linearLayoutFooter.removeView(ivScan);
         linearLayoutFooter.addView(ivScan);
 
         footer.setText("Scan books");

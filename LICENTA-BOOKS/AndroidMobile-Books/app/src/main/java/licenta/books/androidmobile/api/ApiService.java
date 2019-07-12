@@ -75,7 +75,7 @@ public interface ApiService {
     @PUT("users/{username}/{password}/{bookId}")
     Call<ResponseBody> syncUserBooksDeleteUsername( @Path("username") String username, @Path("password") String password, @Path("bookId") String book_id);
 
-    @GET("books/{isbn}")
+    @GET("books/fetch/{isbn}")
     Call<BookE> getBookByISBN(@Path("isbn") String isbn);
 
     @GET("users/{email}")
@@ -87,9 +87,22 @@ public interface ApiService {
     Call<RequestBody> deleteScannedBooks(@Path("email") String email, @Body String books);
 
     @GET("books/someImageBooks")
-    Call<ArrayList<Photo>> getRandomTitles();
+    Call<ArrayList<BookE>> getRandomTitles();
 
     @GET("books/{elementSearched}")
     Call<ArrayList<BookE>> getBooksSearched(@Path("elementSearched") String elementSearched);
+
+    @GET("users/wantToReadBooks/{email}")
+    Call<ArrayList<BookE>> getWantedBooks(@Path("email") String email);
+
+    @PATCH("users/wantToRead/{bookId}/{email}")
+    Call<User> addWantToRead(@Path("bookId") String bookId,@Path("email") String email);
+
+    @PATCH("users/wantToRead/delete/{email}/{bookId}")
+    Call<User> deleteWantToRead(@Path("email") String email,@Path("bookId") String bookId);
+
+    @GET("books/categorySearch/{category}")
+    Call<ArrayList<BookE>> getCategoryBooks(@Path("category") String category);
+
 
 }

@@ -11,7 +11,7 @@ import licenta.books.androidmobile.classes.BookE;
 
 public class PublishedDateSort implements StrategySort, Parcelable {
     public String publicationDate = "Publication Date";
-    private Comparator<BookE> comparator = (BookE o1, BookE o2)-> o1.getPublishedDate().compareTo(o2.getPublishedDate());
+    private Comparator<BookE> comparator = (BookE o1, BookE o2)-> o2.getPublishedDate().compareTo(o1.getPublishedDate());
 
     public PublishedDateSort() {
     }

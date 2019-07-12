@@ -4,6 +4,8 @@
     android:layout_height="match_parent" >
 
 
+
+
     <android.support.v7.widget.Toolbar xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -31,6 +33,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:coverflow="http://schemas.android.com/tools"
         android:layout_width="match_parent"
+        android:id="@+id/scroll_search"
         android:layout_height="match_parent"
         android:layout_below="@+id/toolbar">
      <RelativeLayout
@@ -155,31 +158,45 @@
                  android:text="Explore Popular Genres"
                  android:fontFamily="@font/crimsontext"
                  android:layout_marginBottom="7dp"
-                 android:textSize="19dp"
+                 android:textSize="17dp"
                  android:textAllCaps="true"/>
 
              <LinearLayout
                  android:layout_width="match_parent"
                  android:layout_height="wrap_content"
                  android:gravity="center"
+                 android:layout_marginBottom="10dp"
                  android:orientation="horizontal">
 
-                 <Button
-                     android:layout_width="130dp"
-                     android:layout_height="70dp"
+
+                 <TextView
+                     android:id="@+id/genre_classics"
+                     android:layout_width="120dp"
+                     android:layout_height="60dp"
+
+                     android:fontFamily="@font/crimsontext"
                      android:text="Classics"
+                     android:paddingLeft="2dp"
+                     android:gravity="bottom|start"
+                     android:layout_marginRight="10dp"
+                     android:textAlignment="gravity"
                      android:textAllCaps="false"
-                     android:textSize="18dp"
-                     android:fontFamily="@font/crimsontext"/>
+                     android:textColor="@drawable/white"
+                     android:textSize="15dp" />
 
-                 <Button
-                     android:layout_width="130dp"
-                     android:layout_height="70dp"
+                 <TextView
+                     android:id="@+id/genre_romance"
+                     android:layout_width="120dp"
+                     android:layout_height="60dp"
+
+                     android:fontFamily="@font/crimsontext"
                      android:text="Romance"
+                     android:paddingLeft="2dp"
+                     android:gravity="bottom|start"
+                     android:textAlignment="gravity"
                      android:textAllCaps="false"
-                     android:textAlignment="center"
-                     android:textSize="18dp"
-                     android:fontFamily="@font/crimsontext"/>
+                     android:textColor="@drawable/white"
+                     android:textSize="15dp" />
 
              </LinearLayout>
 
@@ -187,23 +204,35 @@
                  android:layout_width="match_parent"
                  android:layout_height="wrap_content"
                  android:gravity="center"
+                 android:layout_marginBottom="10dp"
                  android:orientation="horizontal">
 
-                 <Button
-                     android:layout_width="130dp"
-                     android:layout_height="70dp"
+                 <TextView
+                     android:id="@+id/genre_science"
+                     android:layout_width="120dp"
+                     android:layout_height="60dp"
+
+                     android:fontFamily="@font/crimsontext"
                      android:text="Science"
+                     android:paddingLeft="2dp"
+                     android:gravity="bottom|start"
+                     android:layout_marginRight="10dp"
+                     android:textAlignment="gravity"
                      android:textAllCaps="false"
-                     android:textSize="18dp"
-                     android:fontFamily="@font/crimsontext"/>
+                     android:textColor="@drawable/white"
+                     android:textSize="15dp"  />
 
-                 <Button
-                     android:layout_width="130dp"
-                     android:layout_height="70dp"
+                 <TextView
+                     android:id="@+id/genre_inspirational"
+                     android:layout_width="120dp"
+                     android:layout_height="60dp"
                      android:text="Inspirational"
+                     android:gravity="bottom|start"
+                     android:textAlignment="gravity"
                      android:textAllCaps="false"
-                     android:textAlignment="center"
-                     android:textSize="18dp"
+                     android:textColor="@drawable/white"
+                     android:textSize="15dp"
+
                      android:fontFamily="@font/crimsontext"/>
 
              </LinearLayout>
@@ -211,23 +240,35 @@
                  android:layout_width="match_parent"
                  android:layout_height="wrap_content"
                  android:gravity="center"
+                 android:layout_marginBottom="10dp"
                  android:orientation="horizontal">
 
-                 <Button
-                     android:layout_width="130dp"
-                     android:layout_height="70dp"
-                     android:text="Fiction"
-                     android:textAllCaps="false"
-                     android:textSize="18dp"
-                     android:fontFamily="@font/crimsontext"/>
+                 <TextView
+                     android:id="@+id/genre_ficton"
+                     android:layout_width="120dp"
+                     android:layout_height="60dp"
 
-                 <Button
-                     android:layout_width="130dp"
-                     android:layout_height="70dp"
-                     android:text="Non-Fiction"
+                     android:fontFamily="@font/crimsontext"
+                     android:text="Fiction"
+                     android:paddingLeft="2dp"
+                     android:gravity="bottom|start"
+                     android:layout_marginRight="10dp"
+                     android:textAlignment="gravity"
                      android:textAllCaps="false"
-                     android:textAlignment="center"
-                     android:textSize="18dp"
+                     android:textColor="@drawable/white"
+                     android:textSize="15dp"  />
+
+                 <TextView
+                     android:id="@+id/genre_non-fiction"
+                     android:layout_width="120dp"
+                     android:layout_height="60dp"
+                     android:text="Non-Fiction"
+                     android:gravity="bottom|start"
+                     android:textAlignment="gravity"
+                     android:textAllCaps="false"
+                     android:textColor="@drawable/white"
+                     android:textSize="15dp"
+
                      android:fontFamily="@font/crimsontext"/>
 
              </LinearLayout>
@@ -241,7 +282,7 @@
              android:layout_height="wrap_content"
              android:layout_below="@+id/ll_genres"
 
-             android:layout_marginTop="60dp"
+             android:layout_marginTop="20dp"
              android:layout_marginBottom="56dp"
              android:background="#eeeeee"
              android:orientation="vertical">

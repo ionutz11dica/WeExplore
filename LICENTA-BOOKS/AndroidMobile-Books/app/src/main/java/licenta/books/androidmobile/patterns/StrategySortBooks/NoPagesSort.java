@@ -12,7 +12,7 @@ import licenta.books.androidmobile.classes.BookE;
 public class NoPagesSort implements StrategySort, Parcelable {
     public String noPage = "Number of Pages";
 
-    private Comparator<BookE> comparator = (BookE o1, BookE o2)-> o1.getPageCount().compareTo(o2.getPageCount());
+    private Comparator<BookE> comparator = (BookE o1, BookE o2)-> o2.getPageCount().compareTo(o1.getPageCount());
 
     public NoPagesSort() {
     }

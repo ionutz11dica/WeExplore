@@ -53,7 +53,8 @@ public class BookE implements Parcelable {
     private Boolean isAvailableEpub; //---??
     @Ignore
     private String downloadLink; //---??
-
+    @Ignore
+    private int noDownloads;
 
     //Database constructor
     public BookE(@NonNull String _id, String title, ArrayList<String> authors, ArrayList<String> categories, Integer pageCount, String description, String publisher,
@@ -107,7 +108,7 @@ public class BookE implements Parcelable {
         byte tmpIsAvailableEpub = in.readByte();
         isAvailableEpub = tmpIsAvailableEpub == 0 ? null : tmpIsAvailableEpub == 1;
         downloadLink = in.readString();
-
+        noDownloads = in.readInt();
     }
 
     @Override
@@ -135,7 +136,7 @@ public class BookE implements Parcelable {
         dest.writeByte((byte) (publicDomain == null ? 0 : publicDomain ? 1 : 2));
         dest.writeByte((byte) (isAvailableEpub == null ? 0 : isAvailableEpub ? 1 : 2));
         dest.writeString(downloadLink);
-
+        dest.writeInt(noDownloads);
     }
 
     @Override
@@ -156,8 +157,13 @@ public class BookE implements Parcelable {
     };
 
 
+    public int getNoDownloads() {
+        return noDownloads;
+    }
 
-
+    public void setNoDownloads(int noDownloads) {
+        this.noDownloads = noDownloads;
+    }
 
     public String getTitle() {
         return title;

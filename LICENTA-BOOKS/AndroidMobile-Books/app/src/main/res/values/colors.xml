@@ -16,4 +16,12 @@
     <color name="book_title">#4c4c4c</color>
     <color name="grey">#C3C3C3</color>
 
+    <color name="start_romance">#a40a3c</color>
+    <color name="center_romance">#f06292</color>
+    <color name="end_romance">#ff9797</color>
+
+    <!--<color name="grey">#C3C3C3</color>-->
+    <!--<color name="grey">#C3C3C3</color>-->
+    <!--<color name="grey">#C3C3C3</color>-->
+
 </resources>
