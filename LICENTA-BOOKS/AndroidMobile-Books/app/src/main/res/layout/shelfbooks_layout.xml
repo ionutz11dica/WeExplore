@@ -57,8 +57,8 @@
         android:layout_marginLeft="5dp"
         android:id="@+id/lv_books_shelf"
         android:layout_width="match_parent"
+        android:listSelector="@drawable/my_selector"
         android:layout_height="match_parent"
-
         android:clipToPadding="false"
         android:padding="5dp"
         android:scrollbarStyle="outsideOverlay"

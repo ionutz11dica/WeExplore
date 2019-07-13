@@ -26,6 +26,8 @@ public class FlexboxAdapter extends RecyclerView.Adapter<FlexboxAdapter.ViewHold
         void respond(CollectionPOJO collection,int pos);
     }
 
+
+
     public FlexboxAdapter(Context context, List<CollectionPOJO> arrayList) {
         this.context = context;
         this.arrayList = arrayList;

@@ -192,9 +192,9 @@ public class SearchFragment extends Fragment {
         });
     }
 
-    private View.OnClickListener listenerGenres(String category){
+    private View.OnClickListener listenerGenres(String category,String genreDescription){
         View.OnClickListener listener = v -> {
-            switchListenr.onFragmentSwitch(category);
+            switchListenr.onFragmentSwitch(category,genreDescription,null);
         };
         return listener;
     }
@@ -226,24 +226,25 @@ public class SearchFragment extends Fragment {
         ll_noBooks.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(),"merge?",Toast.LENGTH_LONG).show();
+
+                switchListenr.onFragmentSwitch("Most Downloaded Books",noDownloads.getText().toString(),titlesAuthors);
             }
         });
 
         scrollView = view.findViewById(R.id.scroll_search);
 
         genreClassic = view.findViewById(R.id.genre_classics);
-        genreClassic.setOnClickListener(listenerGenres(genreClassic.getText().toString()));
+        genreClassic.setOnClickListener(listenerGenres(genreClassic.getText().toString(),getString(R.string.classics_genre)));
         genreRomance = view.findViewById(R.id.genre_romance);
-        genreRomance.setOnClickListener(listenerGenres(genreRomance.getText().toString()));
+        genreRomance.setOnClickListener(listenerGenres(genreRomance.getText().toString(),getString(R.string.romance_genre)));
         genreFiction = view.findViewById(R.id.genre_ficton);
-        genreFiction.setOnClickListener(listenerGenres(genreFiction.getText().toString()));
+        genreFiction.setOnClickListener(listenerGenres(genreFiction.getText().toString(),getString(R.string.fiction_genre)));
         genreNonFiction = view.findViewById(R.id.genre_non_fiction);
-        genreNonFiction.setOnClickListener(listenerGenres(genreNonFiction.getText().toString()));
+        genreNonFiction.setOnClickListener(listenerGenres(genreNonFiction.getText().toString(),getString(R.string.nonfiction_genre)));
         genreScience = view.findViewById(R.id.genre_science);
-        genreScience.setOnClickListener(listenerGenres(genreScience.getText().toString()));
+        genreScience.setOnClickListener(listenerGenres(genreScience.getText().toString(),getString(R.string.science_genre)));
         genreInspirational = view.findViewById(R.id.genre_inspirational);
-        genreInspirational.setOnClickListener(listenerGenres(genreInspirational.getText().toString()));
+        genreInspirational.setOnClickListener(listenerGenres(genreInspirational.getText().toString(),getString(R.string.inspirational_genre)));
 
         loadImageForGenre("https://i.imgur.com/PS4vvGU.jpg",genreClassic," Classics");
         loadImageForGenre("https://i.imgur.com/BQDW6P3.jpg",genreRomance," Romance");
@@ -394,7 +395,7 @@ public class SearchFragment extends Fragment {
 
 
     public void getTitlesForSearchView(){
-        Call<ArrayList<BookE>> call = apiService.getRandomTitles();
+        Call<ArrayList<BookE>> call = apiService.getMostDownloadedBooks();
         call.enqueue(new Callback<ArrayList<BookE>>() {
             @Override
             public void onResponse(Call<ArrayList<BookE>> call, Response<ArrayList<BookE>> response) {
@@ -490,6 +491,6 @@ public class SearchFragment extends Fragment {
     }
 
     public interface OnFragmentGenreSwitchListener {
-        void onFragmentSwitch(String category);
+        void onFragmentSwitch(String category,String genreDescription,ArrayList<BookE> mostDownloaded);
     }
 }

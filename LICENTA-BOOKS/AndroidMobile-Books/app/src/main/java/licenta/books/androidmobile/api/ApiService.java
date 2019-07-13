@@ -87,7 +87,7 @@ public interface ApiService {
     Call<RequestBody> deleteScannedBooks(@Path("email") String email, @Body String books);
 
     @GET("books/someImageBooks")
-    Call<ArrayList<BookE>> getRandomTitles();
+    Call<ArrayList<BookE>> getMostDownloadedBooks();
 
     @GET("books/{elementSearched}")
     Call<ArrayList<BookE>> getBooksSearched(@Path("elementSearched") String elementSearched);

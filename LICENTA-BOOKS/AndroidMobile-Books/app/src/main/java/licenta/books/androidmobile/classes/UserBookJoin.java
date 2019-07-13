@@ -5,6 +5,9 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.support.annotation.NonNull;
+
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(
         tableName = "userBook",
         primaryKeys = {"userId","bookId"},
@@ -12,7 +15,8 @@ import android.support.annotation.NonNull;
                 @ForeignKey(
                         entity = BookE.class,
                         parentColumns = "bookId",
-                        childColumns = "bookId"
+                        childColumns = "bookId",
+                        onDelete = CASCADE
                 ),
                 @ForeignKey(
                         entity = User.class,

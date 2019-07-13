@@ -83,15 +83,14 @@
     <licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.CameraSourcePreview
         android:id="@+id/camera_preview"
         android:layout_width="match_parent"
-
         android:layout_height="match_parent"
-      >
+        android:layout_marginRight="-40dp">
 
         <licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.GraphicOverlay
             android:id="@+id/graphic_overlay"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
 
+            android:layout_height="match_parent" />
 
 
     </licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.CameraSourcePreview>

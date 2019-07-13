@@ -1,6 +1,7 @@
 package licenta.books.androidmobile.activities.DialogFragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -24,6 +25,7 @@ import com.bumptech.glide.Glide;
 
 import io.reactivex.disposables.Disposable;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.DetailsActivity;
 import licenta.books.androidmobile.adapters.BookAdapter;
 import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
@@ -81,7 +83,14 @@ public class BookScanDialogFragment extends DialogFragment {
                 .placeholder(R.drawable.ic_error_outline_24dp)
                 .into(ivBookCover);
 
-
+        moreDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getContext(), DetailsActivity.class);
+                i.putExtra(Constants.KEY_BOOK,bookE);
+                startActivity(i);
+            }
+        });
 
     }
 

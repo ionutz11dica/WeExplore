@@ -8,4 +8,43 @@
 
 
     <string name="hello_blank_fragment">Hello blank fragment</string>s
+
+    <string name="classics_genre">Classic literature is a term most readers are probably familiar with. The term covers a much wider array of works than classical literature. Older books that
+        retain their popularity are almost always considered to be among the classics. This means that the ancient Greek and Roman authors of classical literature fall into this category as well.
+        It\'s not just age that makes a book a classic, however. Books that have a timeless quality are considered to be in this category. While determining if
+        a book is well-written or not is a subjective endeavor, it is generally agreed
+        that classics have high-quality prose.  </string>
+
+    <string name="romance_genre">Novels of this type of genre fiction place their primary focus on the relationship and romantic love between two people, and must have an "emotionally satisfying
+        and optimistic ending." There are many subgenres of the romance novel, including fantasy, historical romance, paranormal fiction, and science fiction</string>
+    <string name="fiction_genre">Fiction refers to literature created from the imagination. Mysteries, science fiction, romance, fantasy, chick lit, crime thrillers are all fiction genres.
+        Whether or not all of these genres should be considered “literature” is a matter of opinion. Some of these fiction genres are taught in literature classrooms and some are not usually taught,
+        considered more to be reading for entertainment. Works often taught in literature classrooms are referred to as “literary fiction” including
+        classics by Dickens, Austen, Twain, and Poe, for example.</string>
+
+    <string name="nonfiction_genre">Like fiction, non-fiction also has a sub-genre called “literary nonfiction” that refers to literature based on fact but written in creative way,
+        making it as enjoyable to read as fiction. Of course there are MANY other types of nonfiction such as cook books, fitness articles, crafting manuals, etc. which are not “literature,”
+        meaning not the types of works we would study in a literature classroom. However, you may not be aware of the many types of nonfiction we would study, such as biography,
+        memoir or autobiography, essays, speeches, and humor. Of these literary nonfiction genres, they can be long like a book or series of books or short like an essay or journal entry.
+        Some examples of these you are already familiar with, like The Diary of Anne Frank or Angela’s Ashes by Frank McCourt.
+        These works of literary nonfiction have character, setting, plot, conflict, figurative language, and theme just like literary fiction.</string>
+
+    <string name="science_genre">Science fiction is a genre of fiction in which the stories often
+tell about science and technology of the future. It is
+important to note that science fiction has a relationship with
+the principles of science—these stories involve partially truepartially fictitious laws or theories of science. It should not be
+completely unbelievable, because it then ventures into the
+genre fantasy.
+The plot creates situations different from those of both the
+present day and the known past. Science fiction texts also
+include a human element, explaining what effect new
+discoveries, happenings and scientific developments will have
+on us in the future. </string>
+
+    <string name="inspirational_genre">The genre of “religious, inspirational, and spiritual” encompasses a diverse collection of material that includes both fiction
+        and nonfiction books covering a wide range of religions, from Christianity to Buddhism to Wiccan. Books may be associated with one
+        specific religion, or may be more general, but they often focus on an inspirational theme with underlying religious lessons or ethics.
+This genre also includes books that cover topics meant to encourage spiritual growth, but are not necessarily tied to one religion. Books that offer
+        techniques for improving physical health, emotional well-being, and personal relationships are popular in this genre, especially when they pull
+        from concepts and practices from all over the world.</string>
 </resources>

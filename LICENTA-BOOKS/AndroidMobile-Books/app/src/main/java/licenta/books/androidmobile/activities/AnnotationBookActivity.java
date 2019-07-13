@@ -31,6 +31,9 @@ import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.fragments.AnnotationFragment;
 import licenta.books.androidmobile.fragments.ChapterFragment;
 import licenta.books.androidmobile.fragments.InfoFragment;
+import licenta.books.androidmobile.fragments.ScannerFragment;
+import licenta.books.androidmobile.fragments.SearchFragment;
+import licenta.books.androidmobile.fragments.ShelfBooks;
 import licenta.books.androidmobile.interfaces.Constants;
 
 public class AnnotationBookActivity extends AppCompatActivity implements InfoFragment.OnFragmentInteractionListener,ChapterFragment.OnFragmentInteractionListener, AnnotationFragment.OnFragmentInteractionListener {
@@ -49,8 +52,11 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_annotation_book);
+
+
+
         if(savedInstanceState == null){
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment,new InfoFragment()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_cont,new InfoFragment()).commit();
         }
         initComp();
 
@@ -107,7 +113,7 @@ public class AnnotationBookActivity extends AppCompatActivity implements InfoFra
             selectedFragment.setArguments(bundle);
 
         }
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment,selectedFragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_cont,selectedFragment).commit();
     }
 
     @Override

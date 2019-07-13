@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="56dp">
 
@@ -11,7 +13,7 @@
 
         android:layout_marginTop="0dp"
         android:fitsSystemWindows="true"
-        android:background="#d8cbbb"
+        android:background="#80d8cbbb"
         >
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,26 +33,90 @@
                 android:src="@drawable/ic_keyboard_backspace_black_24dp"
                 android:visibility="visible"/>
 
+            <TextView
+                android:id="@+id/title_toolbar_genres"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@drawable/white"
+                android:textSize="18dp"
+                android:fontFamily="@font/crimsontext"
+
+                android:gravity="center"
+                android:layout_gravity="center"/>
+
 
         </LinearLayout>
 
 </android.support.v7.widget.Toolbar>
 
-    <TextView
-        android:id="@+id/genre_title"
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:coverflow="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:text="Genre Title"
-        android:textSize="24dp"
-        android:fontFamily="@font/crimsontext"
-        />
+        android:fillViewport="true"
+        >
 
-    <ListView
-        android:id="@+id/lv_genre"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-    </ListView>
+
+            <TextView
+                android:id="@+id/genre_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="9dp"
+                android:text="Genre Title"
+                android:layout_marginLeft="10dp"
+                android:textSize="24dp"
+                android:textColor="@drawable/dark_grey"
+                android:fontFamily="@font/crimsontext"
+                />
+
+            <com.borjabravo.readmoretextview.ReadMoreTextView
+                android:id="@+id/genre_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:layout_marginLeft="10dp"
+                app:trimExpandedText="Read More"
+                app:trimCollapsedText="Show less"
+                app:trimMode="trimModeLine"
+                app:trimLines="3"
+                app:colorClickableText="#d8cbbb"
+                android:layout_marginBottom="10dp"
+                android:text="Genre Title"
+                android:textSize="17dp"
+                android:fontFamily="@font/crimsontext"
+                />
+
+            <!--<ListView-->
+                <!--android:id="@+id/lv_genre"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content">-->
+            <licenta.books.androidmobile.activities.others.GridviewScrollable
+                android:id="@+id/gridview_top"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="true"
+                android:gravity="center"
+                android:background="#f5eeee"
+                android:isScrollContainer="false"
+                android:columnWidth="140dp"
+                android:numColumns="auto_fit"
+                android:verticalSpacing="24dp"
+                android:descendantFocusability="blocksDescendants"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:horizontalSpacing="10dp"
+                android:clickable="true"
+                android:stretchMode="columnWidth"
+                />
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

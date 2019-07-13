@@ -14,13 +14,16 @@ import java.util.Date;
 import licenta.books.androidmobile.classes.Converters.TimestampConverter;
 import licenta.books.androidmobile.interfaces.AnnotationFamily;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(
         tableName = "bookmark_join",
         foreignKeys = {
                 @ForeignKey(
                         entity = BookE.class,
                         parentColumns = "bookId",
-                        childColumns = "bookId"
+                        childColumns = "bookId",
+                        onDelete = CASCADE
                 ),
                 @ForeignKey(
                         entity = User.class,

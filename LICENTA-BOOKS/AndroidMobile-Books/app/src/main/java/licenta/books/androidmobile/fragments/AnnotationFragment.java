@@ -82,6 +82,8 @@ public class AnnotationFragment extends Fragment implements View.OnClickListener
         bundle = this.getArguments();
         if(bundle !=null){
             bookAnnotations =  bundle.getParcelableArrayList(Constants.KEY_BOOKS_ANNOTATION_LIST);
+        }else{
+            bookAnnotations = new ArrayList<>();
         }
         ViewCompat.setNestedScrollingEnabled(lv_annotations, true);
         refreshAdapter(bookAnnotations);

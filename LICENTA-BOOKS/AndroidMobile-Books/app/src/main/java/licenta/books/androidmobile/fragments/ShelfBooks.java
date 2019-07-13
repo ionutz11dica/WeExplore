@@ -4,9 +4,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,23 +21,32 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import io.reactivex.Single;
@@ -44,26 +55,38 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.DetailsActivity;
+import licenta.books.androidmobile.activities.DialogFragments.AddBookInShelfDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.CreateShelfDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.ShelfOptionsDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.StrategySortDialogFragment;
+import licenta.books.androidmobile.activities.ReaderBookActivity;
 import licenta.books.androidmobile.adapters.FlexboxAdapter;
+import licenta.books.androidmobile.adapters.GenreBooksAdapter;
 import licenta.books.androidmobile.adapters.ShelfBooksAdapter;
+import licenta.books.androidmobile.api.ApiClient;
+import licenta.books.androidmobile.api.ApiService;
 import licenta.books.androidmobile.classes.BookE;
+import licenta.books.androidmobile.classes.CollectionBookJoin;
 import licenta.books.androidmobile.classes.CollectionPOJO;
 import licenta.books.androidmobile.classes.Collections;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
 import licenta.books.androidmobile.database.DAO.BookCollectionJoinDao;
+import licenta.books.androidmobile.database.DAO.BookEDao;
 import licenta.books.androidmobile.database.DAO.CollectionDao;
 import licenta.books.androidmobile.database.DAO.UserBookJoinDao;
 import licenta.books.androidmobile.database.DaoMethods.BookCollectionJoinMethods;
+import licenta.books.androidmobile.database.DaoMethods.BookMethods;
 import licenta.books.androidmobile.database.DaoMethods.CollectionMethods;
 import licenta.books.androidmobile.database.DaoMethods.UserBookMethods;
 import licenta.books.androidmobile.interfaces.Constants;
 import licenta.books.androidmobile.patterns.StrategySortBooks.Sorter;
 import licenta.books.androidmobile.patterns.StrategySortBooks.StrategySort;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -71,10 +94,10 @@ import static android.app.Activity.RESULT_OK;
 @TargetApi(Build.VERSION_CODES.KITKAT)
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.OnCompleteListenerShelf,FlexboxAdapter.OnClickItem, StrategySortDialogFragment.OnCompleteListenerStrategySort
-                                            {
+                ,GenreBooksAdapter.OnButtonClickListener, AddBookInShelfDialogFragment.OnCompleteAddBooksListener{
     private OnFragmentInteractionListener listener;
-
     private OnSwitchFragment onSwitchFragmentListener;
+    private OnRefreshFragmentListener onRefreshFragmentListener;
 
     private CollectionDao collectionDao;
     private CollectionMethods collectionMethods;
@@ -93,9 +116,14 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     List<CollectionPOJO> arrayList = new ArrayList<>();
     List<BookE> bookES ;
     List<BookE> readingBooks ;
+    List<BookE> selectedBooks = new ArrayList<>();
+    int checkedItems = 0;
+
+    ArrayList<BookE> wantBooks;
     FlexboxAdapter adapter;
     ShelfBooksAdapter adapterBooks;
     ShelfBooksAdapter adapterReadingBooks;
+    GenreBooksAdapter genreBooksAdapter;
     ListView lvBooksShelf;
     private Button addShelf;
     private EditText searchReadingBooks;
@@ -107,6 +135,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     private boolean isUpdate = false;
     private TextView strategySort;
     private TextView sizeReading;
+    private TextView sizeWantToRead;
     private ImageView ivHome;
     Bundle bundleShelf = new Bundle();
     int selectedPos;
@@ -117,6 +146,13 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     private LinearLayout ll_search;
     private ListView lvSearchedBook;
     private boolean isReading = true;
+    private boolean isNetwork = false;
+    ApiService apiService;
+
+    private BookEDao bookEDao;
+    private BookMethods bookMethods;
+    ActionMode orgMode;
+
 
     public ShelfBooks() {
     }
@@ -139,6 +175,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
         recyclerView = view.findViewById(R.id.recyclerView);
         initArray();
         fetchReadingBooks();
+        getWantedBooks();
         FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(getContext());
         layoutManager.setFlexDirection(FlexDirection.ROW);
         layoutManager.setJustifyContent(JustifyContent.FLEX_START);
@@ -151,6 +188,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void initComp(View view) {
+        apiService = ApiClient.getRetrofit().create(ApiService.class);
         addShelf = view.findViewById(R.id.btn_add_shelf);
         addShelf.setOnClickListener(addShelfListener);
 
@@ -171,7 +209,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
         strategySort.setOnClickListener(strategySortListener);
 
         wantToRead = view.findViewById(R.id.ly_wants);
-
+        wantToRead.setOnClickListener(wantToReadListener);
 
         reading = view.findViewById(R.id.ly_reading);
         reading.setOnClickListener(readingListener);
@@ -188,8 +226,18 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
         searchLayout = view.findViewById(R.id.ll_search_db);
 
         sizeReading = view.findViewById(R.id.tv_size_reading);
+        sizeWantToRead = view.findViewById(R.id.tv_size_want);
 
-
+        lvBooksShelf.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                RxBus.publishBook(readingBooks.get(position));
+                Intent i = new Intent(getContext(), ReaderBookActivity.class);
+                i.putExtra(Constants.KEY_BOOK,readingBooks.get(position));
+                i.putExtra(Constants.KEY_USER,user);
+                startActivity(i);
+            }
+        });
     }
 
 
@@ -218,14 +266,18 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
                     StrategySort strategySort = data.getParcelableExtra(Constants.KEY_STRATEGY);
                     String strategyName = data.getStringExtra(Constants.KEY_STRATEGY_NAME);
                     Sorter sorter = new Sorter(strategySort);
-                    if(isReading){
-                        sorter.sorting(readingBooks);
-                        adapterReadingBooks.notifyDataSetChanged();
-                    }else {
-                        sorter.sorting(bookES);
-                        adapterBooks.notifyDataSetChanged();
+                    if(!isNetwork) {
+                        if (isReading) {
+                            sorter.sorting(readingBooks);
+                            adapterReadingBooks.notifyDataSetChanged();
+                        } else {
+                            sorter.sorting(bookES);
+                            adapterBooks.notifyDataSetChanged();
+                        }
+                    }else{
+                        sorter.sorting(wantBooks);
+                        genreBooksAdapter.notifyDataSetChanged();
                     }
-
                     this.strategySort.setText(strategyName);
                 }
                 break;
@@ -258,6 +310,24 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
 
                     }
                 }
+                break;
+            case 4:
+                if (resultCode == RESULT_OK){
+                    ArrayList<Integer> collIds = data.getIntegerArrayListExtra(Constants.KEY_COLLECTION_IDS);
+                    if(collIds.size() > 0){
+                        ArrayList<CollectionBookJoin> collectionBookJoins = new ArrayList<>();
+                        for(BookE book : selectedBooks){
+                            for (Integer i : collIds){
+                                collectionBookJoins.add(new CollectionBookJoin(book.get_id(),i));
+                            }
+                        }
+                        bookCollectionJoinMethods.insertBookCollection(collectionBookJoins);
+                    }
+                    orgMode.finish();
+                    onRefreshFragmentListener.onRefreshFragment();
+                    //refresh
+                }
+                break;
         }
     }
 
@@ -278,30 +348,32 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
          private View.OnClickListener reverseListener = v -> {
         if(!isReversed){
             reverse.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_arrow_upward_black_24dp,0,0,0);
-
-            if(isReading){
-                java.util.Collections.reverse(readingBooks);
-                adapterReadingBooks.notifyDataSetChanged();
-            }else {
-                java.util.Collections.reverse(bookES);
-                adapterBooks.notifyDataSetChanged();
-            }
+            notifySpecificAdapter();
 
             isReversed = true;
         }else{
             reverse.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_arrow_downward_black_24dp,0,0,0);
-            if(isReading){
-                java.util.Collections.reverse(readingBooks);
-                adapterReadingBooks.notifyDataSetChanged();
-            }else {
-                java.util.Collections.reverse(bookES);
-                adapterBooks.notifyDataSetChanged();
-            }
+            notifySpecificAdapter();
             isReversed = false;
         }
     };
 
-    private View.OnClickListener addShelfListener = v -> {
+    private void notifySpecificAdapter() {
+        if (!isNetwork) {
+            if (isReading) {
+                java.util.Collections.reverse(readingBooks);
+                adapterReadingBooks.notifyDataSetChanged();
+            } else {
+                java.util.Collections.reverse(bookES);
+                adapterBooks.notifyDataSetChanged();
+            }
+        } else {
+            java.util.Collections.reverse(wantBooks);
+            genreBooksAdapter.notifyDataSetChanged();
+        }
+    }
+
+     private View.OnClickListener addShelfListener = v -> {
         ll_books.setVisibility(View.GONE);
         imvOptions.setVisibility(View.GONE);
         ivHome.setVisibility(View.INVISIBLE);
@@ -346,11 +418,96 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     };
 
     private View.OnClickListener readingListener = v -> {
-        readingLayoutTest();
+        readingLayoutTest("Reading..");
         isReading = true;
+        isNetwork = false;
+        lvBooksShelf.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        lvBooksShelf.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                checkedItems = lvBooksShelf.getCheckedItemCount();
+                lvBooksShelf.setSelected(true);
+                mode.setTitle(checkedItems +" Selected");
+                if(checked){
+                    selectedBooks.add(readingBooks.get(position));
+                }else{
+                    selectedBooks.remove(readingBooks.get(position));
+                }
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                shelfToolbar.setVisibility(View.GONE);
+
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.listview_context_menu,menu);
+                return true ;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                orgMode = mode;
+                switch (item.getItemId()){
+                    case R.id.delete_id:
+                        bookMethods.deleteBooks(selectedBooks);
+                        for(BookE book : selectedBooks){
+                            readingBooks.remove(book);
+                        }
+                        adapterReadingBooks.notifyDataSetChanged();
+                        sizeReading.setText(readingBooks.size() + " books");
+
+                        mode.finish();
+                        onRefreshFragmentListener.onRefreshFragment();
+                        return true;
+                    case R.id.select_shelf:
+                        Bundle bundle = new Bundle();
+                        AddBookInShelfDialogFragment addBookInShelfDialogFragment = new AddBookInShelfDialogFragment();
+                        bundle.putParcelable("userTest",user);
+                        addBookInShelfDialogFragment.setArguments(bundle);
+                        assert getFragmentManager() != null;
+                        addBookInShelfDialogFragment.setTargetFragment(getFragmentManager().findFragmentByTag("shelf"),4);
+                        addBookInShelfDialogFragment.show(getFragmentManager(),"tag3");
+
+                        return true;
+
+                    default:
+
+                        return false;
+                }
+
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                shelfToolbar.postDelayed(() -> shelfToolbar.setVisibility(View.VISIBLE),500);
+            }
+        });
         lvBooksShelf.setAdapter(adapterReadingBooks);
     };
 
+//    public void onListItemClick(ListView l, View v, int position, long id) {
+//        lvBooksShelf.setItemChecked(position, true);
+//    }
+
+    private View.OnClickListener wantToReadListener = v -> {
+      readingLayoutTest("Want to Read");
+      isNetwork = true;
+      lvBooksShelf.setChoiceMode(ListView.CHOICE_MODE_NONE);
+      lvBooksShelf.setAdapter(genreBooksAdapter);
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+    }
 
     private TextWatcher searchListener = new TextWatcher() {
         @Override
@@ -421,11 +578,35 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
                 });
     }
 
-    private void readingLayoutTest() {
+   private void getWantedBooks() {
+       Call<ArrayList<BookE>> call = apiService.getWantedBooks(user.getEmail());
+       call.enqueue(new Callback<ArrayList<BookE>>() {
+           @Override
+           public void onResponse(Call<ArrayList<BookE>> call, Response<ArrayList<BookE>> response) {
+               ArrayList<BookE> temp=null;
+               if(response.body() == null){
+                   temp = new ArrayList<>();
+                   setWantBooks(temp);
+               }
+               if (response.isSuccessful() && response.body()!=null) {
+                    setWantBooks(response.body());
+               }
+
+           }
+
+
+           @Override
+           public void onFailure(Call<ArrayList<BookE>> call, Throwable t) {
+
+           }
+       });
+   }
+
+    private void readingLayoutTest(String type) {
         animateViewAppear(ll_books);
         ivHome.setVisibility(View.VISIBLE);
         addShelf.setVisibility(View.INVISIBLE);
-        titleShelf.setText("Reading..");
+        titleShelf.setText(type);
     }
 
      private void animateViewAppear(View view){
@@ -495,9 +676,16 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
         this.readingBooks = books;
         adapterReadingBooks = new ShelfBooksAdapter(getActivity(),books);
         lvBooksShelf.setAdapter(adapterReadingBooks);
-        sizeReading.setText(books.size() +" books");}
+        sizeReading.setText(books.size() +" books");
+    }
+    private void setWantBooks(ArrayList<BookE> bookEArrayList){
+        this.wantBooks = bookEArrayList;
+        genreBooksAdapter = new GenreBooksAdapter(getActivity(),bookEArrayList,bookEArrayList);
+        genreBooksAdapter.setOnButtonClickListener(this);
+        lvBooksShelf.setAdapter(genreBooksAdapter);
+        sizeWantToRead.setText(bookEArrayList.size() + " books");
 
-
+    }
 
     @Override
     public void onCompleteCreateShelf(Collections collections) {
@@ -509,7 +697,9 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     public void respond(CollectionPOJO collection,int pos) {
         selectedPos = pos;
         isReading = false;
+        isNetwork = false;
         titleShelf.setText(collection.collectionName);
+        lvBooksShelf.setChoiceMode(ListView.CHOICE_MODE_NONE);
         animateViewAppear(imvOptions);
         ll_books.setClickable(true);
 //        ll_books.setVisibility(View.VISIBLE);
@@ -553,9 +743,18 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
         userBookJoinDao = AppRoomDatabase.getInstance(getContext()).getUserBookDao();
         userBookMethods = UserBookMethods.getInstance(userBookJoinDao);
 
-
+        bookEDao = AppRoomDatabase.getInstance(getContext()).getBookEDao();
+        bookMethods = BookMethods.getInstance(bookEDao);
 
     }
+
+//    private void refreshFragment(){
+//        FragmentTransaction ft =getFragmentManager().beginTransaction();
+//        if(Build.VERSION.SDK_INT >= 26){
+//            ft.setReorderingAllowed(false);
+//        }
+//        ft.detach(this).attach(this).commit();
+//    }
 
     public void onButtonPressed(Uri uri) {
         if (listener != null) {
@@ -571,6 +770,8 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
         if (context instanceof ShelfBooks.OnFragmentInteractionListener) {
             listener = (ShelfBooks.OnFragmentInteractionListener) context;
             onSwitchFragmentListener = (OnSwitchFragment) context;
+            onRefreshFragmentListener = (OnRefreshFragmentListener)context;
+
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -581,12 +782,41 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     public void onDetach() {
         super.onDetach();
         listener = null;
+        onSwitchFragmentListener = null;
+        onRefreshFragmentListener = null;
     }
 
     @Override
     public void onCompleteStrategy(String strategy) {
 
     }
+
+    @Override
+    public void onButtonClick(BookE bookE, boolean isWanted) {
+        Call<User> callDelete = apiService.deleteWantToRead(user.getEmail(),bookE.get_id());
+        callDelete.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if(response.isSuccessful()){
+                    Log.d("WantToRead ","Succ DELETED");
+                    wantBooks.remove(bookE);
+                    genreBooksAdapter.notifyDataSetChanged();
+                    sizeWantToRead.setText(wantBooks.size() + " books");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+
+            }
+        });
+    }
+
+    @Override
+    public void onCompleteAddBooks(Collections collections) {
+
+    }
+
 
     public interface OnSwitchFragment{
         void onSwitchFragment(int id);
@@ -596,5 +826,9 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
     public interface OnFragmentInteractionListener {
 
         void onFragmentInteraction(Uri uri);
+    }
+
+    public interface OnRefreshFragmentListener {
+        void onRefreshFragment();
     }
 }

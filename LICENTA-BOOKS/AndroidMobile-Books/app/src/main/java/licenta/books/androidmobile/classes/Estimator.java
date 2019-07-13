@@ -18,12 +18,15 @@ import licenta.books.androidmobile.classes.Converters.ArrayIntegerConverter;
 import licenta.books.androidmobile.patterns.readingEstimator.AverageIndicators;
 import licenta.books.androidmobile.patterns.readingEstimator.DifficultyRead;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(tableName = "estimator",
             foreignKeys = {
                 @ForeignKey(
                         entity = BookE.class,
                         parentColumns = "bookId",
-                        childColumns = "bookId"
+                        childColumns = "bookId",
+                        onDelete = CASCADE
                 )
             }, indices = {@Index(value = {"bookId"},unique = true)})
 

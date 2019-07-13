@@ -15,7 +15,8 @@ import static android.arch.persistence.room.ForeignKey.CASCADE;
                 @ForeignKey(
                         entity = BookE.class,
                         parentColumns = "bookId",
-                        childColumns = "bookId"
+                        childColumns = "bookId",
+                        onDelete = CASCADE
                 ),
                 @ForeignKey(
                         entity = Collections.class,

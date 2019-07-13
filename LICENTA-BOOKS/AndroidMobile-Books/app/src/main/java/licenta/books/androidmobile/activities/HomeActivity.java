@@ -7,6 +7,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 
 import io.reactivex.disposables.Disposable;
 import licenta.books.androidmobile.R;
+import licenta.books.androidmobile.activities.DialogFragments.AddBookInShelfDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.BookScanDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.CreateShelfDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.ShelfOptionsDialogFragment;
@@ -45,7 +47,8 @@ import retrofit2.Response;
 public class HomeActivity extends AppCompatActivity implements ScannerFragment.OnScannerInteractionListener, BarcodeGraphicTracker.BarcodeUpdateListener,
                                     BookScanDialogFragment.OnCompleteListenerBookScan,ShelfBooks.OnFragmentInteractionListener, CreateShelfDialogFragment.OnCompleteListenerShelf
                                     , StrategySortDialogFragment.OnCompleteListenerStrategySort, ShelfOptionsDialogFragment.OnCompleteListenerOptions, ShelfBooks.OnSwitchFragment
-                                    , SearchFragment.OnFragmentSearchListener, SearchFragment.OnFragmentGenreSwitchListener, GenreBooksFragment.OnFragmentGenreBooksListener {
+                                    , SearchFragment.OnFragmentSearchListener, SearchFragment.OnFragmentGenreSwitchListener, GenreBooksFragment.OnFragmentGenreBooksListener ,
+                            AddBookInShelfDialogFragment.OnCompleteAddBooksListener,ShelfBooks.OnRefreshFragmentListener{
     BottomNavigationView bottomNavigationView;
     ApiService apiService;
     Bundle bundle = new Bundle();
@@ -53,10 +56,6 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     RadioButton rbBooksScanned;
     User user;
     ArrayList<Photo> photosTitles;
-
-
-
-
 
     final Fragment scannerFragment = new ScannerFragment();
     final Fragment shelfBooks = new ShelfBooks();
@@ -161,6 +160,12 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void addBookToScannedBooks(BookE book){
 //        if(book.getIsbn()) {
@@ -244,19 +249,40 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     }
 
     @Override
-    public void onFragmentGenreBooks() {
+    public void onFragmentGenreBooks(GenreBooksFragment genresFragment) {
+//        fm.beginTransaction().add(R.id.frament_contianer,genresFragment,"genres").hide(genresFragment).commit();
+        fm.beginTransaction().hide(active).show(searchFragment).commit();
+        active = searchFragment;
+    }
+
+
+
+    @Override
+    public void onCompleteAddBooks(Collections collections) {
 
     }
 
     @Override
-    public void onFragmentSwitch(String category) {
-//        Toast.makeText(getApplicationContext(),category +" what",Toast.LENGTH_LONG).show();
+    public void onRefreshFragment() {
+        Fragment frg = null;
+        frg = getSupportFragmentManager().findFragmentByTag("shelf");
+        final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.detach(frg);
+        ft.attach(frg);
+        ft.commit();
+    }
+
+    @Override
+    public void onFragmentSwitch(String category, String genreDescription,ArrayList<BookE> mostDownloaded) {
         final Fragment genresFragment = new GenreBooksFragment();
         fm.beginTransaction().add(R.id.frament_contianer,genresFragment,"genres").hide(genresFragment).commit();
         bundle.putString("testCategory",category);
+        bundle.putString("testDescription",genreDescription);
+        if(mostDownloaded!=null){
+            bundle.putParcelableArrayList("testMostDownloaded",mostDownloaded);
+        }
         genresFragment.setArguments(bundle);
         fm.beginTransaction().hide(active).show(genresFragment).commit();
         active = genresFragment;
-
     }
 }

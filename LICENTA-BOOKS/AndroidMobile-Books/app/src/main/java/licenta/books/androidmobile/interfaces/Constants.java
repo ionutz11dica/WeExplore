@@ -80,4 +80,5 @@ public interface Constants {
       String[] OPTIONS_SHELF = {"Add Books","Update Shelf", "Delete"};
       String POSITION_OPTIONS = "keyPosition";
       String KEY_IS_UPDATE_SHELF = "keyIsUpdateShelf";
+      String KEY_COLLECTION_IDS = "keyCollectionIds";
 }

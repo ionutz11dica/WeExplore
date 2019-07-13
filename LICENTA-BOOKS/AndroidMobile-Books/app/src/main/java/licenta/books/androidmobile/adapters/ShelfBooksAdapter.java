@@ -2,6 +2,7 @@ package licenta.books.androidmobile.adapters;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -11,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -26,7 +28,6 @@ public class ShelfBooksAdapter extends ArrayAdapter<BookE> {
     private List<BookE> books;
     private List<BookE> origData;
 
-
     public ShelfBooksAdapter(Activity context, List<BookE> books) {
         super(context, R.layout.row_shelf_books, books);
         this.context = context;
@@ -40,6 +41,19 @@ public class ShelfBooksAdapter extends ArrayAdapter<BookE> {
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater = context.getLayoutInflater();
         @SuppressLint("ViewHolder") View view = inflater.inflate(R.layout.row_shelf_books, null, false);
+
+//        if (selectedIds.contains(position)) {
+//            view.setSelected(true);
+//            view.setPressed(true);
+//            view.setBackgroundColor(Color.parseColor("#FF9912"));
+//        }
+//        else
+//        {
+//            view.setSelected(false);
+//            view.setPressed(false);
+//            view.setBackgroundColor(Color.TRANSPARENT);
+//        }
+
         TextView title = view.findViewById(R.id.tv_title_shelf);
         TextView authors = view.findViewById(R.id.tv_authors_shelf);
         TextView publicationYear = view.findViewById(R.id.tv_publication_year_shelf);
@@ -96,4 +110,6 @@ public class ShelfBooksAdapter extends ArrayAdapter<BookE> {
 
         };
     }
+
+
 }

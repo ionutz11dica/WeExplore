@@ -1,12 +1,17 @@
 package licenta.books.androidmobile.database.DaoMethods;
 
+import android.util.Log;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.CompletableObserver;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.classes.Bookmark;
 import licenta.books.androidmobile.database.DAO.BookmarkDao;
@@ -32,24 +37,48 @@ public class BookmarkMethods implements BookmarkDao {
 
     @Override
     public void insertBookmark(final Bookmark... bookmark) {
-        Completable.fromRunnable(new Runnable() {
-            @Override
-            public void run() {
-                bookmarkDao.insertBookmark(bookmark);
-            }
-        }).subscribeOn(Schedulers.io())
-                .subscribe().dispose();
+        Completable.fromAction(() -> bookmarkDao.insertBookmark(bookmark))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d("Bookmark Insert", "Successful");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d("Bookmark Insert", e.getMessage());
+                    }
+                });
     }
 
     @Override
     public void deleteBookmark(final Double bookmarkId, final String bookId) {
-        Completable.fromRunnable(new Runnable() {
-            @Override
-            public void run() {
-                bookmarkDao.deleteBookmark(bookmarkId,bookId);
-            }
-        }).subscribeOn(Schedulers.io())
-                .subscribe();
+        Completable.fromAction(() -> bookmarkDao.deleteBookmark(bookmarkId,bookId))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d("Bookmark Delete", "Successful");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d("Bookmark Delete", e.getMessage());
+                    }
+                });
     }
 
     @Override

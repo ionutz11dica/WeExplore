@@ -2,6 +2,7 @@ package licenta.books.androidmobile.database.DaoMethods;
 
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Completable;
@@ -37,7 +38,7 @@ public class BookCollectionJoinMethods implements BookCollectionJoinDao {
     }
 
     @Override
-    public void insertBookCollection(CollectionBookJoin collectionBookJoin) {
+    public void insertBookCollection(ArrayList<CollectionBookJoin> collectionBookJoin) {
         Completable.fromAction(() -> bookCollectionJoinDao.insertBookCollection(collectionBookJoin))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
@@ -49,7 +50,7 @@ public class BookCollectionJoinMethods implements BookCollectionJoinDao {
 
                     @Override
                     public void onComplete() {
-                        Log.d("Collection", "Successful");
+                        Log.d("Collection Add Multiple", "Successful");
                     }
 
                     @Override

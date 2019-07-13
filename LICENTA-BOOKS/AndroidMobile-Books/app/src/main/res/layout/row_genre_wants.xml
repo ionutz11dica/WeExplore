@@ -4,13 +4,13 @@
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
     android:gravity="center"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="10dp">
 
     <ImageView
         android:id="@+id/imv_cover_genre"
-        android:layout_width="70dp"
-        android:layout_height="100dp"
+        android:layout_width="85dp"
+        android:layout_height="110dp"
         android:gravity="center"/>
 
     <LinearLayout
@@ -22,7 +22,7 @@
             android:id="@+id/tv_title_genre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20dp"
+            android:textSize="18dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="#000"
@@ -44,7 +44,7 @@
             android:id="@+id/tv_no_downloads_genre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16dp"
+            android:textSize="14dp"
             android:ellipsize="end"
             android:textAlignment="center"
             android:maxLines="1"
@@ -64,8 +64,8 @@
             android:textAllCaps="false"
             android:textColor="@drawable/white"
             android:textSize="14dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:background="#1abb9c"/>
 
     </LinearLayout>

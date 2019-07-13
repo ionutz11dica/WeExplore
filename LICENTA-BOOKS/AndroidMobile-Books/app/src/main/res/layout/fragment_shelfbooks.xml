@@ -21,6 +21,7 @@
             android:layout_height="40dp"
             android:orientation="horizontal"
             android:layout_marginRight="20dp"
+            android:gravity="center"
             android:weightSum="1.2"
 
 
@@ -115,25 +116,27 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
+            android:layout_gravity="center"
             android:orientation="vertical">
 
             <TextView
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="@font/crimsontext"
-                android:padding="10dp"
+                android:padding="5dp"
                 android:text="Want to Read"
 
                 android:textSize="25dp" />
 
             <TextView
+                android:id="@+id/tv_size_want"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="@font/crimsontext"
-                android:padding="9dp"
+                android:padding="5dp"
                 android:text="Want to Read"
 
                 android:textSize="16dp" />
@@ -171,9 +174,10 @@
                 <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                 android:orientation="vertical">
                     <TextView
-                    android:padding="10dp"
+                    android:padding="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -183,7 +187,7 @@
                     android:textSize="25dp" />
                     <TextView
                         android:id="@+id/tv_size_reading"
-                    android:padding="9dp"
+                    android:padding="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"

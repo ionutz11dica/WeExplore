@@ -16,10 +16,14 @@ import java.util.Date;
 import licenta.books.androidmobile.classes.Converters.PageTransitionConverter;
 import licenta.books.androidmobile.classes.Converters.TimestampConverter;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(tableName = "bookstate",
         foreignKeys = @ForeignKey(entity = BookE.class,
         parentColumns = "bookId",
-        childColumns = "bookId"),
+        childColumns = "bookId",
+                onDelete = CASCADE
+        ),
     indices = {@Index(value = {"bookId"},unique = true)})
 public class BookState implements Parcelable {
     @PrimaryKey(autoGenerate = true)

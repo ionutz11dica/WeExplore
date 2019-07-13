@@ -2,6 +2,7 @@ package licenta.books.androidmobile.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -99,13 +100,20 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         apiService = ApiClient.getRetrofit().create(ApiService.class);
         intent = getIntent();
         book = intent.getParcelableExtra(Constants.KEY_BOOK);
+        ActionBar actionBar = getActionBar();
+        if(actionBar!=null){
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+            getActionBar().setTitle(book.getTitle());
+        }
+
+        blurCoverBook();
         createUserBookJoin(book,null);
         fetchBookBehaviour(book);
 
 
 
 
-        blurCoverBook();
+
 
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetJavaScriptEnabled")
@@ -229,6 +237,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
             });
         }else{
             intent.putExtra(Constants.KEY_BOOK,book);
+            RxBus.publishBook(book);
             intent = new Intent(getApplicationContext(),ReaderBookActivity.class);
             startActivity(intent);
 //            Toast.makeText(getApplicationContext(),"Va urma!",Toast.LENGTH_LONG).show();
@@ -310,9 +319,12 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void blurCoverBook() {
-        final String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
+        String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
         final BookE book = intent.getParcelableExtra(Constants.KEY_BOOK);
 
+        if(url==null){
+            url = book.getImageLink();
+        }
 
         final LinearLayout parent = findViewById(R.id.ll_details_parent);
         final LinearLayout blurBackground = parent.findViewById(R.id.ll_details);

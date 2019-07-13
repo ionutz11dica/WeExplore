@@ -786,6 +786,9 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         Disposable d = RxBus.subscribeBook(bookE -> book = bookE);
         d.dispose();
 
+//        book = getIntent().getParcelableExtra(Constants.KEY_BOOK);
+//        user = getIntent().getParcelableExtra(Constants.KEY_USER);
+
         Disposable disp = RxBus.subscribeUser(userr -> {
             user = userr;
             loadBookMarkFromDb(userr);
@@ -2673,8 +2676,9 @@ String test= "ceva";
         switch (item.getItemId()){
             case android.R.id.home:
                 insertBookState(subscribeBookState());
-                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(getApplicationContext(),HomeActivity.class);
+//                startActivity(intent);
+                finish();
                 return true;
             case R.id.bookmark_id:
                 verifyBookMark(subscribeBookmark());

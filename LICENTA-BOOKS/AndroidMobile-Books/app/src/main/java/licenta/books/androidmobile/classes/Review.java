@@ -8,13 +8,16 @@ import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(
         tableName = "review_join",
         foreignKeys = {
                 @ForeignKey(
                         entity = BookE.class,
                         parentColumns = "bookId",
-                        childColumns = "bookId"
+                        childColumns = "bookId",
+                        onDelete = CASCADE
                 ),
                 @ForeignKey(
                         entity = User.class,

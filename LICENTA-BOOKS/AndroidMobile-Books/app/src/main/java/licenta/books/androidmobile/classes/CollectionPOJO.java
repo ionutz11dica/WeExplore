@@ -8,6 +8,7 @@ import android.os.Parcelable;
 public class CollectionPOJO implements Parcelable {
     public int bookIds;
     public String collectionName;
+    public Integer idCollection;
 
     public CollectionPOJO(){
 
