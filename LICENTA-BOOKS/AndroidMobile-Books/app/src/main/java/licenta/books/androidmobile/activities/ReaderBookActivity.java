@@ -799,7 +799,11 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
 
         topToolbar.setTitle(book.getTitle());
+        topToolbar.setTitleTextColor(Color.WHITE);
         topToolbar.setSubtitle(convertFromArray(book.getAuthors()));
+        topToolbar.setSubtitleTextColor(Color.WHITE);
+        topToolbar.setTitleTextAppearance(getApplicationContext(),R.style.CrimsonTextAppearance);
+        topToolbar.setSubtitleTextAppearance(getApplicationContext(),R.style.CrimsonTextAppearance);
         setSupportActionBar(topToolbar);
         if(getSupportActionBar() !=null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -1445,7 +1449,7 @@ String test= "ceva";
 
 
         if(isBookmark){
-            menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_black_24dp));
+            menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_white));
         }else{
             menuItems.getItem(0).setIcon(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_bookmark_border_black_24dp));
         }
@@ -2210,7 +2214,7 @@ String test= "ceva";
             menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_border_black_24dp));
         }else{
             bookmarkMethods.insertBookmark(bookmark);
-            menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_black_24dp));
+            menuItems.getItem(0).setIcon(ContextCompat.getDrawable(this,R.drawable.ic_bookmark_white));
         }
         //refresh list
         loadBookMarkFromDb(user);
@@ -2678,6 +2682,7 @@ String test= "ceva";
                 insertBookState(subscribeBookState());
 //                Intent intent = new Intent(getApplicationContext(),HomeActivity.class);
 //                startActivity(intent);
+                shutDownTTS();
                 finish();
                 return true;
             case R.id.bookmark_id:

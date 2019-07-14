@@ -101,7 +101,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:background="#f1f1f2"
-            android:fontFamily="@font/simplicity"
+            android:fontFamily="@font/crimsontext"
             android:text="Note"
             android:textSize="13dp" />
 
@@ -112,7 +112,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:background="#f1f1f2"
-            android:fontFamily="@font/simplicity"
+            android:fontFamily="@font/crimsontext"
             android:text="define"
             android:textSize="13dp" />
         <Button
@@ -121,7 +121,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:background="#f1f1f2"
-            android:fontFamily="@font/simplicity"
+            android:fontFamily="@font/crimsontext"
             android:text="share"
             android:textSize="13dp" />
         <Button
@@ -130,7 +130,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:background="#f1f1f2"
-            android:fontFamily="@font/simplicity"
+            android:fontFamily="@font/crimsontext"
             android:text="search"
             android:textSize="13dp" />
 

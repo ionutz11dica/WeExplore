@@ -1,5 +1,9 @@
 package licenta.books.androidmobile.interfaces;
 
+import android.annotation.SuppressLint;
+
+import java.text.SimpleDateFormat;
+
 import licenta.books.androidmobile.patterns.StrategySortBooks.AuthorSort;
 import licenta.books.androidmobile.patterns.StrategySortBooks.NoPagesSort;
 import licenta.books.androidmobile.patterns.StrategySortBooks.PublishedDateSort;
@@ -26,6 +30,9 @@ public interface Constants {
       float BLUR_RADIUS_GENRE = 13f;
 
       String TIME_STAMP_FORMAT = "MMM dd yyyy HH:mm:ss.SSS";
+      String SIMPLE_DATE_FILE = "dd-MMM-YYYY HH:mm";
+      @SuppressLint("SimpleDateFormat")
+      SimpleDateFormat sdf = new SimpleDateFormat(SIMPLE_DATE_FILE);
 
 
       String KEY_IMAGE_URL = "keyImgUrl";

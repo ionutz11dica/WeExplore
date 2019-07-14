@@ -12,8 +12,9 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/reader_toolbar_bottom"
             android:layout_width="match_parent"
+
             android:layout_height="130dp"
-            android:background="@color/granite">
+            android:background="#333644">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -25,8 +26,7 @@
 
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    >
+                    android:orientation="horizontal">
 
                     <ImageButton
                         android:id="@+id/image_button_content"
@@ -36,6 +36,7 @@
                         android:background="@drawable/rounded_button_corner"
                         android:gravity="center"
                         android:src="@drawable/ic_menu_black_24dp" />
+
                     <ImageButton
                         android:id="@+id/image_button_dayNight"
                         android:layout_width="0dp"
@@ -44,6 +45,7 @@
                         android:background="@drawable/rounded_button_corner"
                         android:gravity="center"
                         android:src="@drawable/ic_highlight_black_24dp" />
+
                     <ImageButton
                         android:id="@+id/image_button_style"
                         android:layout_width="0dp"
@@ -52,6 +54,7 @@
                         android:background="@drawable/rounded_button_corner"
                         android:gravity="center"
                         android:src="@drawable/ic_format_size_black_24dp" />
+
                     <ImageButton
                         android:id="@+id/image_button_search"
                         android:layout_width="0dp"
@@ -59,24 +62,27 @@
                         android:layout_weight="1"
                         android:background="@drawable/rounded_button_corner"
                         android:gravity="center"
-                        android:src="@drawable/ic_location_searching_black_24dp" />
+                        android:src="@drawable/ic_search_blackv2_24dp" />
                 </LinearLayout>
+
                 <View
-                    android:layout_marginTop="10dp"
                     android:layout_width="fill_parent"
                     android:layout_height="1dp"
-                    android:background="#c0c0c0"/>
+                    android:layout_marginTop="10dp"
+                    android:background="#ffffff" />
 
                 <LinearLayout
-                    android:layout_marginTop="10dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginTop="10dp"
                     android:orientation="vertical">
+
                     <SeekBar
                         android:id="@+id/reader_seekBar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-
+                        android:thumbTint="#fff"
+                        android:progressTint="#fff"
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginEnd="8dp"
@@ -86,7 +92,7 @@
                         android:id="@+id/reader_tv_page"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-
+                        android:textColor="@drawable/white"
                         android:text="page"
                         android:textAlignment="center"
                         android:textSize="15dp" />

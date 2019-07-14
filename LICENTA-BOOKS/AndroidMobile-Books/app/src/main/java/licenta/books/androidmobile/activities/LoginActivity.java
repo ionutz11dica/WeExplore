@@ -3,6 +3,7 @@ package licenta.books.androidmobile.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -327,6 +328,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
         tvSignupInvoker.setVisibility(View.GONE);
         tvSigninInvoker.setVisibility(View.VISIBLE);
+        tvSigninInvoker.setTextColor(Color.parseColor("#333644"));
         Animation translate= AnimationUtils.loadAnimation(getApplicationContext(),R.anim.translate_right_to_left);
         llsignup.startAnimation(translate);
 
@@ -346,6 +348,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         llSignin.startAnimation(translate);
 
         tvSignupInvoker.setVisibility(View.VISIBLE);
+        tvSignupInvoker.setTextColor(Color.WHITE);
         tvSigninInvoker.setVisibility(View.GONE);
         Animation clockwise= AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_left_to_right);
         btnSignin.startAnimation(clockwise);

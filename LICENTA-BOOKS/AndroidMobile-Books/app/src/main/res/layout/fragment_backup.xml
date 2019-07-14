@@ -1,18 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/backup_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#d8cbbb"
+        android:layout_marginLeft="-10dp"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        />
 
-    <Button
-        android:id="@+id/backup_button"
+    <ListView
+        android:id="@+id/backup_lv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="backup"/>
+        android:layout_below="@id/backup_toolbar"
+        android:layout_marginBottom="56dp" />
 
-    <Button
-        android:id="@+id/restore_button"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="restore"/>
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="599dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
+        android:backgroundTint="#333644"
+        android:focusable="true"
+        android:src="@drawable/ic_google_drive_logo"
+        app:fabSize="auto" />
 
-</LinearLayout>
+    <!--<Button-->
+        <!--android:id="@+id/backup_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="backup"/>-->
+
+    <!--<Button-->
+        <!--android:id="@+id/restore_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="restore"/>-->
+
+</RelativeLayout>

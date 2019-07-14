@@ -5,13 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="bottom"
+    android:background="#ece8d9"
     android:layout_gravity="bottom">
 
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="295dp"
-        android:background="#f1f1f2"
+        android:background="#333644"
         android:orientation="vertical">
 
         <View
@@ -34,13 +35,16 @@
                 android:layout_weight="0.6"
                 android:gravity="center"
                 android:padding="10dp"
+                android:textColor="#fff"
                 android:text="Brightness"
-                android:textSize="15dp" />
+                android:fontFamily="@font/crimsontext"
+                android:textSize="16dp" />
 
             <SeekBar
                 android:id="@+id/brightness_seeker"
                 android:layout_width="0dp"
-
+                android:thumbTint="#fff"
+                android:progressTint="#fff"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.87" />
         </LinearLayout>
@@ -60,8 +64,11 @@
                 android:layout_weight="0.6"
                 android:gravity="center"
                 android:padding="10dp"
+                android:textColor="#fff"
+                android:fontFamily="@font/crimsontext"
+                android:textSize="16dp"
                 android:text="Fonts"
-                android:textSize="15dp" />
+                 />
 
             <ImageButton
                 android:id="@+id/font_minus"
@@ -101,8 +108,10 @@
                 android:layout_weight="0.6"
                 android:gravity="center"
                 android:padding="10dp"
+                android:textColor="#fff"
                 android:text="Typeface"
-                android:textSize="15dp" />
+                android:fontFamily="@font/crimsontext"
+                android:textSize="16dp" />
 
             <Button
                 android:id="@+id/typeface_btn"
@@ -110,10 +119,11 @@
                 android:layout_height="35dp"
                 android:layout_gravity="center"
                 android:layout_weight="0.85"
+                android:fontFamily="@font/crimsontext"
                 android:background="@drawable/fonts_btn"
                 android:padding="10dp"
                 android:text="typeface"
-                android:textSize="12dp" />
+                android:textSize="14dp" />
 
         </LinearLayout>
 
@@ -132,8 +142,10 @@
                 android:layout_weight="0.6"
                 android:gravity="center"
                 android:padding="10dp"
+                android:textColor="#fff"
                 android:text="Background"
-                android:textSize="15dp" />
+                android:fontFamily="@font/crimsontext"
+                android:textSize="16dp" />
 
             <Button
                 android:id="@+id/background_btn"
@@ -162,7 +174,9 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="Text Color"
-                android:textSize="15dp" />
+                android:textColor="#fff"
+                android:fontFamily="@font/crimsontext"
+                android:textSize="16dp"/>
 
             <Button
                 android:id="@+id/textcolor_btn"
@@ -191,7 +205,9 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="Spacing"
-                android:textSize="15dp" />
+                android:textColor="#fff"
+                android:fontFamily="@font/crimsontext"
+                android:textSize="16dp" />
 
             <ImageButton
                 android:id="@+id/line_spacing_minus"
@@ -201,6 +217,7 @@
                 android:layout_weight="0.41"
                 android:background="@drawable/fonts_btn"
                 android:padding="10dp"
+                android:textColor="#fff"
                 android:src="@drawable/ic_line_spacing_text" />
 
             <ImageButton

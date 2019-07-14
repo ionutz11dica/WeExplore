@@ -174,6 +174,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         footerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.footer_layout, null, false);
         linearLayoutFooter = footerView.findViewById(R.id.footer_layout);
         footer = footerView.findViewById(R.id.footer_1);
+
         linearLayoutFooter.setOnClickListener(footerListener);
         ivScan = new ImageView(getContext());
         swipeMenuListView.addFooterView(footerView,null,false);

@@ -300,7 +300,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
                         case 2 :  //delete
 
                             ll_books.setVisibility(View.GONE);
-                            imvOptions.setVisibility(View.GONE);
+                            imvOptions.setVisibility(View.INVISIBLE);
                             ivHome.setVisibility(View.INVISIBLE);
                             refreshLayout();
                             collectionMethods.deleteCollection(arrayList.get(selectedPos).collectionName);
@@ -375,7 +375,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
 
      private View.OnClickListener addShelfListener = v -> {
         ll_books.setVisibility(View.GONE);
-        imvOptions.setVisibility(View.GONE);
+        imvOptions.setVisibility(View.INVISIBLE);
         ivHome.setVisibility(View.INVISIBLE);
         refreshLayout();
         CreateShelfDialogFragment createShelfDialogFragment = new CreateShelfDialogFragment();
@@ -630,7 +630,7 @@ public class ShelfBooks extends Fragment implements CreateShelfDialogFragment.On
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        view.setVisibility(View.GONE);
+                        view.setVisibility(View.INVISIBLE);
                     }
                 });
     }
