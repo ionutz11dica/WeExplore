@@ -1,7 +1,9 @@
 package licenta.books.androidmobile.activities;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.Snackbar;
@@ -9,17 +11,19 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.Toast;
 
 import com.google.android.gms.vision.barcode.Barcode;
 
 import java.util.ArrayList;
 
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.DialogFragments.AddBookInShelfDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.BookScanDialogFragment;
@@ -33,22 +37,34 @@ import licenta.books.androidmobile.classes.BookE;
 import licenta.books.androidmobile.classes.Collections;
 import licenta.books.androidmobile.classes.RxJava.RxBus;
 import licenta.books.androidmobile.classes.User;
+import licenta.books.androidmobile.database.AppRoomDatabase;
+import licenta.books.androidmobile.database.DAO.UserDao;
+import licenta.books.androidmobile.database.DaoMethods.UserMethods;
+import licenta.books.androidmobile.fragments.BackupFragment;
 import licenta.books.androidmobile.fragments.GenreBooksFragment;
 import licenta.books.androidmobile.fragments.ScannerFragment;
 import licenta.books.androidmobile.fragments.SearchFragment;
 import licenta.books.androidmobile.fragments.ShelfBooks;
+import licenta.books.androidmobile.interfaces.Constants;
 import licenta.books.androidmobile.patterns.BarcodeDetector.CameraInterface.Graphics.BarcodeGraphicTracker;
 import licenta.books.androidmobile.patterns.Carousel.Photo;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static licenta.books.androidmobile.interfaces.Constants.KEY_PREF_USER;
+
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class HomeActivity extends AppCompatActivity implements ScannerFragment.OnScannerInteractionListener, BarcodeGraphicTracker.BarcodeUpdateListener,
                                     BookScanDialogFragment.OnCompleteListenerBookScan,ShelfBooks.OnFragmentInteractionListener, CreateShelfDialogFragment.OnCompleteListenerShelf
                                     , StrategySortDialogFragment.OnCompleteListenerStrategySort, ShelfOptionsDialogFragment.OnCompleteListenerOptions, ShelfBooks.OnSwitchFragment
                                     , SearchFragment.OnFragmentSearchListener, SearchFragment.OnFragmentGenreSwitchListener, GenreBooksFragment.OnFragmentGenreBooksListener ,
-                            AddBookInShelfDialogFragment.OnCompleteAddBooksListener,ShelfBooks.OnRefreshFragmentListener{
+                            AddBookInShelfDialogFragment.OnCompleteAddBooksListener,ShelfBooks.OnRefreshFragmentListener,BackupFragment.OnFragmentInteractionListener{
+
+    public static final int REQUEST_CODE_OPENING = 1;
+    public static final int REQUEST_CODE_CREATION = 2;
+    public static final int REQUEST_CODE_PERMISSIONS = 2;
+
     BottomNavigationView bottomNavigationView;
     ApiService apiService;
     Bundle bundle = new Bundle();
@@ -56,27 +72,96 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     RadioButton rbBooksScanned;
     User user;
     ArrayList<Photo> photosTitles;
+    UserDao userDao;
+    UserMethods userMethods;
+    SharedPreferences sharedPreferences;
 
-    final Fragment scannerFragment = new ScannerFragment();
-    final Fragment shelfBooks = new ShelfBooks();
-    final Fragment searchFragment = new SearchFragment();
+     Fragment scannerFragment ;
+     Fragment shelfBooks  ;
+     Fragment searchFragment ;
+     Fragment backupFragment ;
 
-    final FragmentManager fm = getSupportFragmentManager();
-    Fragment active = searchFragment;
+     FragmentManager fm ;
+    Fragment active;
 
     Fragment prev = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
         Disposable d = RxBus.subscribeUser(userr -> user = userr);
         d.dispose();
+        if (user == null) {
+            openDb();
+            sharedPreferences = getSharedPreferences(KEY_PREF_USER,MODE_PRIVATE);
+            String with = sharedPreferences.getString(Constants.KEY_STATUS,"with");
+            if(with.equals("with")){
+                String email = sharedPreferences.getString(Constants.KEY_USER_EMAIL,null);
+                Single<User> userSingle = userDao.verifyExistenceGoogleAcount(email);
+                userSingle.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new SingleObserver<User>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onSuccess(User user) {
+                                Log.d("Publish ","successfully");
+                                setUserData(user);
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.d("Publish ","Error");
+                            }
+                        });
+            }else{
+                String username = sharedPreferences.getString(Constants.KEY_USER_USERNAME,null);
+                String password = sharedPreferences.getString(Constants.KEY_USER_PASSWORD,null);
+                Single<User> userSingle = userDao.verifyAvailableAccount(username,password);
+                userSingle.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new SingleObserver<User>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onSuccess(User user) {
+                                Log.d("Publish ","successfully");
+                                setUserData(user);
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.d("Publish ","Error");
+                            }
+                        });
+            }
+
+        }
+
+          scannerFragment = new ScannerFragment();
+          shelfBooks = new ShelfBooks();
+          searchFragment = new SearchFragment();
+          backupFragment = new BackupFragment();
+
+          fm = getSupportFragmentManager();
+          active = searchFragment;
 
         fm.beginTransaction().add(R.id.frament_contianer,scannerFragment,"scanner").hide(scannerFragment).commit();
         fm.beginTransaction().add(R.id.frament_contianer,shelfBooks,"shelf").hide(shelfBooks).commit();
-
+        fm.beginTransaction().add(R.id.frament_contianer,backupFragment,"backup").hide(backupFragment).commit();
         fm.beginTransaction().add(R.id.frament_contianer,searchFragment,"search").commit();
         initComp();
+    }
+
+    private void setUserData(User user) {
+        RxBus.publishUser(user);
     }
 
     private void initComp(){
@@ -103,7 +188,8 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
                         return true;
 
                     case R.id.item_backUp:
-
+                        fm.beginTransaction().hide(active).show(backupFragment).commit();
+                        active = backupFragment;
                         return true;
                 }
                 return false;
@@ -164,6 +250,11 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     protected void onResume() {
         super.onResume();
 
+    }
+
+    private void openDb(){
+        userDao = AppRoomDatabase.getInstance(getApplicationContext()).getUserDao();
+        userMethods = UserMethods.getInstance(userDao);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)

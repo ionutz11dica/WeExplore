@@ -17,7 +17,7 @@ public interface Constants {
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;
 
-      String BASE_URL = "http://192.168.1.9:4000/";
+      String BASE_URL = "http://192.168.1.3:4000/";
 
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;

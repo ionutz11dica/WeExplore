@@ -1,7 +1,12 @@
 package licenta.books.androidmobile.database.DaoMethods;
 
+import android.util.Log;
+
 import io.reactivex.Completable;
+import io.reactivex.CompletableObserver;
 import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.classes.User;
 import licenta.books.androidmobile.database.AppRoomDatabase;
@@ -29,13 +34,25 @@ public class UserMethods implements UserDao {
 
     @Override
     public void insertUser(final User... user) {
-        Completable.fromRunnable(new Runnable() {
-            @Override
-            public void run() {
-                userDao.insertUser(user);
-            }
-        }).subscribeOn(Schedulers.io())
-                .subscribe().dispose();
+        Completable.fromAction(() -> userDao.insertUser(user))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d("User Insert", "Successful");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d("User Insert", e.getMessage());
+                    }
+                });
     }
 
     @Override

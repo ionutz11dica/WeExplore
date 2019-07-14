@@ -27,6 +27,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.drive.Drive;
 import com.google.android.gms.tasks.Task;
 
 import io.reactivex.Single;
@@ -257,6 +258,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestScopes(Drive.SCOPE_FILE)
                 .requestEmail()
                 .build();
 
@@ -273,7 +275,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     private void signIn(){
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+
+//        GoogleSignInClient googleSignInClient = buildGoogleSignInClient();
         startActivityForResult(signInIntent, Constants.RC_SIGN_IN);
+    }
+
+    private GoogleSignInClient buildGoogleSignInClient() {
+        GoogleSignInOptions signInOptions =
+                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .build();
+        return GoogleSignIn.getClient(getApplicationContext(), signInOptions);
     }
 
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
