@@ -1,6 +1,7 @@
 package licenta.books.androidmobile.adapters;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -41,6 +42,7 @@ public class ScannedBooksAdapter extends ArrayAdapter<BookE> {
         this.listener = listener;
     }
 
+    @TargetApi(Build.VERSION_CODES.N)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @NonNull
     @Override
@@ -61,15 +63,17 @@ public class ScannedBooksAdapter extends ArrayAdapter<BookE> {
                     checks.clear();
                     listener.onCheckChanged(checks);
                 }else {
-                    checks.remove(position);
+                    checks.remove(books.get(position).get_id());
 
                     listener.onCheckChanged(checks);
+                    notifyDataSetChanged();
                 }
             }else{
                 Log.d("Pos:", String.valueOf(position));
                 checks.add(books.get(position).get_id());
 
                 listener.onCheckChanged(checks);
+                notifyDataSetChanged();
             }
         });
 

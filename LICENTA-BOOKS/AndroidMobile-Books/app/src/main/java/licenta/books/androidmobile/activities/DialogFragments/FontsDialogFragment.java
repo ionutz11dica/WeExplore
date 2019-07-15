@@ -26,24 +26,25 @@ public class FontsDialogFragment extends DialogFragment {
     ListView fontsList;
     OnCompleteListenerFonts listener;
     HelperApp helperApp;
-    private ArrayList<CustomFont> customFonts = new ArrayList<>();
+    private ArrayList<String> customFonts = new ArrayList<>();
+    ArrayList<String> fonts = new ArrayList<>();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
          super.onCreateView(inflater, container, savedInstanceState);
          View view = inflater.inflate(R.layout.activity_fonts_dialog_fragment,container,false);
-         helperApp = (HelperApp) Objects.requireNonNull(getActivity()).getApplication();
-         fontsList = view.findViewById(R.id.lv_typeface_fonts);
-         createFontsList();
 
-         TypefaceAdapter adapter = new TypefaceAdapter(getActivity(), customFonts);
+         fontsList = view.findViewById(R.id.lv_typeface_fonts);
+
+         createFontsList();
+         TypefaceAdapter adapter = new TypefaceAdapter(getActivity(), fonts);
          fontsList.setAdapter(adapter);
 
          fontsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
              @Override
              public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                 Typeface typeface = Typeface.createFromAsset(Objects.requireNonNull(getActivity()).getAssets(),customFonts.get(position).fontFileName);
-                 listener.onCompleteFonts(typeface,customFonts.get(position).fontFaceName,customFonts.get(position));
+                 listener.onCompleteFonts(fonts.get(position));
                  dismiss();
              }
          });
@@ -55,11 +56,16 @@ public class FontsDialogFragment extends DialogFragment {
     }
 
     public interface OnCompleteListenerFonts{
-        void onCompleteFonts(Typeface typeface,String name,CustomFont customFont);
+        void onCompleteFonts(String customFont);
     }
 
     public void createFontsList(){
-        customFonts.addAll(helperApp.customFonts);
+        fonts.add("TimesRoman");
+        fonts.add("Monospace");
+        fonts.add("Sans-serif");
+        fonts.add("Fantasy");
+        fonts.add("Cursive");
+
     }
 
 

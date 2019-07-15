@@ -41,21 +41,22 @@
                 android:textColor="@drawable/white"
                 android:textSize="18dp"
                 android:fontFamily="@font/crimsontext"
-
                 android:gravity="center"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center"
+                android:visibility="invisible"/>
 
 
         </LinearLayout>
 
 </android.support.v7.widget.Toolbar>
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <licenta.books.androidmobile.activities.others.CustomScrollview xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:coverflow="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fillViewport="true"
+        android:id="@+id/scroll_genre"
         >
 
         <LinearLayout
@@ -117,6 +118,6 @@
                 />
 
         </LinearLayout>
-    </ScrollView>
+    </licenta.books.androidmobile.activities.others.CustomScrollview>
 
 </LinearLayout>

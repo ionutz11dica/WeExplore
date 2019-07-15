@@ -876,7 +876,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
         SkyProvider skyProvider = new SkyProvider();
 
-
+//        reflowableControl.setFont("Helvetica",16);
 
         reflowableControl.setContentProvider(skyProvider);
 
@@ -1282,13 +1282,11 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
     }
 
     @Override
-    public void onCompleteFonts(Typeface typeface, String name,CustomFont customFont) {
-        String nameFile = customFont.getFullName();
-        if(!fontType.equalsIgnoreCase(nameFile)){
-            settings.fontName = nameFile;
+    public void onCompleteFonts(String customFont) {
+        fontType = customFont;
+        typeface.setText(customFont);
 
-            reflowableControl.changeFont(settings.fontName,fontSize);
-        }
+        reflowableControl.changeFont(customFont,fontSize);
     }
 
 
@@ -1576,13 +1574,14 @@ String test= "ceva";
 //        double GFS = 0;
 //        for (Estimator est : estimatorArrayList) {
 //            GFS += est.getGunningFogScore();
-////                cycleDay = est.getCycleDay();
 //        }
-//        GFS = GFS/estimatorArrayList.size();
-//        if(averageIndicators.avgGFS !=0){
-//            averageIndicators.avgGFS = (GFS + averageIndicators.avgGFS)/2;
-//        }else{
-//            averageIndicators.avgGFS = GFS;
+//        if(estimatorArrayList.size()>0) {
+//            GFS = GFS / estimatorArrayList.size();
+//            if (averageIndicators.avgGFS != 0) {
+//                averageIndicators.avgGFS = (GFS + averageIndicators.avgGFS) / 2;
+//            } else {
+//                averageIndicators.avgGFS = GFS;
+//            }
 //        }
 
         long estimatedTime =(long) Estimator.chapterEstimator(information,averageIndicators);
@@ -2318,14 +2317,16 @@ String test= "ceva";
         if(fontType != null){
             typeface.setText(fontType);
             if(!fontType.equals("TimesRoman")){
-                typeface.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(),"font/"+"simplicity"+".ttf"));
+                typeface.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(),"fonts/"+"crimsontext"+".ttf"));
             }
-            if(fontSize>15){
+            if(fontSize > 15){
                 Estimator.SECOND_INFERIOR_LIMIT -= (fontSize-15)*800;
             }else{
                 Estimator.SECOND_INFERIOR_LIMIT += (15-fontSize)*800;
             }
             reflowableControl.setFont(fontType,fontSize);
+
+
         }
         pagePosition = pageP;
         pageTransition = pageTran;
@@ -2338,7 +2339,7 @@ String test= "ceva";
 
 
 //        reflowableControl.changeFontSize(fontS);
-        reflowableControl.setFont(fontT,fontS);
+//        reflowableControl.setFont(fontT,fontS);
         if(theme){
             reflowableControl.changeBackgroundColor(Color.BLACK);
             reflowableControl.changeForegroundColor(Color.WHITE);

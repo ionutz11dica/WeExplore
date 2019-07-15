@@ -19,13 +19,13 @@ import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.others.CustomFont;
 import licenta.books.androidmobile.interfaces.Constants;
 
-public class TypefaceAdapter extends ArrayAdapter<CustomFont> {
+public class TypefaceAdapter extends ArrayAdapter<String> {
 
     private Activity context;
-    private ArrayList<CustomFont> fonts;
+    private ArrayList<String> fonts;
 
 
-    public TypefaceAdapter(Activity context, ArrayList<CustomFont> fonts) {
+    public TypefaceAdapter(Activity context, ArrayList<String> fonts) {
         super(context, R.layout.row_typeface_lv, fonts);
         this.context = context;
         this.fonts = fonts;
@@ -36,12 +36,33 @@ public class TypefaceAdapter extends ArrayAdapter<CustomFont> {
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater = context.getLayoutInflater();
         @SuppressLint("ViewHolder") View view = inflater.inflate(R.layout.row_typeface_lv, null, false);
-
         TextView typeface = view.findViewById(R.id.tv_typeface);
         typeface.setTextColor(Color.GRAY);
-        Typeface tf = Typeface.createFromAsset(context.getAssets(),fonts.get(position).fontFileName);
-        typeface.setText(fonts.get(position).fontFaceName);
-        typeface.setTypeface(tf);
+        Typeface tf = null;
+        if(fonts.get(position).toLowerCase().equals("monospace")){
+            tf = Typeface.MONOSPACE;
+            typeface.setText(fonts.get(position));
+            typeface.setTypeface(tf);
+        }else if(fonts.get(position).toLowerCase().equals("sans-serif")){
+            tf = Typeface.SANS_SERIF;
+            typeface.setText(fonts.get(position));
+            typeface.setTypeface(tf);
+        }else if(fonts.get(position).toLowerCase().equals("cursive")){
+            tf =  Typeface.createFromAsset(context.getAssets(),"fantasy.ttf");
+            typeface.setText(fonts.get(position));
+            typeface.setTypeface(tf);
+        }else if(fonts.get(position).toLowerCase().equals("fantasy")){
+            tf =  Typeface.createFromAsset(context.getAssets(),"inconsolata.ttf");
+            typeface.setText(fonts.get(position));
+            typeface.setTypeface(tf);
+        }else if(fonts.get(position).toLowerCase().equals("timesroman")){
+            tf =  Typeface.DEFAULT;
+            typeface.setText(fonts.get(position));
+            typeface.setTypeface(tf);
+        }
+
+
+
 
         return view;
     }

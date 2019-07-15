@@ -76,8 +76,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+@RequiresApi(api = Build.VERSION_CODES.N)
+
 public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.BarcodeUpdateListener, ScannedBooksAdapter.OnCheckedChangedListener {
     private static final String TAG = "Barcode reader";
 
@@ -124,6 +124,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         View view = inflater.inflate(R.layout.fragment_scanner, container, false);
         getUserInfo();
         initComp(view);
+
         //garantarea permisiunilor pentru camera
         if(getContext()!=null) {
             int rc = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA);
@@ -193,9 +194,9 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         listScan.setClickable(true);
         rbScannedBooks.setClickable(false);
         rbScan.setClickable(true);
-        if(scannedBooks.size() == 0 ){
-            setFooterViewListener();
-        }
+//        if(scannedBooks.size() == 0 ){
+//            setFooterViewListener();
+//        }
 
     };
 
@@ -258,11 +259,22 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         if(scannedBooks.size()>0) {
             if (ScannedBooksAdapter.checks != null && ScannedBooksAdapter.checks.size() > 0) {
                 try {
-                    deleteScannedBooks(new JSONArray(Arrays.asList(ScannedBooksAdapter.checks.toArray(new String[0]))));
-                    scannedBooks.clear();
-                    adapter.notifyDataSetChanged();
-                    swipeMenuListView.setAdapter(adapter);
-                    setFooterViewListener();
+                    if(scannedBooks.size() == ScannedBooksAdapter.checks.size()) {
+                        deleteScannedBooks(new JSONArray(Arrays.asList(ScannedBooksAdapter.checks.toArray(new String[0]))));
+                        scannedBooks.clear();
+                        adapter.notifyDataSetChanged();
+                        swipeMenuListView.setAdapter(adapter);
+                        setFooterViewListener();
+                    }else{
+                        deleteScannedBooks(new JSONArray(Arrays.asList(ScannedBooksAdapter.checks.toArray(new String[0]))));
+                        for(String str: ScannedBooksAdapter.checks ){
+                            scannedBooks.removeIf(id->id.get_id().equals(str));
+                        }
+                        ScannedBooksAdapter.checks = new ArrayList<>();
+                        adapter.notifyDataSetChanged();
+                        swipeMenuListView.setAdapter(adapter);
+                        setFooterSize(ScannedBooksAdapter.checks);
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -356,8 +368,14 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         scannedBooks = arrayList;
         adapter = new ScannedBooksAdapter(getActivity(),scannedBooks);
         adapter.setOnCheckedChangedListener(this);
-        footer.setText(string);
-        footer.setTextSize(16);
+        if(arrayList.size() == 0){
+           setFooterViewListener();
+        }else{
+            ivScan.setVisibility(View.INVISIBLE);
+            footer.setText(string);
+            footer.setTextSize(16);
+        }
+
         footer.setTypeface(Typeface.createFromAsset(getActivity().getAssets(),"crimsontext.ttf"));
         swipeMenuListView.setAdapter(adapter);
 
@@ -369,6 +387,9 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
     @SuppressLint("SetTextI18n")
     public void setFooterSize(ArrayList<String> ids){
 //        idStrings = ScannedBooksAdapter.checks.toArray(new String[0]);
+        linearLayoutFooter.removeView(ivScan);
+        linearLayoutFooter.addView(ivScan);
+        ivScan.setVisibility(View.INVISIBLE);
         footer.setText("Clear "+ ids.size() +" Book");
         footer.setTextSize(16);
         footer.setTypeface(Typeface.createFromAsset(getActivity().getAssets(),"crimsontext.ttf"));
@@ -376,6 +397,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
 
     }
 
+    @TargetApi(Build.VERSION_CODES.N)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void setFooterViewListener(){
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.MATCH_PARENT,1.5f);
@@ -384,7 +406,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         ivScan.setImageResource(R.drawable.ic_qr_code);
         linearLayoutFooter.removeView(ivScan);
         linearLayoutFooter.addView(ivScan);
-
+        ivScan.setVisibility(View.VISIBLE);
         footer.setText("Scan books");
         footer.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
         footer.setTextSize(30);

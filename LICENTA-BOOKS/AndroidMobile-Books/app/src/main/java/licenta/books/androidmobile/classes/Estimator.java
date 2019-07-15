@@ -204,11 +204,17 @@ public class Estimator implements Parcelable {
         double GFS = 0;
         int noWordPerPage = DifficultyRead.getNoOfWords(information.pageDescription);
 
-        if(averageIndicators.sumPages == 0 ){
+        if(averageIndicators.avgGFS == 0 ){
             //valori default
-
+            GFS = 7;
+            avgWordPerPage = 170;
+            TimePW = 0.45;
         }else {
-             TimePP = (double) averageIndicators.avgTime / 1000; // TimePP = TimePerPage -> transformam in secunde
+            if(averageIndicators.avgTime == 0){
+                TimePP = (double)65543/1000;
+            }else
+                TimePP = (double) averageIndicators.avgTime / 1000; // TimePP = TimePerPage -> transformam in secunde
+
              TW = averageIndicators.sumWords; // TW = TotalWords
              avgWordPerPage = TW / averageIndicators.sumPages;
              TimePW = TimePP / avgWordPerPage; // TimePW = TimePerWords
@@ -220,19 +226,23 @@ public class Estimator implements Parcelable {
         if(information.pageIndex + 1 == information.numberOfPagesInChapter && noWordPerPage > 60){
             noPage = 1;
         }
+        if(information.pageIndex + 1 == information.numberOfPagesInChapter && noWordPerPage < 60){
+            avgWordPerPage = (avgWordPerPage - noWordPerPage)/2;
+            noPage = 1;
+        }
         if(information.pageIndex + 1 == information.numberOfPagesInChapter && noWordPerPage == 0){
             noPage = 0;
         }
-        if(information.pageIndex + 1 == information.numberOfPagesInChapter && noWordPerPage < 60){
-            avgWordPerPage = (avgWordPerPage - noWordPerPage)/2;
-            noPage=1;
+
+        if(information.pageIndex + 1 < information.numberOfPagesInChapter - 1 && DifficultyRead.getNoOfWords(information.pageDescription) > 0 ){
+            noPage = information.numberOfPagesInChapter - (information.pageIndex);
         }
-        if(information.pageIndex + 1 != information.numberOfPagesInChapter - 1 && DifficultyRead.getNoOfWords(information.pageDescription) > 0 ){
-            noPage = information.numberOfPagesInChapter - (information.pageIndex+1);
+        if(information.pageIndex +1 == information.numberOfPagesInChapter -1 && noWordPerPage > 60){
+            noPage = 2;
         }
-        if(information.pageIndex + 1 != information.numberOfPagesInChapter && (DifficultyRead.getNoOfWords(information.pageDescription) == 0|| DifficultyRead.getNoOfWords(information.pageDescription)< 50)){
-            noPage = information.numberOfPagesInChapter -(information.pageIndex+1);
-        }
+//        if(information.pageIndex + 1 != information.numberOfPagesInChapter && (DifficultyRead.getNoOfWords(information.pageDescription) == 0|| DifficultyRead.getNoOfWords(information.pageDescription)< 50)){
+//            noPage = information.numberOfPagesInChapter -(information.pageIndex+1);
+//        }
 
         int RWtR = avgWordPerPage*noPage; //Remaining Words to Read
 

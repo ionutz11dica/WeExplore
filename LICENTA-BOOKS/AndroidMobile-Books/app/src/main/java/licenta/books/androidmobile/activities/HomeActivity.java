@@ -85,6 +85,7 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     Fragment active;
 
     Fragment prev = null;
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

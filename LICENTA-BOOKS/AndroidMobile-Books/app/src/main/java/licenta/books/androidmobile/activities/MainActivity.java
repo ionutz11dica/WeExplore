@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity   {
         this.registerCustomFont("Hightower","hightower.ttf");
         this.registerCustomFont("Molengo","molengo.ttf");
         this.registerCustomFont("Simplicity","simplicity.ttf");
-        this.registerCustomFont("ReenieBeanie","reeniebeanie.ttf");
+        this.registerCustomFont("ReenieBeanie", "fantasy.ttf");
 
     }
 

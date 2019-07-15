@@ -1,5 +1,7 @@
 package licenta.books.androidmobile.fragments;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import io.reactivex.disposables.Disposable;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.DetailsActivity;
+import licenta.books.androidmobile.activities.others.CustomScrollview;
 import licenta.books.androidmobile.activities.others.GridviewScrollable;
 import licenta.books.androidmobile.adapters.GenreBooksAdapter;
 import licenta.books.androidmobile.api.ApiClient;
@@ -41,6 +45,7 @@ import retrofit2.Response;
 public class GenreBooksFragment extends Fragment implements GenreBooksAdapter.OnButtonClickListener {
     private OnFragmentGenreBooksListener listener;
     private TextView genreTitle;
+    private TextView genreTitleToolbar;
     private ReadMoreTextView readMoreTextView;
     private GridviewScrollable categoryListview;
     private ApiService apiService;
@@ -49,6 +54,8 @@ public class GenreBooksFragment extends Fragment implements GenreBooksAdapter.On
     private ImageView homeBtn;
     private ArrayList<BookE> allBooks;
     private ArrayList<BookE> mostDownloaded;
+    private CustomScrollview scrollView;
+
 
     Bundle bundle;
     String category;
@@ -59,9 +66,11 @@ public class GenreBooksFragment extends Fragment implements GenreBooksAdapter.On
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View  view = inflater.inflate(R.layout.genre_books_layout,container,false);
         genreTitle = view.findViewById(R.id.genre_title);
+        genreTitleToolbar = view.findViewById(R.id.title_toolbar_genres);
         categoryListview = view.findViewById(R.id.gridview_top);
         readMoreTextView = view.findViewById(R.id.genre_description);
         homeBtn = view.findViewById(R.id.btn_home_genres);
+        scrollView = view.findViewById(R.id.scroll_genre);
         progressDialog = new ProgressDialog(getContext());
         progressDialog.setCancelable(false);
         progressDialog.setMessage("Please wait..");
@@ -116,10 +125,28 @@ public class GenreBooksFragment extends Fragment implements GenreBooksAdapter.On
             getWantedBooks(callWanted,mostDownloaded);
         }
 
+        scrollView.setOnScrollListener(new CustomScrollview.OnScrollListener() {
+            @Override
+            public void onScrollChanged(int x, int y, int oldx, int oldy) {
+              if (y >= 56) {
+                  if(genreTitleToolbar.getVisibility() == View.INVISIBLE){
+                      genreTitleToolbar.setText(category);
+//                      genreTitleToolbar.setVisibility(View.VISIBLE);
+                      animateViewAppear(genreTitleToolbar);
+                  }
+                  System.out.println("dwwn");
+            }else {
+                  genreTitleToolbar.setVisibility(View.INVISIBLE);
+              }
+            }
+        });
+
 
 
         return view;
     }
+
+
 
     private void setAllBooks(Response<ArrayList<BookE>> response) {
         allBooks = response.body();
@@ -220,6 +247,19 @@ public class GenreBooksFragment extends Fragment implements GenreBooksAdapter.On
                 }
             });
         }
+    }
+
+    private void animateViewAppear(View view){
+        view.animate()
+                .alpha(1.0f)
+                .setDuration(400)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        view.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 
     public interface OnFragmentGenreBooksListener {
