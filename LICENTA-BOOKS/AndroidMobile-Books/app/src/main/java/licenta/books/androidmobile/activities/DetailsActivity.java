@@ -229,7 +229,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                 public synchronized void onComplete() {
 
                     btnDownload.setText("READ");
-
+                    increseDownloads(book.get_id());
 
 
 
@@ -315,7 +315,20 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
     }
 
 
+    private void increseDownloads(String id){
+        Call<ResponseBody> responseBodyCall = apiService.increaseNoDownloads(id);
+        responseBodyCall.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void blurCoverBook() {

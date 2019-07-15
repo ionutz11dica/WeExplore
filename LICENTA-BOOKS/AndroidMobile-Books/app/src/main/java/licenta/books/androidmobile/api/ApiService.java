@@ -104,5 +104,8 @@ public interface ApiService {
     @GET("books/categorySearch/{category}")
     Call<ArrayList<BookE>> getCategoryBooks(@Path("category") String category);
 
+    @PUT("books/nodownloads/{id}")
+    Call<ResponseBody> increaseNoDownloads(@Path("id")String id);
+
 
 }
