@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="450dp"
             android:descendantFocusability="blocksDescendants"
-            android:background="@drawable/btn_rounded"
+            android:background="@drawable/btn_rounded_transparent"
             android:gravity="center"
 
             android:orientation="vertical">
@@ -48,46 +48,85 @@
 
 
         </LinearLayout>
-        <ProgressBar
-            android:id="@+id/id_progress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:max="100"
-            />
 
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:id="@+id/title_details"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:textStyle="bold"
+                android:padding="5dp"
+                android:fontFamily="@font/crimsontext"
+                android:text="Titlul cartii"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:id="@+id/authors_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16dp"
+                android:textStyle="normal"
+                android:padding="5dp"
+                android:fontFamily="@font/crimsontext"
+                android:text="Autorul cartii"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:id="@+id/noDownloads_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16dp"
+                android:textStyle="normal"
+                android:padding="5dp"
+                android:fontFamily="@font/crimsontext"
+                android:text="Numar de descarcari"
+                android:textAlignment="center"/>
+
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_margin="3dp"
+            android:background="#c0c0c0"/>
         <TextView
             android:id="@+id/tv_bookdetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:textColor="@color/colorBlackTrans"
-            android:textSize="14dp"
+            android:layout_marginLeft="10dp"
+            android:textSize="17dp"
             android:text="Book Description"
+            android:fontFamily="@font/crimsontext"
             android:paddingLeft="@dimen/book_title_padding"
             android:paddingTop="@dimen/book_title_padding"
             android:paddingRight="@dimen/book_title_padding"
 
              />
 
-        <TextView
+        <com.borjabravo.readmoretextview.ReadMoreTextView
             android:id="@+id/tv_book_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textColor="@color/granite"
-            android:textSize="12sp"
-            android:ellipsize="end"
-            android:maxLines="5"
-            android:paddingLeft="@dimen/book_title_padding"
 
-            android:paddingRight="@dimen/book_title_padding"
-            android:paddingBottom="@dimen/book_title_padding"
+            app:trimExpandedText="Read More"
+            app:trimCollapsedText="Show less"
+            app:trimMode="trimModeLength"
+            app:trimLines="70"
+            app:colorClickableText="@color/granite"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:layout_marginLeft="10dp"
+            android:textSize="16dp"
+            android:fontFamily="@font/crimsontext"
             />
 
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
+            android:layout_margin="3dp"
             android:background="#c0c0c0"/>
         <TextView
             android:id="@+id/tv_book_info"
@@ -95,12 +134,63 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:textColor="@color/colorBlackTrans"
-            android:textSize="14dp"
+            android:textSize="17dp"
             android:text="Book Information"
+            android:layout_marginLeft="10dp"
+            android:fontFamily="@font/crimsontext"
             android:paddingLeft="@dimen/book_title_padding"
             android:paddingTop="@dimen/book_title_padding"
             android:paddingRight="@dimen/book_title_padding"
-
             />
+
+        <TextView
+            android:id="@+id/categories_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/colorBlackTrans"
+            android:textSize="17dp"
+            android:text="Categories"
+
+            android:fontFamily="@font/crimsontext"
+            android:textAlignment="center"
+            android:paddingLeft="@dimen/book_title_padding"
+            android:paddingTop="@dimen/book_title_padding"
+            android:paddingRight="@dimen/book_title_padding"
+            />
+
+        <TextView
+            android:id="@+id/isbn_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/colorBlackTrans"
+            android:textSize="17dp"
+            android:text="isbn"
+
+            android:fontFamily="@font/crimsontext"
+            android:textAlignment="center"
+            android:paddingLeft="@dimen/book_title_padding"
+            android:paddingTop="@dimen/book_title_padding"
+            android:paddingRight="@dimen/book_title_padding"
+            />
+
+        <TextView
+            android:id="@+id/publishedDate_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/colorBlackTrans"
+            android:textSize="17dp"
+            android:text="an publicatie"
+
+            android:fontFamily="@font/crimsontext"
+            android:textAlignment="center"
+            android:paddingLeft="@dimen/book_title_padding"
+            android:paddingTop="@dimen/book_title_padding"
+            android:paddingRight="@dimen/book_title_padding"
+            />
+
+
     </LinearLayout>
 </ScrollView>

@@ -282,13 +282,16 @@ public class BookE implements Parcelable {
 
     public static String convertFromArray(ArrayList<String> authors){
         StringBuilder sb = new StringBuilder();
-        for(String s : authors){
-            if(authors.size() == 1){
-                sb.append(s);
-            }else{
-                sb.append(s).append(", ");
+        for(int i = 0 ;i<authors.size();i++){
+            if(i == authors.size()-1){
+                sb.append(authors.get(i));
+            }else {
+                if (authors.size() == 1) {
+                    sb.append(authors.get(i));
+                } else {
+                    sb.append(authors.get(i)).append(", ");
+                }
             }
-
         }
         return sb.toString();
     }

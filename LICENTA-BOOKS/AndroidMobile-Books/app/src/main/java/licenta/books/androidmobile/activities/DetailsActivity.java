@@ -92,7 +92,6 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         openDao();
-        progressBar = findViewById(R.id.id_progress);
         sharedPreferences = getSharedPreferences(Constants.KEY_PREF_USER, 0);
         editor = sharedPreferences.edit();
 
@@ -211,6 +210,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
                 @Override
                 public void onSubscribe(Disposable d) {
                     btnDownload.setText("Wait...");
+                    btnDownload.setEnabled(false);
                     bookMethods.insertBook(book);
 
                 }
@@ -227,7 +227,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                 @Override
                 public synchronized void onComplete() {
-
+                    btnDownload.setEnabled(true);
                     btnDownload.setText("READ");
                     increseDownloads(book.get_id());
 
@@ -330,6 +330,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         });
     }
 
+    @SuppressLint("SetTextI18n")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void blurCoverBook() {
         String url = intent.getStringExtra(Constants.KEY_IMAGE_URL);
@@ -343,9 +344,30 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
         final LinearLayout blurBackground = parent.findViewById(R.id.ll_details);
         final ImageView bookCover = blurBackground.findViewById(R.id.iv_bookcover);
         final TextView description = parent.findViewById(R.id.tv_book_description);
+        final TextView title = parent.findViewById(R.id.title_details);
+        final TextView authors = parent.findViewById(R.id.authors_details);
+        final TextView noDownloads = parent.findViewById(R.id.noDownloads_details);
+        final TextView categories = parent.findViewById(R.id.categories_details);
+        final TextView isbn = parent.findViewById(R.id.isbn_details);
+        final TextView publication = parent.findViewById(R.id.publishedDate_details);
         parent.setOnClickListener(this);
         blurBackground.setOnClickListener(this);
 
+
+        description.setText(book.getDescription());
+        title.setText(book.getTitle());
+        authors.setText("by "+BookE.convertFromArray(book.getAuthors()));
+//        if(book.getNoDownloads() == 0){
+            noDownloads.setText("No. Downloads: "+book.getNoDownloads());
+//        }
+
+        categories.setText(BookE.convertFromArray(book.getCategories()));
+        if(book.getIsbn().length() > 0){
+            isbn.setText("ISBN: "+book.getIsbn());
+        }else{
+            isbn.setVisibility(View.GONE);
+        }
+        publication.setText("Date publication "+book.getPublishedDate());
 
 
         Glide.with(this)
@@ -360,7 +382,7 @@ public class DetailsActivity extends AppCompatActivity implements EasyPermission
 
                         blurBackground.setBackgroundDrawable(drawable);
                         bookCover.setImageBitmap(resource);
-                        description.setText(book.getDescription());
+
                     }
                 });
     }

@@ -147,7 +147,7 @@ public class InfoFragment extends Fragment {
         String pages = "<fonts color =#b7b8b6>Pages</fonts>&nbsp &nbsp &nbsp <fonts color=#000>"+book.getPageCount()+"</fonts>";
         tvBookInformationPages.setText(Html.fromHtml(pages));
 
-        String categories = "<fonts color =#b7b8b6>Categories</fonts>&nbsp &nbsp &nbsp <fonts color=#000>"+BookE.convertFromArray(book.getAuthors())+"</fonts>";
+        String categories = "<fonts color =#b7b8b6>Categories</fonts>&nbsp &nbsp &nbsp <fonts color=#000>"+BookE.convertFromArray(book.getCategories())+"</fonts>";
         tvBookInformationCategories.setText(Html.fromHtml(categories));
 
         String permissions = "<fonts color =#b7b8b6>Permissions</fonts>&nbsp &nbsp &nbsp <fonts color=#000>&#8226; Allow viewing on any device<br/> \t \t \t \t \t \t &nbsp &nbsp &nbsp &nbsp &#8226; Allow copying/pasting</fonts>";

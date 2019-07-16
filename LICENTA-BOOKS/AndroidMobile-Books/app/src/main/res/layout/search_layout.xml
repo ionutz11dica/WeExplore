@@ -60,7 +60,7 @@
                  android:layout_marginTop="39dp"
                  android:scaleType="fitXY"
                  android:elevation="35dp"
-                 android:background="@drawable/dark_grey" />
+                 android:background="@android:color/transparent"/>
 
              <ImageView
                  android:id="@+id/left_second"
@@ -74,7 +74,7 @@
                  android:scaleType="fitXY"
                  android:layout_toEndOf="@+id/left_first"
                  android:layout_toRightOf="@+id/left_first"
-                 android:background="@color/blueSky" />
+                 android:background="@android:color/transparent"/>
 
              <ImageView
                  android:id="@+id/right_first"
@@ -88,7 +88,7 @@
                  android:elevation="35dp"
                  android:scaleType="fitXY"
                  android:layout_marginRight="0dp"
-                 android:background="@color/grey" />
+                 android:background="@android:color/transparent" />
 
 
              <ImageView
@@ -103,7 +103,7 @@
                  android:layout_marginRight="-19dp"
                  android:layout_toStartOf="@+id/right_first"
                  android:layout_toLeftOf="@+id/right_first"
-                 android:background="#000" />
+                 android:background="@android:color/transparent" />
 
 
              <ImageView
@@ -120,7 +120,7 @@
                  android:layout_marginTop="15dp"
                  android:layout_marginEnd="111dp"
                  android:layout_marginRight="111dp"
-                 android:background="#2f6"
+                 android:background="@android:color/transparent"
                  android:elevation="35dp"
 
                  android:scaleType="fitXY" />
@@ -287,23 +287,7 @@
              android:background="#eeeeee"
              android:orientation="vertical">
 
-             <TextView
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:layout_margin="16dp"
-                 android:text="Most related"
-                 android:textSize="16sp"
-                 android:textStyle="bold" />
 
-             <com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView
-                 android:id="@+id/first_recycler_view"
-                 android:layout_width="match_parent"
-                 android:layout_height="wrap_content"
-                 android:layout_gravity="center_vertical"
-                 android:orientation="horizontal"
-                 app:msrv_gravity="start"
-                 app:msrv_ms_per_inch="@dimen/normal_speed"
-                 app:msrv_snap_count="1" />
 
              <TextView
                  android:layout_width="wrap_content"
@@ -323,6 +307,24 @@
                  app:msrv_gravity="center"
                  app:msrv_ms_per_inch="@dimen/low_speed"
                  app:msrv_snap_count="2" />
+
+             <TextView
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_margin="16dp"
+                 android:text="Searched books"
+                 android:textSize="16sp"
+                 android:textStyle="bold" />
+
+             <com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView
+                 android:id="@+id/first_recycler_view"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center_vertical"
+                 android:orientation="horizontal"
+                 app:msrv_gravity="start"
+                 app:msrv_ms_per_inch="@dimen/normal_speed"
+                 app:msrv_snap_count="1" />
 
 
          </LinearLayout>

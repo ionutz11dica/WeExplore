@@ -65,7 +65,7 @@ public class ShelfBooksAdapter extends ArrayAdapter<BookE> {
         title.setText(bookE.getTitle());
         authors.setText(BookAdapter.convertStringFromArray(bookE));
         publicationYear.setText(bookE.getPublishedDate());
-        noPage.setText(String.valueOf(bookE.getPageCount()));
+        noPage.setText(String.valueOf(bookE.getPageCount())+ " pages");
         Glide.with(getContext())
                 .load(bookE.getImageLink())
                 .placeholder(R.drawable.ic_error_outline_24dp)

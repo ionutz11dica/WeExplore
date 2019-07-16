@@ -69,11 +69,15 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
 
     public static String convertStringFromArray(BookE book){
         StringBuilder sb = new StringBuilder();
-        for(String author : book.getAuthors()){
-            if(book.getAuthors().size()>1){
-                sb.append(author).append(",");
-            }else{
-                sb.append(author);
+        for(int i = 0 ;i < book.getAuthors().size();i++){
+            if(i == book.getAuthors().size()-1){
+                sb.append(book.getAuthors().get(i));
+            }else {
+                if (book.getAuthors().size() == 1) {
+                    sb.append(book.getAuthors().get(i));
+                } else {
+                    sb.append(book.getAuthors().get(i)).append(", ");
+                }
             }
         }
         return sb.toString();

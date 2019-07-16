@@ -107,5 +107,7 @@ public interface ApiService {
     @PUT("books/nodownloads/{id}")
     Call<ResponseBody> increaseNoDownloads(@Path("id")String id);
 
+    @GET("books/randomBooks")
+    Call<ArrayList<BookE>> getRandomBooks();
 
 }

@@ -85,9 +85,9 @@ public class GenreBooksFragment extends Fragment implements GenreBooksAdapter.On
             category = bundle.getString("testCategory");
             description = bundle.getString("testDescription");
             mostDownloaded = bundle.getParcelableArrayList("testMostDownloaded");
-            if(category!=null){
+            if(category!=null) {
                 genreTitle.setText(category);
-                readMoreTextView.setText(description+"djasdjqwdhawhfahwfuahwufhauhwfuahuh uh uhqudhwauh udh hauwh duahwduhauh duhu huah duahw uhwau hdwuah uah uhdwuad hudahwu hdauh uah hwa uawu hdauh uah uhwau ua huwh uaw ");
+                readMoreTextView.setText(description);
             }
         }
 

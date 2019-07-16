@@ -103,12 +103,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @SuppressLint("CommitPrefEdits")
     void initComp(){
-        if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
-            Toast.makeText(getApplicationContext(),"Exista net",Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(getApplicationContext(),"nu Exista net",Toast.LENGTH_LONG).show();
-
-        }
+//        if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
+//            Toast.makeText(getApplicationContext(),"Exista net",Toast.LENGTH_LONG).show();
+//        } else {
+//            Toast.makeText(getApplicationContext(),"nu Exista net",Toast.LENGTH_LONG).show();
+//
+//        }
         userDao = AppRoomDatabase.getInstance(getApplicationContext()).getUserDao();
         userMethods = UserMethods.getInstance(userDao);
 
@@ -415,7 +415,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                      editor.apply();
                     Toast.makeText(getApplicationContext(),"User "+ user.getEmail()+ " created successfully",Toast.LENGTH_LONG).show();
 
-                    startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                    startActivity(new Intent(getApplicationContext(),HomeActivity.class));
                  }else if(response.code() == 200){
                     customToast.show("That email is already used "+ response.message(), getApplicationContext());
                 }
@@ -468,6 +468,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
                             @Override
                             public void onSuccess(User user) {
+                                RxBus.publishUser(user);
                                 Intent intent = new Intent(getApplicationContext(),HomeActivity.class);
                                 startActivity(intent);
                             }
@@ -495,7 +496,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         Call<User> call;
         final User user = new User();
         final CustomToast customToast = new CustomToast(this);
-        final Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+        final Intent intent = new Intent(getApplicationContext(),HomeActivity.class);
         user.setEmail(account.getEmail());
         call = apiService.loginUser(user);
 

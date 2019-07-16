@@ -21,13 +21,13 @@ public interface Constants {
       int RC_SIGN_IN = 9001;
       int WRITE_REQUEST_CODE = 300;
 
-      String BASE_URL = "http://192.168.1.3:4000/";
+      String BASE_URL = "http://192.168.1.5:4000/";
 
       float BITMAP_SCALE = 0.4f;
       float BLUR_RADIUS = 24f;
 
       float BITMAP_SCALE_GENRE = 0.8f;
-      float BLUR_RADIUS_GENRE = 13f;
+      float BLUR_RADIUS_GENRE = 10f;
 
       String TIME_STAMP_FORMAT = "MMM dd yyyy HH:mm:ss.SSS";
       String SIMPLE_DATE_FILE = "dd-MMM-YYYY HH:mm";

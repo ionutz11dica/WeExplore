@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="bottom|center"
+    android:layout_gravity="bottom|center"
+    android:layout_marginBottom="10dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="170dp">
+        <LinearLayout
+            android:layout_width="280dp"
+            android:layout_height="170dp"
+            android:background="@drawable/rounded_button_corner"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/grey"
+                android:text="Dictionary"
+                android:textSize="17dp"
+                android:fontFamily="@font/crimsontext"
+                android:layout_marginTop="4dp"
+                android:layout_marginLeft="10dp"/>
+            <TextView
+                android:id="@+id/tv_word"
+                android:layout_width="match_parent"
+                android:layout_marginTop="7dp"
+                android:layout_height="wrap_content"
+                android:text="Word"
+                android:textStyle="bold"
+                android:textSize="22dp"
+                android:fontFamily="@font/crimsontext"
+                android:paddingLeft="10dp"/>
+
+            <TextView
+                android:id="@+id/tv_type_Word"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Part of Speech"
+                android:textStyle="italic"
+                android:layout_marginTop="4dp"
+                android:textSize="17dp"
+                android:fontFamily="@font/crimsontext"
+                android:paddingLeft="10dp"/>
+
+            <TextView
+                android:id="@+id/tv_definition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Definition"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:textStyle="normal"
+                android:textSize="17dp"
+                android:fontFamily="@font/crimsontext"
+                android:paddingLeft="10dp"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

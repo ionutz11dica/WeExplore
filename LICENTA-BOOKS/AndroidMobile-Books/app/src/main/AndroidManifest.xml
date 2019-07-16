@@ -41,7 +41,7 @@
         <activity android:name=".activities.ReaderBookActivity" />
         <activity
             android:name=".activities.DetailsActivity"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/AppTheme" />

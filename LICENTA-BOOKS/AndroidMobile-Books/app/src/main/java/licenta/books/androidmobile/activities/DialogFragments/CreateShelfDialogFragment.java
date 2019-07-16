@@ -113,7 +113,6 @@ public class CreateShelfDialogFragment extends DialogFragment {
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-
     }
 
     public interface OnCompleteListenerShelf{

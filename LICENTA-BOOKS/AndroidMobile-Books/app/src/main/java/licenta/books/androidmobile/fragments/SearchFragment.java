@@ -63,7 +63,9 @@ public class SearchFragment extends Fragment {
 
     private LinearLayoutManager firstManager;
     private MultiSnapRecyclerView firstRecyclerView;
+    private MultiSnapRecyclerView secondRecyclerView;
     private BookAdapter firstAdapter;
+    private BookAdapter secondAdapter;
 
     private ImageView leftFirst;
     private ImageView leftSecond;
@@ -100,63 +102,20 @@ public class SearchFragment extends Fragment {
         getTitlesForSearchView();
         listenerMenuToolbar();
 
+        getRandomBooks();
         animationDrawable = (AnimationDrawable) relativeBackground.getBackground();
         animationDrawable2 = (AnimationDrawable) toolbar.getBackground();
-
-       
 
 
 
         // setting enter fade animation duration to 5 seconds
-        animationDrawable.setEnterFadeDuration(3000);
-        animationDrawable2.setEnterFadeDuration(3000);
+        animationDrawable.setEnterFadeDuration(2000);
+        animationDrawable2.setEnterFadeDuration(2000);
 
         // setting exit fade animation duration to 2 seconds
         animationDrawable.setExitFadeDuration(2000);
         animationDrawable2.setExitFadeDuration(2000);
 
-//        ValueAnimator anim = ValueAnimator.ofFloat(0, 1);
-//        anim.setDuration(10000);
-//
-//        float[] hsv;
-//        final int[] runColor = new int[1];
-//        int hue = 0;
-//        hsv = new float[3]; // Transition color
-//        hsv[1] = 1;
-//        hsv[2] = 1;
-//        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//
-//                hsv[0] = 360 * animation.getAnimatedFraction();
-//
-//                runColor[0] = Color.HSVToColor(hsv);
-//                relativeBackground.setBackgroundColor(runColor[0]);
-//            }
-//        });
-//
-//        anim.setRepeatCount(Animation.INFINITE);
-//
-//        anim.start();
-//
-//        final Handler handler = new Handler();
-//        Runnable runnable = new Runnable() {
-//            int i=0;
-//            public void run() {
-//                relativeBackground.setBackgroundResource(imageArray[i]);
-//                final TransitionDrawable background = (TransitionDrawable) relativeBackground.getBackground();
-//                background.startTransition(300);
-//
-//                i++;
-//                if(i>imageArray.length-1)
-//                {
-//                    i=0;
-//                }
-//                handler.postDelayed(this, 5000);  //for interval...
-//            }
-//        };
-//        handler.postDelayed(runnable, 2000); //for initial delay..
 
         return view;
     }
@@ -208,6 +167,8 @@ public class SearchFragment extends Fragment {
         setHasOptionsMenu(true);
 
         firstRecyclerView = view.findViewById(R.id.first_recycler_view);
+        secondRecyclerView = view.findViewById(R.id.second_recycler_view);
+
         leftFirst = view.findViewById(R.id.left_first);
         leftSecond = view.findViewById(R.id.left_second);
         centerImv = view.findViewById(R.id.center_imv);
@@ -426,6 +387,7 @@ public class SearchFragment extends Fragment {
                     firstManager = new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false);
                     firstRecyclerView.setLayoutManager(firstManager);
                     firstRecyclerView.setAdapter(firstAdapter);
+
                 }
             }
 
@@ -434,9 +396,28 @@ public class SearchFragment extends Fragment {
                 Toast.makeText(getContext(),t.getMessage(),Toast.LENGTH_LONG).show();
             }
         });
-
-
     }
+
+    private void getRandomBooks(){
+        Call<ArrayList<BookE>> call = apiService.getRandomBooks();
+        call.enqueue(new Callback<ArrayList<BookE>>() {
+            @Override
+            public void onResponse(Call<ArrayList<BookE>> call, Response<ArrayList<BookE>> response) {
+                if(response.body()!=null){
+                    secondAdapter = new BookAdapter(getContext(),response.body());
+                    firstManager = new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false);
+                    secondRecyclerView.setLayoutManager(firstManager);
+                    secondRecyclerView.setAdapter(secondAdapter);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<BookE>> call, Throwable t) {
+
+            }
+        });
+    }
+
 
     private void setTitlesAuthors(ArrayList<BookE> arrayList){
         this.titlesAuthors = arrayList;
@@ -448,7 +429,7 @@ public class SearchFragment extends Fragment {
             ArrayList<String> matches = data
                     .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             hideKeyboardFrom(getContext(),view);
-            getSearchedBooks(matches.get(0));
+             getSearchedBooks(matches.get(0));
             scrollView.postDelayed(()-> scrollView.fullScroll(View.FOCUS_DOWN),500);
 
         }

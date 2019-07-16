@@ -80,6 +80,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -89,6 +91,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import licenta.books.androidmobile.R;
 import licenta.books.androidmobile.activities.DialogFragments.ColorsDialogFragment;
+import licenta.books.androidmobile.activities.DialogFragments.DefinitionWordDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.FontsDialogFragment;
 import licenta.books.androidmobile.activities.DialogFragments.NoteDialogFragment;
 import licenta.books.androidmobile.activities.others.BookAnnotations;
@@ -125,7 +128,8 @@ import licenta.books.androidmobile.patterns.readingEstimator.GunningFogFormula;
 
 
 public class ReaderBookActivity extends AppCompatActivity implements View.OnClickListener, NoteDialogFragment.OnCompleteListener,
-        FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor, AnnotationFragment.OnFragmentInteractionListener  {
+        FontsDialogFragment.OnCompleteListenerFonts, ColorsDialogFragment.OnCompleteListenerColor, AnnotationFragment.OnFragmentInteractionListener ,
+        DefinitionWordDialogFragment.OnCompleteListenerDefinition {
     ReflowableControl reflowableControl;
     RelativeLayout renderRelative;
 
@@ -221,7 +225,7 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
     //Buttons
     Button noteBtn;
-
+    Button defineBtn;
     LinearLayout styleLayout;
     Button typeface;
 
@@ -354,14 +358,6 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         estimationLayout.setVisibility(View.GONE);
         estimationLayout.setClickable(true);
 
-//        BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(estimationLayout);
-//        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-//        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-//        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-//
-//        bottomSheetBehavior.setPeekHeight(340);
-//
-//        bottomSheetBehavior.setHideable(false);
 
         tvEstimation = findViewById(R.id.tv_estimation);
         btnDifficulty = findViewById(R.id.grade_difficulty);
@@ -402,6 +398,28 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
 
 
         noteBtn = findViewById(R.id.btn_note);
+        defineBtn = findViewById(R.id.btn_define);
+        defineBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                String[] words= textInHighlight.split(" ");
+//                Pattern wordPattern = Pattern.compile("\\w+");
+//                Matcher wordMatcher = wordPattern.matcher(textInHighlight);
+                if (words.length != 1) {
+                    // discard user input
+                }else{
+                    bundle.putString("definitionKey",textInHighlight);
+                    DefinitionWordDialogFragment definitionWordDialogFragment = new DefinitionWordDialogFragment();
+                    definitionWordDialogFragment.setArguments(bundle);
+                    definitionWordDialogFragment.show(getSupportFragmentManager(),"define");
+                }
+
+            }
+        });
+
+
+
         noteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1287,6 +1305,11 @@ public class ReaderBookActivity extends AppCompatActivity implements View.OnClic
         typeface.setText(customFont);
 
         reflowableControl.changeFont(customFont,fontSize);
+    }
+
+    @Override
+    public void onCompleteDefinition() {
+
     }
 
 

@@ -21,11 +21,16 @@ public interface BookCollectionJoinDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertBookCollection(ArrayList<CollectionBookJoin> collectionBookJoin);
+//
+//    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+//    @Query("SELECT b.collectionId as idCollection, b.nameCollection as collectionName, count(a.bookId) as bookIds" +
+//            " FROM collection b" +
+//            " LEFT JOIN collectionBook a ON b.collectionId = a.collectionId and b.userId= :userId group by b.nameCollection")
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT b.collectionId as idCollection, b.nameCollection as collectionName, count(a.bookId) as bookIds" +
             " FROM collection b" +
-            " LEFT JOIN collectionBook a ON b.collectionId = a.collectionId and b.userId= :userId group by b.nameCollection")
+            " LEFT JOIN collectionBook a ON b.collectionId = a.collectionId WHERE b.userId= :userId group by b.nameCollection")
     Single<List<CollectionPOJO>> fetchUserCollection(Integer userId);
     
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)

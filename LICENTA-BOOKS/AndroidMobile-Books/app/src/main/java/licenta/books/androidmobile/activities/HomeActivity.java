@@ -250,7 +250,6 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
     @Override
     protected void onResume() {
         super.onResume();
-
     }
 
     private void openDb(){
