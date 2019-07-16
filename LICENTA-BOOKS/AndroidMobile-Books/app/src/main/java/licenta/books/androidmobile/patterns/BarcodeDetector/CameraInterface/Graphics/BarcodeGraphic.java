@@ -14,9 +14,10 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
     private int id;
 
     private static final int COLOR_CHOICES[] = {
-            Color.GREEN,
-            Color.YELLOW,
-            Color.WHITE
+            Color.parseColor("#099a97"),
+            Color.parseColor("#d8cbbb"),
+            Color.parseColor("#f2f4fb"),
+            Color.parseColor("#eaec96")
     };
 
     private static int currentColorIndex = 0;
