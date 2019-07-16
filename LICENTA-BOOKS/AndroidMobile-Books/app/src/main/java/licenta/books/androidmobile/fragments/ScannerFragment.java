@@ -187,7 +187,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
     }
 
     private View.OnClickListener listenerScannedBooks = v -> {
-        getScannedBooks();
+        getScannedBooks(v);
         listScan.setVisibility(View.VISIBLE);
         cameraSource.stop();
         preview.setVisibility(View.INVISIBLE);
@@ -334,7 +334,7 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
         });
     }
 
-    private void getScannedBooks(){
+    private void getScannedBooks(View view){
         Call<ArrayList<BookE>> call = apiService.getScannedBooks(user.getEmail());
         call.enqueue(new Callback<ArrayList<BookE>>() {
             @Override
@@ -358,7 +358,8 @@ public class ScannerFragment extends Fragment implements BarcodeGraphicTracker.B
 
             @Override
             public void onFailure(Call<ArrayList<BookE>> call, Throwable t) {
-                Toast.makeText(getContext(), (CharSequence) t.getMessage(),Toast.LENGTH_LONG).show();
+                Snackbar.make(view, "Please check your network", Snackbar.LENGTH_LONG)
+                        .show();
             }
         });
     }

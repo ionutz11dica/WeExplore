@@ -58,7 +58,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
 
         Glide.with(mContext)
                 .load(bookCover)
-                .placeholder(R.drawable.ic_error_outline_24dp)
+                .placeholder(R.drawable.placeholder)
                 .into(viewHolder.thumbnail);
     }
 

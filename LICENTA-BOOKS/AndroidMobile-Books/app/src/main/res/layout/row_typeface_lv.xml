@@ -11,6 +11,7 @@
         android:id="@+id/tv_typeface"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/crimsontext"
         android:textSize="18dp"
         android:text="test"
         android:textAlignment="center"/>

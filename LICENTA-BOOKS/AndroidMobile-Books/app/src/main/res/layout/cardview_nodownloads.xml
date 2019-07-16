@@ -42,7 +42,7 @@
                 android:fontFamily="@font/crimsontext"
                 android:maxLines="1"
                 android:paddingLeft="20dp"
-                android:text="124 Downloads"
+                android:text="0 Downloads"
                 android:textColor="@color/book_title"
                 android:textSize="16dp"
 

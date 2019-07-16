@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -213,7 +214,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
                     @Override
                     public void onError(Throwable e) {
-                        customToast.show("Passowrd or username incorrect",R.drawable.ic_error_outline_24dp,getApplicationContext());
+                        customToast.show("Password or username incorrect",R.drawable.ic_cancel,getApplicationContext());
                     }
                 });
         }
@@ -367,7 +368,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     signIn();
                     break;
                 }else{
-                    Toast.makeText(getApplicationContext(),"Nu exista conexiune la internet",Toast.LENGTH_LONG).show();
+                    Snackbar.make(view, "Please check your network", Snackbar.LENGTH_LONG)
+                            .show();
                     break;
                 }
             case R.id.btnSignin:
@@ -378,7 +380,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 if(CheckForNetwork.isConnectedToNetwork(getApplicationContext())){
                     verifySignup();
                 }else{
-                    Toast.makeText(getApplicationContext(),"Connection problem",Toast.LENGTH_LONG).show();
+                    Snackbar.make(view, "Please check your network", Snackbar.LENGTH_LONG)
+                            .show();
                     break;
                 }
 
@@ -397,7 +400,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 call = apiService.loginUser(user);
             }else{
                 customToast = new CustomToast(this);
-                customToast.show("Invalid inputs",R.drawable.ic_input_24dp,this);
+                customToast.show("Invalid inputs",R.drawable.ic_cancel,this);
                 return;
         }
         customToast = new CustomToast(this);
@@ -413,7 +416,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                      editor.putString(Constants.KEY_USER_USERNAME,tie_signupUsername.getText().toString());
                      editor.putString(Constants.KEY_USER_PASSWORD,tie_signupPassword.getText().toString());
                      editor.apply();
-                    Toast.makeText(getApplicationContext(),"User "+ user.getEmail()+ " created successfully",Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getApplicationContext(),"User "+ user.getEmail()+ " created successfully",Toast.LENGTH_LONG).show();
 
                     startActivity(new Intent(getApplicationContext(),HomeActivity.class));
                  }else if(response.code() == 200){
@@ -446,7 +449,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 editor.apply();
                 call = apiService.loginUser(user);
             } else {
-                customToast.show("Complete field properly", R.drawable.ic_error_outline_24dp, this);
+                customToast.show("Complete field properly", R.drawable.ic_cancel, this);
                 return ;
             }
         }
@@ -454,7 +457,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             @Override
             public void onResponse(Call<User> call, final Response<User> response) {
                 if(!response.isSuccessful()){
-                    customToast.show("Passowrd or username incorrect",R.drawable.ic_error_outline_24dp,getApplicationContext());
+                    customToast.show("Password or username incorrect",R.drawable.ic_cancel,getApplicationContext());
                     return;
                 }
                 Single<User> userSingle = userMethods.verifyAvailableAccount(user.getUsername(),user.getPassword());
@@ -506,7 +509,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 if(!response.isSuccessful()){
                     return;
                 }
-                    customToast.show("User has been logged in",R.drawable.ic_error_outline_24dp,getApplicationContext());
+                    customToast.show("User has been logged in",R.drawable.ic_checked,getApplicationContext());
                     verifyLoginFromDbGoogleAccount(account);
 
                 }

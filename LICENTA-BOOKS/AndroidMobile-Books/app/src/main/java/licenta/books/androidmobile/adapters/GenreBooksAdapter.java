@@ -117,7 +117,7 @@ public class GenreBooksAdapter extends BaseAdapter {
 
         Glide.with(context)
                 .load(bookE.getImageLink())
-                .placeholder(R.drawable.ic_error_outline_24dp)
+                .placeholder(R.drawable.placeholder)
                 .into(imageView);
 
         return view;

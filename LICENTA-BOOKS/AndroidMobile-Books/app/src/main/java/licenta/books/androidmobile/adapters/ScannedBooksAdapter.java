@@ -83,7 +83,7 @@ public class ScannedBooksAdapter extends ArrayAdapter<BookE> {
         isbn.setText(bookE.getIsbn());
         Glide.with(getContext())
                 .load(bookE.getImageLink())
-                .placeholder(R.drawable.ic_error_outline_24dp)
+                .placeholder(R.drawable.placeholder)
                 .into(cover);
 
         return view;

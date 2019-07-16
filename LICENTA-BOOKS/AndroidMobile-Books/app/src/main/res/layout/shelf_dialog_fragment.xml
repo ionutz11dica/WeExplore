@@ -25,6 +25,7 @@
             android:textCursorDrawable="@color/granite"
             android:backgroundTint="@color/granite"
             android:fontFamily="@font/crimsontext"
+            android:singleLine="true"
             android:focusable="true"
             android:hint="Shelf name" />
 

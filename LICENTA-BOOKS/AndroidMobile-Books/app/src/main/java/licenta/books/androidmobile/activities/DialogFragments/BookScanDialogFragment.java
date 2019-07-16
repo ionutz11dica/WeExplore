@@ -80,7 +80,7 @@ public class BookScanDialogFragment extends DialogFragment {
 
         Glide.with(getContext())
                 .load(bookE.getImageLink())
-                .placeholder(R.drawable.ic_error_outline_24dp)
+                .placeholder(R.drawable.placeholder)
                 .into(ivBookCover);
 
         moreDetails.setOnClickListener(new View.OnClickListener() {

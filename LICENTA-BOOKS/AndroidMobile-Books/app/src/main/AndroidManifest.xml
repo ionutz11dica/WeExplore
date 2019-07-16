@@ -32,21 +32,27 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="n">
         <activity android:name=".activities.HomeActivity"
-            android:configChanges="keyboardHidden|orientation"/>
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name=".activities.StylePopupActivity"
-            android:theme="@style/AppTheme.CustomTheme" />
-        <activity android:name=".activities.AnnotationBookActivity" />
-        <activity android:name=".activities.ReaderBookActivity" />
+            android:theme="@style/AppTheme.CustomTheme"
+            />
+        <activity android:name=".activities.AnnotationBookActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activities.ReaderBookActivity"
+            />
         <activity
             android:name=".activities.DetailsActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/AppTheme" />
         <activity android:name=".activities.LoginActivity"
-            android:configChanges="keyboardHidden|orientation">
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

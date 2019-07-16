@@ -96,6 +96,7 @@ public class BackupFragment extends Fragment   {
                     builder.setMessage("This will reset your application.");
                     final EditText input = new EditText(getActivity());
                     input.setInputType(InputType.TYPE_CLASS_TEXT);
+                    input.setSingleLine(true);
                     builder.setView(input);
                     builder.setPositiveButton("Save", (dialog, which) -> {
                         if(input.getText().toString().length() >= 1) {
@@ -163,7 +164,7 @@ public class BackupFragment extends Fragment   {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle("Delete Backup");
-                builder.setPositiveButton("Save", (dialog, which) -> {
+                builder.setPositiveButton("Delete", (dialog, which) -> {
                     String path = "/sdcard/"+DATABASE_NAME+File.separator+ files[position].getName();
                     File file = new File(path);
                     boolean deleted=deleteDirectory(file);
