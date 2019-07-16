@@ -371,6 +371,8 @@ public class HomeActivity extends AppCompatActivity implements ScannerFragment.O
         bundle.putString("testDescription",genreDescription);
         if(mostDownloaded!=null){
             bundle.putParcelableArrayList("testMostDownloaded",mostDownloaded);
+        }else {
+            bundle.putParcelableArrayList("testMostDownloaded",null);
         }
         genresFragment.setArguments(bundle);
         fm.beginTransaction().hide(active).show(genresFragment).commit();

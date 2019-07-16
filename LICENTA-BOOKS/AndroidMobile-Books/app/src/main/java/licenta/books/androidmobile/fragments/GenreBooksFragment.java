@@ -63,6 +63,7 @@ public class GenreBooksFragment extends Fragment implements GenreBooksAdapter.On
     Bundle bundle;
     String category;
     String description;
+    Boolean isMostDownloaded = false;
     User user;
     @Nullable
     @Override
@@ -87,6 +88,8 @@ public class GenreBooksFragment extends Fragment implements GenreBooksAdapter.On
         if(bundle!=null){
             category = bundle.getString("testCategory");
             description = bundle.getString("testDescription");
+//            isMostDownloaded = bundle.getBoolean("isMostDownloaded");
+
             mostDownloaded = bundle.getParcelableArrayList("testMostDownloaded");
             if(category!=null) {
                 genreTitle.setText(category);

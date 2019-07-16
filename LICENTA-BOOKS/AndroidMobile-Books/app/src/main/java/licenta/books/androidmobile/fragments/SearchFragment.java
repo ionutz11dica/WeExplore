@@ -150,6 +150,7 @@ public class SearchFragment extends Fragment {
 
     private View.OnClickListener listenerGenres(String category,String genreDescription){
         View.OnClickListener listener = v -> {
+
             switchListenr.onFragmentSwitch(category,genreDescription,null);
         };
         return listener;
@@ -257,23 +258,17 @@ public class SearchFragment extends Fragment {
     }
 
     public void openSearch() {
-
         setTransparency(0.15f);
         search.setHint("Search by title or authors");
-//        centerImv.setImageAlpha();
         search.revealFromMenuItem(R.id.action_search, getActivity());
-//        for (Photo title : titlesAuthors) {
-//            SearchResult option = new SearchResult(title.title, getResources().getDrawable(
-//                    R.drawable.ic_open_book));
-//            search.addSearchable(option);
-//        }
+
         search.setMenuListener(new SearchBox.MenuListener() {
 
             @Override
             public void onMenuClick() {
                 // Hamburger has been clicked
-                Toast.makeText(getContext(), "Menu click",
-                        Toast.LENGTH_LONG).show();
+//                Toast.makeText(getContext(), "Menu click",
+//                        Toast.LENGTH_LONG).show();
             }
 
         });
