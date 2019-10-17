@@ -2,6 +2,7 @@
 
 
 ---------- Features for own library management ----------
+
   • Search for books in cloud
   
   • Create shelves, add book to it, delete books, sorting by information
