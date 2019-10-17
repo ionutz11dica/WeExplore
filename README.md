@@ -4,20 +4,30 @@
 -- Features for own library management --
 
   • Search for books in cloud
+  
   • Create shelves, add book to it, delete books, sorting by information
+  
   • Scanner for isbn to find easly books in cloud
+  
   • Backup and restore system
+  
   • Want to read - counter
+  
   • Details about the most downloaded books
   
   
 -- Functionalities on the book content --
 
   • Full content
+  
   • Day-Night mode
+  
   • Luminosity control
+  
   • Text-To-Speech
+  
   • Bookmark
+  
   • Spacing
   • Highlight
   • Note
