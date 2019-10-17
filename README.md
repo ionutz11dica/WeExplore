@@ -1,7 +1,7 @@
       --- Books Fever ---
 
 
--- Features for own library management --
+---------- Features for own library management ----------
   • Search for books in cloud
   
   • Create shelves, add book to it, delete books, sorting by information
@@ -16,7 +16,7 @@
   
   
   
--- Functionalities on the book content --
+---------- Functionalities on the book content ----------
 
   • Full content
   
@@ -53,7 +53,7 @@
   • Seek bar for easy-to-use navigation in chapter 
   
   
-  Estimator pattern:
+ ---------- Estimator pattern ----------
   
   In order to estimate how long a user can finish a chapter, I had to take into account several variables.
   For calculating the difficulty coefficient I used Gunning Fog Score, consists in applying a text or a paragraph with a lenght of about 100 - 200 words, from this paragraph we extract the exact number of words, number sentences, but also the number of complex words ( provided, they had to have 3 syllables or more, soo the words that have common prefixes and suffixes (eg "ing","ous" etc.) are eliminated ).
