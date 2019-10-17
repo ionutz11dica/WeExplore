@@ -60,3 +60,12 @@
   For calculating the difficulty coefficient I used Gunning Fog Score, consists in applying a text or a paragraph with a lenght of about 100 - 200 words, from this paragraph we extract the exact number of words, number sentences, but also the number of complex words ( provided, they had to have 3 syllables or more, soo the words that have common prefixes and suffixes (eg "ing","ous" etc.) are eliminated ).
   To optimize the estimate in algorithm I also calculated the average time spent on each page.
   
+  ---------- Tehnologies used ----------
+  
+  Own server to make communication with database: NodeJS, MongoDB
+  
+  API used: Google Books API, Oxford dictionary API
+  
+  Android Studio: RxJava 2, Retrofit 2, Room Persistence Library, SkyEpub Reader
+  
+  
