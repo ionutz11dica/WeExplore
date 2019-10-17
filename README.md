@@ -26,7 +26,7 @@ Functionalities on the book content:
   • Changing background and foreground
   • Sharing quotes
   • Dictionary for every word --> Oxford Dictionary API
-  • Seek bar for easy-to-use navigation in chapter
+  • Seek bar for easy-to-use navigation in chapter 
   
   Estimator pattern:
   In order to estimate how long a user can finish a chapter, I had to take into account several variables.
