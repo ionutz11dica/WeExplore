@@ -2,7 +2,6 @@
 
 
 -- Features for own library management --
-
   • Search for books in cloud
   
   • Create shelves, add book to it, delete books, sorting by information
@@ -14,6 +13,7 @@
   • Want to read - counter
   
   • Details about the most downloaded books
+  
   
   
 -- Functionalities on the book content --
@@ -29,17 +29,29 @@
   • Bookmark
   
   • Spacing
+  
   • Highlight
+  
   • Note
+  
   • Search in book's content
+  
   • List of chapters to navigate easly
+  
   • List of highlights and bookmarks for a good administration of the content
+  
   • Increase and decrease font
+  
   • Custom font
+  
   • Changing background and foreground
+  
   • Sharing quotes
+  
   • Dictionary for every word --> Oxford Dictionary API
+  
   • Seek bar for easy-to-use navigation in chapter 
+  
   
   Estimator pattern:
   
