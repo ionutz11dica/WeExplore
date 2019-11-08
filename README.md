@@ -11,7 +11,7 @@
   
   • Backup and restore system
   
-  • Want to read - counter
+  • Want to read - counter and list
   
   • Details about the most downloaded books
   
@@ -67,5 +67,11 @@
   API used: Google Books API, Oxford dictionary API
   
   Android Studio: RxJava 2, Retrofit 2, Room Persistence Library, SkyEpub Reader
+  
+  
+  
+  
+  
+  
   
   
