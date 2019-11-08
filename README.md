@@ -120,7 +120,7 @@
  <br></br>
    <h3> E-Pub Features </h3>
    
-   <p>As I said, Books Fever App emphasizes the management side, but also on the side of providing to the user with the integral content of the books, but also a pleasant environment for use.
+   <p>As I said, Books Fever App emphasizes the management side, but also on the side of providing to the user with the integral content of the books, but also a pleasant environment for using.
 In the following screens you will able to see all the functionalities  that the user could apply to the content and not only.</p>
 
 <h4> Book Details: download option </h4>
