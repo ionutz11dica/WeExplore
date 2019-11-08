@@ -123,14 +123,34 @@
    <p>As I said, Books Fever App emphasizes the management side, but also on the side of providing to the user with the integral content of the books, but also a pleasant environment for use.
 In the following screens you will able to see all the functionalities  that the user could apply to the content and not only.</p>
 
-<h4> Book Details </h4>
+<h4> Book Details: download option </h4>
 <p float="left"> 
- <img src= "ScreenApp/Screenshot_20191108-164700_AndroidMobile.jpg" width = "230" heigh="280">
- <img src= "ScreenApp/Screenshot_20191108-164714_AndroidMobile.jpg" width = "230" heigh="280">
- <img src= "ScreenApp/Screenshot_20191108-164727_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-162227_AndroidMobile.jpg" width = "230" heigh="280">
 </p>
 
-  
+ <h4> Functionalities applicable to the content. </h4>
+<p float="left"> 
+ <img src= "ScreenApp/Screenshot_20191108-170304_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163222_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163230_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163241_AndroidMobile.jpg" width = "230" heigh="280">     
+      
+ <img src= "ScreenApp/Screenshot_20191107-163318_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163323_AndroidMobile.jpg" width = "230" heigh="280">
+ 
+ <img src= "ScreenApp/Screenshot_20191107-163406_AndroidMobile.jpg" width = "230" heigh="280">     
+ <img src= "ScreenApp/Screenshot_20191107-163455_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163459_AndroidMobile.jpg" width = "230" heigh="280">  
+ 
+ <img src= "ScreenApp/Screenshot_20191107-163504_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163548_AndroidMobile.jpg" width = "230" heigh="280">
+ 
+ <img src= "ScreenApp/Screenshot_20191107-163336_AndroidMobile.jpg" width = "230" heigh="280">  
+ 
+ <img src= "ScreenApp/Screenshot_20191107-163353_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163656_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163706_AndroidMobile.jpg" width = "230" heigh="280">
+</p>
   
   
   
