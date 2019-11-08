@@ -151,6 +151,13 @@ In the following screens you will able to see all the functionalities  that the 
  <img src= "ScreenApp/Screenshot_20191107-163656_AndroidMobile.jpg" width = "230" heigh="280">
  <img src= "ScreenApp/Screenshot_20191107-163706_AndroidMobile.jpg" width = "230" heigh="280">
 </p>
+
+<h2> Estimator Pattern </h2>
+<p> In order to estimate how long a user can finish a chapter, I had to take into account several variables.
+  For calculating the difficulty coefficient I used Gunning Fog Score, consists in applying a text or a paragraph with a lenght of about 100 - 200 words, from this paragraph we extract the exact number of words, number sentences, but also the number of complex words ( provided, they had to have 3 syllables or more, soo the words that have common prefixes and suffixes (eg "ing","ous" etc.) are eliminated ).
+  To optimize the estimate in algorithm I also calculated the average time spent on each page. </p>
+
+<a href="https://imgflip.com/gif/3fp4kz"><img src="https://i.imgflip.com/3fp4kz.gif" title="made at imgflip.com"/></a>
   
   
   
