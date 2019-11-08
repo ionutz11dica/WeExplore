@@ -64,10 +64,36 @@
   
   Own server to make communication with database: NodeJS, MongoDB
   
-  API used: Google Books API, Oxford dictionary API
+  API used: Google Books API, Oxford Dictionary API, Google Vision API
   
   Android Studio: RxJava 2, Retrofit 2, Room Persistence Library, SkyEpub Reader
   
+  
+  <h3> SignIn/SignUp Activity </h3>
+ <a href="https://imgflip.com/gif/3fopxx"><img src="https://i.imgflip.com/3fopxx.gif" title="made at imgflip.com"/></a>
+ 
+ 
+ <br></br>
+   <h3> Home Activity </h3>
+   <p> There is the Container Activity that stores 4 fragments, we'll talk later about them </p>
+   <h5> Books Fragment </h5>
+<p float="left">  
+ <img src= "ScreenApp/Screenshot_20191107-161418_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-161423_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-161537_AndroidMobile.jpg" width = "230" heigh="280">
+</p>
+ 
+ <br></br>
+   <h5> Scanner Books Fragment </h5>
+<p float="left">  
+ <img src= "ScreenApp/Screenshot_20191107-161453_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191108-162333_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-161504_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-162526_AndroidMobile.jpg" width = "230" heigh="280">
+</p>
+   
+   
+ 
   
   
   
