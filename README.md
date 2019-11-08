@@ -86,16 +86,50 @@
  <br></br>
    <h5> Scanner Books Fragment </h5>
 <p float="left">  
- <img src= "ScreenApp/Screenshot_20191107-161453_AndroidMobile.jpg" width = "230" heigh="280">
- <img src= "ScreenApp/Screenshot_20191108-162333_AndroidMobile.jpg" width = "230" heigh="280">
- <img src= "ScreenApp/Screenshot_20191107-161504_AndroidMobile.jpg" width = "230" heigh="280">
- <img src= "ScreenApp/Screenshot_20191107-162526_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-161453_AndroidMobile.jpg" width = "210" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191108-162333_AndroidMobile.jpg" width = "210" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-161504_AndroidMobile.jpg" width = "210" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-162526_AndroidMobile.jpg" width = "210" heigh="280">
 </p>
    
+ <br></br>
+   <h5> Home Fragment </h5>
+<p float="left">  
+ <img src= "ScreenApp/Screenshot_20191107-161721_AndroidMobile.jpg" width = "230" heigh="280">     
+ <img src= "ScreenApp/Screenshot_20191107-161755_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191108-164141_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-163758_AndroidMobile.jpg" width = "230" heigh="280">    
+ <img src= "ScreenApp/Screenshot_20191107-161824_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-161841_AndroidMobile.jpg" width = "230" heigh="280">
+      
+ <img src= "ScreenApp/Screenshot_20191107-161851_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-161858_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191107-161909_AndroidMobile.jpg" width = "230" heigh="280">
+</p>
    
  
-  
-  
+ <br></br>
+   <h5> Backup/Restore Fragment </h5>
+<p float="left">  
+ <img src= "ScreenApp/Screenshot_20191108-164700_AndroidMobile.jpg" width = "230" heigh="280">     
+ <img src= "ScreenApp/Screenshot_20191108-164714_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191108-164727_AndroidMobile.jpg" width = "230" heigh="280">
+</p>
+
+ 
+ <br></br>
+   <h3> E-Pub Features </h3>
+   
+   <p>As I said, Books Fever App emphasizes the management side, but also on the side of providing to the user with the integral content of the books, but also a pleasant environment for use.
+In the following screens you will able to see all the functionalities  that the user could apply to the content and not only.</p>
+
+<h4> Book Details </h4>
+<p float="left"> 
+ <img src= "ScreenApp/Screenshot_20191108-164700_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191108-164714_AndroidMobile.jpg" width = "230" heigh="280">
+ <img src= "ScreenApp/Screenshot_20191108-164727_AndroidMobile.jpg" width = "230" heigh="280">
+</p>
+
   
   
   
